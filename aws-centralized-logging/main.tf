@@ -331,7 +331,7 @@ resource "aws_iam_role_policy" "firehose-elasticsearch" {
                 "logs:PutLogEvents"
             ],
             "Resource": [
-                "arn:aws:logs:eu-west-1:934030966520:log-group:/aws/kinesisfirehose/*:log-stream:*"
+                "arn:aws:logs:eu-west-1:012345678901:log-group:/aws/kinesisfirehose/*:log-stream:*"
             ]
         },
         {
