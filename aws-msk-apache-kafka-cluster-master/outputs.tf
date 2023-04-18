@@ -48,22 +48,7 @@ output "latest_revision" {
   value       = join("", aws_msk_configuration.config.*.latest_revision)
 }
 
-output "hostname" {
-  description = "Comma separated list of one or more MSK Cluster Broker DNS hostname"
-  value       = join(",", module.hostname.*.hostname)
-}
-
 output "cluster_name" {
   description = "MSK Cluster name"
   value       = join("", aws_msk_cluster.default.*.cluster_name)
-}
-
-output "security_group_id" {
-  description = "The ID of the security group rule"
-  value       = module.broker_security_group.id
-}
-
-output "security_group_name" {
-  description = "The name of the security group rule"
-  value       = module.broker_security_group.name
 }
