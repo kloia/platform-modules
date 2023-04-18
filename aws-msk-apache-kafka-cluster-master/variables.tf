@@ -1,3 +1,15 @@
+variable "enabled" {
+  type        = bool
+  default     = true
+  description = "Set to false to prevent the module from creating any resources"
+}
+
+variable "name" {
+  type        = string
+  default     = null
+  description = "Name of the MSK cluster"
+}
+
 variable "kafka_version" {
   type        = string
   description = "The desired Kafka software version"
@@ -38,12 +50,6 @@ variable "subnet_ids" {
 #  }
 }
 
-variable "zone_id" {
-  type        = string
-  description = "Route53 DNS Zone ID for MSK broker hostnames"
-  default     = null
-}
-
 # Intentionally not deprecated via security_group_inputs.tf since it cannot effectively be replaced via var.additional_security_group_rules.
 # This is because the logic to create these rules exists within this module, and should not be passed in by the consumer
 # of this module.
@@ -51,6 +57,12 @@ variable "allowed_cidr_blocks" {
   type        = list(string)
   default     = []
   description = "List of CIDR blocks to be allowed to connect to the cluster"
+}
+
+variable "associated_security_group_ids" {
+  description = "associated id of existing security group whose rules we will manage"
+  type        = string
+  default     = null
 }
 
 variable "client_broker" {
@@ -195,4 +207,10 @@ variable "storage_autoscaling_disable_scale_in" {
   type        = bool
   default     = false
   description = "If the value is true, scale in is disabled and the target tracking policy won't remove capacity from the scalable resource."
+}
+
+variable "tags" {
+  type        = map(string)
+  default     = {}
+  description = "tags for the MSK cluster"
 }

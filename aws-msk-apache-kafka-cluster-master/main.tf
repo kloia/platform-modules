@@ -1,5 +1,5 @@
 locals {
-  enabled = module.this.enabled
+  enabled = var.enabled
 
   brokers = local.enabled ? flatten(data.aws_msk_broker_nodes.default[0].node_info_list.*.endpoints) : []
   # If var.storage_autoscaling_max_capacity is not set, don't autoscale past current size
@@ -72,44 +72,10 @@ data "aws_msk_broker_nodes" "default" {
   cluster_arn = join("", aws_msk_cluster.default.*.arn)
 }
 
-module "broker_security_group" {
-  source  = "cloudposse/security-group/aws"
-  version = "1.0.1"
-
-  enabled                       = local.enabled && var.create_security_group
-  security_group_name           = var.security_group_name
-  create_before_destroy         = var.security_group_create_before_destroy
-  security_group_create_timeout = var.security_group_create_timeout
-  security_group_delete_timeout = var.security_group_delete_timeout
-
-  security_group_description = var.security_group_description
-  allow_all_egress           = true
-  rules                      = var.additional_security_group_rules
-  rule_matrix = [
-    {
-      source_security_group_ids = local.allowed_security_group_ids
-      cidr_blocks               = var.allowed_cidr_blocks
-      rules = [
-        for protocol_key, protocol in local.protocols : {
-          key         = protocol_key
-          type        = "ingress"
-          from_port   = protocol.port
-          to_port     = protocol.port
-          protocol    = "tcp"
-          description = format(var.security_group_rule_description, protocol.name)
-        } if protocol.enabled
-      ]
-    }
-  ]
-  vpc_id = var.vpc_id
-
-  context = module.this.context
-}
-
 resource "aws_msk_configuration" "config" {
   count          = local.enabled ? 1 : 0
   kafka_versions = [var.kafka_version]
-  name           = module.this.id
+  name           = var.name
   description    = "Manages an Amazon Managed Streaming for Kafka configuration"
 
   server_properties = join("\n", [for k in keys(var.properties) : format("%s = %s", k, var.properties[k])])
@@ -120,7 +86,7 @@ resource "aws_msk_cluster" "default" {
   #bridgecrew:skip=BC_AWS_LOGGING_18:Skipping `Amazon MSK cluster logging is not enabled` check since it can be enabled with cloudwatch_logs_enabled = true
   #bridgecrew:skip=BC_AWS_GENERAL_32:Skipping `MSK cluster encryption at rest and in transit is not enabled` check since it can be enabled with encryption_in_cluster = true
   count                  = local.enabled ? 1 : 0
-  cluster_name           = module.this.id
+  cluster_name           = var.name
   kafka_version          = var.kafka_version
   number_of_broker_nodes = var.broker_per_zone * length(var.subnet_ids)
   enhanced_monitoring    = var.enhanced_monitoring
@@ -129,7 +95,7 @@ resource "aws_msk_cluster" "default" {
     instance_type   = var.broker_instance_type
     #ebs_volume_size = var.broker_volume_size
     client_subnets  = var.subnet_ids
-    security_groups = var.create_security_group ? concat(var.associated_security_group_ids, [module.broker_security_group.id]) : var.associated_security_group_ids
+    security_groups = [var.associated_security_group_ids]
     storage_info {
       ebs_storage_info {
         volume_size = var.broker_volume_size
@@ -205,7 +171,7 @@ resource "aws_msk_cluster" "default" {
     ]
   }
 
-  tags = module.this.tags
+  tags = var.tags
 }
 
 resource "aws_msk_scram_secret_association" "default" {
@@ -213,20 +179,6 @@ resource "aws_msk_scram_secret_association" "default" {
 
   cluster_arn     = aws_msk_cluster.default[0].arn
   secret_arn_list = var.client_sasl_scram_secret_association_arns
-}
-
-module "hostname" {
-  count = local.enabled && var.zone_id != null ? (var.broker_per_zone * length(var.subnet_ids)) : 0
-
-  source  = "cloudposse/route53-cluster-hostname/aws"
-  version = "0.12.2"
-
-  enabled  = local.enabled && length(var.zone_id) > 0
-  dns_name = "${module.this.name}-broker-${count.index + 1}"
-  zone_id  = var.zone_id
-  records  = local.enabled ? [local.brokers[count.index]] : []
-
-  context = module.this.context
 }
 
 resource "aws_appautoscaling_target" "default" {
