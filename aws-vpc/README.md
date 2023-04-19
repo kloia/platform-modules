@@ -5,23 +5,66 @@ Terraform module which creates VPC resources on AWS.
 
 ```hcl
 module "vpc" {
-  source = "terraform-aws-modules/vpc/aws"
 
   name = "my-vpc"
   cidr = "10.0.0.0/16"
-
-  azs             = ["eu-west-1a", "eu-west-1b", "eu-west-1c"]
-  private_subnets = ["10.0.1.0/24", "10.0.2.0/24", "10.0.3.0/24"]
-  public_subnets  = ["10.0.4.0/24", "10.0.5.0/24", "10.0.6.0/24"]
-  database_subnets  = ["10.0.7.0/24", "10.0.8.0/24", "10.0.9.0/24"]
-  cache_subnets  = ["10.0.10.0/24", "10.0.11.0/24", "10.0.12.0/24"]
-  eks_subnets  = ["10.0.13.0/24", "10.0.14.0/24", "10.0.15.0/24"]
-  ecs_subnets  = ["10.0.16.0/24", "10.0.17.0/24", "10.0.18.0/24"]
-  mq_subnets  = ["10.0.19.0/24", "10.0.20.0/24", "10.0.21.0/24"]
-
+  public_subnets  = ["10.0.4.0/24", "10.0.5.0/24"]
   enable_nat_gateway = true
-  enable_vpn_gateway = true
 
+    private_subnets = [
+    {
+      name            = "eks-subnet-1"
+      cidr_block      = "10.100.0.0/22"
+      availability_zone = "eu-west-1a"
+    },
+    {
+      name            = "eks-subnet-2"
+      cidr_block      = "10.100.4.0/22"
+      availability_zone = "eu-west-1b"
+    },
+    {
+      name            = "database-subnet-1"
+      cidr_block      = "10.100.8.0/24"
+      availability_zone = "eu-west-1a"
+    },
+    {
+      name            = "database-subnet-2"
+      cidr_block      = "10.100.9.0/24"
+      availability_zone = "eu-west-1b"
+    },
+    {
+      name            = "msk-subnet-1"
+      cidr_block      = "10.100.10.0/24"
+      availability_zone = "eu-west-1a"
+    },
+    {
+      name            = "msk-subnet-2"
+      cidr_block      = "10.100.11.0/24"
+      availability_zone = "eu-west-1b"
+    },
+    {
+      name            = "elasticache-subnet-1"
+      cidr_block      = "10.100.12.0/24"
+      availability_zone = "eu-west-1a"
+    },
+    {
+      name            = "elasticache-subnet-2"
+      cidr_block      = "10.100.13.0/24"
+      availability_zone = "eu-west-1b"
+    },
+    {
+      name            = "mq-subnet-1"
+      cidr_block      = "10.100.16.0/24"
+      availability_zone = "eu-west-1a"
+    },
+    {
+      name            = "mq-subnet-2"
+      cidr_block      = "10.100.17.0/24"
+      availability_zone = "eu-west-1b"
+    }
+    ]
+
+    
 
 }
 ```
@@ -197,7 +240,6 @@ Also, each type of subnet may have its own network ACL with custom rules per sub
 
 
 ```
-
 By default, all subnets are associated with the default network ACL.
 
 ## Public access to eks cluster
@@ -220,7 +262,6 @@ It is possible to integrate this VPC module with [terraform-aws-transit-gateway 
 - [VPC with IPv6 enabled](https://github.com/terraform-aws-modules/terraform-aws-vpc/tree/master/examples/ipv6)
 - [Network ACL](https://github.com/terraform-aws-modules/terraform-aws-vpc/tree/master/examples/network-acls)
 - [VPC Flow Logs](https://github.com/terraform-aws-modules/terraform-aws-vpc/tree/master/examples/vpc-flow-logs)
-- [VPC with Outpost](https://github.com/terraform-aws-modules/terraform-aws-vpc/tree/master/examples/outpost)
 - [Manage Default VPC](https://github.com/terraform-aws-modules/terraform-aws-vpc/tree/master/examples/manage-default-vpc)
 - [Few tests and edge case examples](https://github.com/terraform-aws-modules/terraform-aws-vpc/tree/master/examples/issues)
 

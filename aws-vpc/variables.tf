@@ -1,3 +1,19 @@
+variable "private_subnets" {
+  type = list(map(string))
+  default = [
+    {
+      name            = "subnet-1"
+      cidr_block      = "10.0.1.0/24"
+      availability_zone = "us-east-1a"
+    },
+    {
+      name            = "subnet-2"
+      cidr_block      = "10.0.2.0/24"
+      availability_zone = "us-east-1b"
+    }
+  ]
+}
+
 variable "create_vpc" {
   description = "Controls if VPC should be created (it affects almost all resources)"
   type        = bool
@@ -22,12 +38,6 @@ variable "enable_ipv6" {
   default     = false
 }
 
-variable "ecs_subnet_ipv6_prefixes" {
-  description = "Assigns IPv6 ecs subnet id based on the Amazon provided /56 prefix base 10 integer (0-256). Must be of equal length to the corresponding IPv4 subnet list"
-  type        = list(string)
-  default     = []
-}
-
 variable "private_subnet_ipv6_prefixes" {
   description = "Assigns IPv6 private subnet id based on the Amazon provided /56 prefix base 10 integer (0-256). Must be of equal length to the corresponding IPv4 subnet list"
   type        = list(string)
@@ -40,59 +50,12 @@ variable "public_subnet_ipv6_prefixes" {
   default     = []
 }
 
-variable "outpost_subnet_ipv6_prefixes" {
-  description = "Assigns IPv6 outpost subnet id based on the Amazon provided /56 prefix base 10 integer (0-256). Must be of equal length to the corresponding IPv4 subnet list"
-  type        = list(string)
-  default     = []
-}
-
-variable "database_subnet_ipv6_prefixes" {
-  description = "Assigns IPv6 database subnet id based on the Amazon provided /56 prefix base 10 integer (0-256). Must be of equal length to the corresponding IPv4 subnet list"
-  type        = list(string)
-  default     = []
-}
-
-variable "mq_subnet_ipv6_prefixes" {
-  description = "Assigns IPv6 mq subnet id based on the Amazon provided /56 prefix base 10 integer (0-256). Must be of equal length to the corresponding IPv4 subnet list"
-  type        = list(string)
-  default     = []
-}
-
-variable "eks_subnet_ipv6_prefixes" {
-  description = "Assigns IPv6 eks subnet id based on the Amazon provided /56 prefix base 10 integer (0-256). Must be of equal length to the corresponding IPv4 subnet list"
-  type        = list(string)
-  default     = []
-}
-
-variable "cache_subnet_ipv6_prefixes" {
-  description = "Assigns IPv6 cache subnet id based on the Amazon provided /56 prefix base 10 integer (0-256). Must be of equal length to the corresponding IPv4 subnet list"
-  type        = list(string)
-  default     = []
-}
-
-variable "intra_subnet_ipv6_prefixes" {
-  description = "Assigns IPv6 intra subnet id based on the Amazon provided /56 prefix base 10 integer (0-256). Must be of equal length to the corresponding IPv4 subnet list"
-  type        = list(string)
-  default     = []
-}
-
 variable "assign_ipv6_address_on_creation" {
   description = "Assign IPv6 address on subnet, must be disabled to change IPv6 CIDRs. This is the IPv6 equivalent of map_public_ip_on_launch"
   type        = bool
   default     = false
 }
 
-variable "ecs_subnet_assign_ipv6_address_on_creation" {
-  description = "Assign IPv6 address on ecs subnet, must be disabled to change IPv6 CIDRs. This is the IPv6 equivalent of map_public_ip_on_launch"
-  type        = bool
-  default     = null
-}
-
-variable "mq_subnet_assign_ipv6_address_on_creation" {
-  description = "Assign IPv6 address on mq subnet, must be disabled to change IPv6 CIDRs. This is the IPv6 equivalent of map_public_ip_on_launch"
-  type        = bool
-  default     = null
-}
 
 variable "private_subnet_assign_ipv6_address_on_creation" {
   description = "Assign IPv6 address on private subnet, must be disabled to change IPv6 CIDRs. This is the IPv6 equivalent of map_public_ip_on_launch"
@@ -102,36 +65,6 @@ variable "private_subnet_assign_ipv6_address_on_creation" {
 
 variable "public_subnet_assign_ipv6_address_on_creation" {
   description = "Assign IPv6 address on public subnet, must be disabled to change IPv6 CIDRs. This is the IPv6 equivalent of map_public_ip_on_launch"
-  type        = bool
-  default     = null
-}
-
-variable "outpost_subnet_assign_ipv6_address_on_creation" {
-  description = "Assign IPv6 address on outpost subnet, must be disabled to change IPv6 CIDRs. This is the IPv6 equivalent of map_public_ip_on_launch"
-  type        = bool
-  default     = null
-}
-
-variable "database_subnet_assign_ipv6_address_on_creation" {
-  description = "Assign IPv6 address on database subnet, must be disabled to change IPv6 CIDRs. This is the IPv6 equivalent of map_public_ip_on_launch"
-  type        = bool
-  default     = null
-}
-
-variable "eks_subnet_assign_ipv6_address_on_creation" {
-  description = "Assign IPv6 address on eks subnet, must be disabled to change IPv6 CIDRs. This is the IPv6 equivalent of map_public_ip_on_launch"
-  type        = bool
-  default     = null
-}
-
-variable "cache_subnet_assign_ipv6_address_on_creation" {
-  description = "Assign IPv6 address on cache subnet, must be disabled to change IPv6 CIDRs. This is the IPv6 equivalent of map_public_ip_on_launch"
-  type        = bool
-  default     = null
-}
-
-variable "intra_subnet_assign_ipv6_address_on_creation" {
-  description = "Assign IPv6 address on intra subnet, must be disabled to change IPv6 CIDRs. This is the IPv6 equivalent of map_public_ip_on_launch"
   type        = bool
   default     = null
 }
@@ -148,18 +81,6 @@ variable "instance_tenancy" {
   default     = "default"
 }
 
-variable "ecs_subnet_suffix" {
-  description = "Suffix to append to ecs subnets name"
-  type        = string
-  default     = "ecs"
-}
-
-variable "mq_subnet_suffix" {
-  description = "Suffix to append to mq subnets name"
-  type        = string
-  default     = "mq"
-}
-
 variable "public_subnet_suffix" {
   description = "Suffix to append to public subnets name"
   type        = string
@@ -172,47 +93,6 @@ variable "private_subnet_suffix" {
   default     = "private"
 }
 
-variable "outpost_subnet_suffix" {
-  description = "Suffix to append to outpost subnets name"
-  type        = string
-  default     = "outpost"
-}
-
-variable "intra_subnet_suffix" {
-  description = "Suffix to append to intra subnets name"
-  type        = string
-  default     = "intra"
-}
-
-variable "database_subnet_suffix" {
-  description = "Suffix to append to database subnets name"
-  type        = string
-  default     = "db"
-}
-
-variable "eks_subnet_suffix" {
-  description = "Suffix to append to eks subnets name"
-  type        = string
-  default     = "eks"
-}
-
-variable "cache_subnet_suffix" {
-  description = "Suffix to append to cache subnets name"
-  type        = string
-  default     = "cache"
-}
-
-variable "ecs_subnets" {
-  description = "A list of ecs subnets"
-  type        = list(string)
-  default     = []
-}
-
-variable "mq_subnets" {
-  description = "A list of mq subnets"
-  type        = list(string)
-  default     = []
-}
 
 variable "public_subnets" {
   description = "A list of public subnets inside the VPC"
@@ -220,113 +100,11 @@ variable "public_subnets" {
   default     = []
 }
 
-variable "private_subnets" {
-  description = "A list of private subnets inside the VPC"
-  type        = list(string)
-  default     = []
-}
-
-variable "outpost_subnets" {
-  description = "A list of outpost subnets inside the VPC"
-  type        = list(string)
-  default     = []
-}
-
-variable "database_subnets" {
-  description = "A list of database subnets"
-  type        = list(string)
-  default     = []
-}
-
-variable "eks_subnets" {
-  description = "A list of eks subnets"
-  type        = list(string)
-  default     = []
-}
-
-variable "cache_subnets" {
-  description = "A list of cache subnets"
-  type        = list(string)
-  default     = []
-}
-
-variable "intra_subnets" {
-  description = "A list of intra subnets"
-  type        = list(string)
-  default     = []
-}
-
-variable "create_ecs_subnet_route_table" {
-  description = "Controls if separate route table for ecs should be created"
+variable "create_private_subnet_route_table"{
+  description = "Controls if separate route table for private should be created"
   type        = bool
   default     = false
-}
 
-variable "create_mq_subnet_route_table" {
-  description = "Controls if separate route table for mq should be created"
-  type        = bool
-  default     = false
-}
-
-
-variable "create_database_subnet_route_table" {
-  description = "Controls if separate route table for database should be created"
-  type        = bool
-  default     = false
-}
-
-variable "create_eks_subnet_route_table" {
-  description = "Controls if separate route table for eks should be created"
-  type        = bool
-  default     = false
-}
-
-variable "enable_public_eks" {
-  description = "Controls if eks should have public routing table"
-  type        = bool
-  default     = false
-}
-
-variable "create_cache_subnet_route_table" {
-  description = "Controls if separate route table for cache should be created"
-  type        = bool
-  default     = false
-}
-
-variable "create_database_subnet_group" {
-  description = "Controls if database subnet group should be created (n.b. database_subnets must also be set)"
-  type        = bool
-  default     = true
-}
-
-variable "create_cache_subnet_group" {
-  description = "Controls if cache subnet group should be created"
-  type        = bool
-  default     = true
-}
-
-variable "create_database_internet_gateway_route" {
-  description = "Controls if an internet gateway route for public database access should be created"
-  type        = bool
-  default     = false
-}
-
-variable "create_ecs_nat_gateway_route" {
-  description = "Controls if a nat gateway route should be created to give internet access to the ecs subnets"
-  type        = bool
-  default     = false
-}
-
-variable "create_mq_nat_gateway_route" {
-  description = "Controls if a nat gateway route should be created to give internet access to the mq subnets"
-  type        = bool
-  default     = false
-}
-
-variable "create_database_nat_gateway_route" {
-  description = "Controls if a nat gateway route should be created to give internet access to the database subnets"
-  type        = bool
-  default     = false
 }
 
 variable "azs" {
@@ -409,40 +187,10 @@ variable "map_public_ip_on_launch" {
   default     = true
 }
 
-variable "customer_gateways" {
-  description = "Maps of Customer Gateway's attributes (BGP ASN and Gateway's Internet-routable external IP address)"
-  type        = map(map(any))
-  default     = {}
-}
-
-variable "enable_vpn_gateway" {
-  description = "Should be true if you want to create a new VPN Gateway resource and attach it to the VPC"
-  type        = bool
-  default     = false
-}
-
-variable "vpn_gateway_id" {
-  description = "ID of VPN Gateway to attach to the VPC"
-  type        = string
-  default     = ""
-}
-
 variable "amazon_side_asn" {
   description = "The Autonomous System Number (ASN) for the Amazon side of the gateway. By default the virtual private gateway is created with the current default Amazon ASN."
   type        = string
   default     = "64512"
-}
-
-variable "vpn_gateway_az" {
-  description = "The Availability Zone for the VPN Gateway"
-  type        = string
-  default     = null
-}
-
-variable "propagate_intra_route_tables_vgw" {
-  description = "Should be true if you want route table propagation"
-  type        = bool
-  default     = false
 }
 
 variable "propagate_private_route_tables_vgw" {
@@ -487,31 +235,7 @@ variable "default_route_table_tags" {
   default     = {}
 }
 
-variable "ecs_route_table_tags" {
-  description = "Additional tags for the ecs route tables"
-  type        = map(string)
-  default     = {}
-}
-
-variable "mq_route_table_tags" {
-  description = "Additional tags for the mq route tables"
-  type        = map(string)
-  default     = {}
-}
-
 variable "tags" {
-  description = "A map of tags to add to all resources"
-  type        = map(string)
-  default     = {}
-}
-
-variable "eks_public_tags" {
-  description = "A map of tags that needs to be attached to the "
-  type        = map(string)
-  default     = {}
-}
-
-variable "eks_private_tags" {
   description = "A map of tags to add to all resources"
   type        = map(string)
   default     = {}
@@ -529,18 +253,6 @@ variable "igw_tags" {
   default     = {}
 }
 
-variable "ecs_subnet_tags" {
-  description = "Additional tags for the ecs subnets"
-  type        = map(string)
-  default     = {}
-}
-
-variable "mq_subnet_tags" {
-  description = "Additional tags for the mq subnets"
-  type        = map(string)
-  default     = {}
-}
-
 variable "public_subnet_tags" {
   description = "Additional tags for the public subnets"
   type        = map(string)
@@ -549,12 +261,6 @@ variable "public_subnet_tags" {
 
 variable "private_subnet_tags" {
   description = "Additional tags for the private subnets"
-  type        = map(string)
-  default     = {}
-}
-
-variable "outpost_subnet_tags" {
-  description = "Additional tags for the outpost subnets"
   type        = map(string)
   default     = {}
 }
@@ -571,91 +277,6 @@ variable "private_route_table_tags" {
   default     = {}
 }
 
-variable "database_route_table_tags" {
-  description = "Additional tags for the database route tables"
-  type        = map(string)
-  default     = {}
-}
-
-variable "eks_route_table_tags" {
-  description = "Additional tags for the eks route tables"
-  type        = map(string)
-  default     = {}
-}
-
-variable "cache_route_table_tags" {
-  description = "Additional tags for the cache route tables"
-  type        = map(string)
-  default     = {}
-}
-
-variable "intra_route_table_tags" {
-  description = "Additional tags for the intra route tables"
-  type        = map(string)
-  default     = {}
-}
-
-variable "database_subnet_group_name" {
-  description = "Name of database subnet group"
-  type        = string
-  default     = null
-}
-
-variable "database_subnet_tags" {
-  description = "Additional tags for the database subnets"
-  type        = map(string)
-  default     = {}
-}
-
-variable "database_subnet_group_tags" {
-  description = "Additional tags for the database subnet group"
-  type        = map(string)
-  default     = {}
-}
-
-variable "eks_subnet_tags" {
-  description = "Additional tags for the eks subnets"
-  type        = map(string)
-  default     = {}
-}
-
-
-variable "cache_subnet_group_name" {
-  description = "Name of cache subnet group"
-  type        = string
-  default     = null
-}
-
-variable "cache_subnet_group_tags" {
-  description = "Additional tags for the cache subnet group"
-  type        = map(string)
-  default     = {}
-}
-
-variable "cache_subnet_tags" {
-  description = "Additional tags for the cache subnets"
-  type        = map(string)
-  default     = {}
-}
-
-variable "intra_subnet_tags" {
-  description = "Additional tags for the intra subnets"
-  type        = map(string)
-  default     = {}
-}
-
-variable "ecs_acl_tags" {
-  description = "Additional tags for the ecs subnets network ACL"
-  type        = map(string)
-  default     = {}
-}
-
-variable "mq_acl_tags" {
-  description = "Additional tags for the mq subnets network ACL"
-  type        = map(string)
-  default     = {}
-}
-
 variable "public_acl_tags" {
   description = "Additional tags for the public subnets network ACL"
   type        = map(string)
@@ -664,36 +285,6 @@ variable "public_acl_tags" {
 
 variable "private_acl_tags" {
   description = "Additional tags for the private subnets network ACL"
-  type        = map(string)
-  default     = {}
-}
-
-variable "outpost_acl_tags" {
-  description = "Additional tags for the outpost subnets network ACL"
-  type        = map(string)
-  default     = {}
-}
-
-variable "intra_acl_tags" {
-  description = "Additional tags for the intra subnets network ACL"
-  type        = map(string)
-  default     = {}
-}
-
-variable "database_acl_tags" {
-  description = "Additional tags for the database subnets network ACL"
-  type        = map(string)
-  default     = {}
-}
-
-variable "eks_acl_tags" {
-  description = "Additional tags for the eks subnets network ACL"
-  type        = map(string)
-  default     = {}
-}
-
-variable "cache_acl_tags" {
-  description = "Additional tags for the cache subnets network ACL"
   type        = map(string)
   default     = {}
 }
@@ -712,18 +303,6 @@ variable "nat_gateway_tags" {
 
 variable "nat_eip_tags" {
   description = "Additional tags for the NAT EIP"
-  type        = map(string)
-  default     = {}
-}
-
-variable "customer_gateway_tags" {
-  description = "Additional tags for the Customer Gateway"
-  type        = map(string)
-  default     = {}
-}
-
-variable "vpn_gateway_tags" {
-  description = "Additional tags for the VPN gateway"
   type        = map(string)
   default     = {}
 }
@@ -831,18 +410,6 @@ variable "default_network_acl_tags" {
   default     = {}
 }
 
-variable "ecs_dedicated_network_acl" {
-  description = "Whether to use dedicated network ACL (not default) and custom rules for ecs subnets"
-  type        = bool
-  default     = false
-}
-
-variable "mq_dedicated_network_acl" {
-  description = "Whether to use dedicated network ACL (not default) and custom rules for mq subnets"
-  type        = bool
-  default     = false
-}
-
 variable "public_dedicated_network_acl" {
   description = "Whether to use dedicated network ACL (not default) and custom rules for public subnets"
   type        = bool
@@ -851,36 +418,6 @@ variable "public_dedicated_network_acl" {
 
 variable "private_dedicated_network_acl" {
   description = "Whether to use dedicated network ACL (not default) and custom rules for private subnets"
-  type        = bool
-  default     = false
-}
-
-variable "outpost_dedicated_network_acl" {
-  description = "Whether to use dedicated network ACL (not default) and custom rules for outpost subnets"
-  type        = bool
-  default     = false
-}
-
-variable "intra_dedicated_network_acl" {
-  description = "Whether to use dedicated network ACL (not default) and custom rules for intra subnets"
-  type        = bool
-  default     = false
-}
-
-variable "database_dedicated_network_acl" {
-  description = "Whether to use dedicated network ACL (not default) and custom rules for database subnets"
-  type        = bool
-  default     = false
-}
-
-variable "eks_dedicated_network_acl" {
-  description = "Whether to use dedicated network ACL (not default) and custom rules for eks subnets"
-  type        = bool
-  default     = false
-}
-
-variable "cache_dedicated_network_acl" {
-  description = "Whether to use dedicated network ACL (not default) and custom rules for cache subnets"
   type        = bool
   default     = false
 }
@@ -933,69 +470,7 @@ variable "default_network_acl_egress" {
   ]
 }
 
-variable "ecs_inbound_acl_rules" {
-  description = "ecs subnets inbound network ACL rules"
-  type        = list(map(string))
 
-  default = [
-    {
-      rule_number = 100
-      rule_action = "allow"
-      from_port   = 0
-      to_port     = 0
-      protocol    = "-1"
-      cidr_block  = "0.0.0.0/0"
-    },
-  ]
-}
-
-variable "ecs_outbound_acl_rules" {
-  description = "ecs subnets outbound network ACL rules"
-  type        = list(map(string))
-
-  default = [
-    {
-      rule_number = 100
-      rule_action = "allow"
-      from_port   = 0
-      to_port     = 0
-      protocol    = "-1"
-      cidr_block  = "0.0.0.0/0"
-    },
-  ]
-}
-
-variable "mq_inbound_acl_rules" {
-  description = "mq subnets inbound network ACL rules"
-  type        = list(map(string))
-
-  default = [
-    {
-      rule_number = 100
-      rule_action = "allow"
-      from_port   = 0
-      to_port     = 0
-      protocol    = "-1"
-      cidr_block  = "0.0.0.0/0"
-    },
-  ]
-}
-
-variable "mq_outbound_acl_rules" {
-  description = "mq subnets outbound network ACL rules"
-  type        = list(map(string))
-
-  default = [
-    {
-      rule_number = 100
-      rule_action = "allow"
-      from_port   = 0
-      to_port     = 0
-      protocol    = "-1"
-      cidr_block  = "0.0.0.0/0"
-    },
-  ]
-}
 
 variable "public_inbound_acl_rules" {
   description = "Public subnets inbound network ACLs"
@@ -1047,166 +522,6 @@ variable "private_inbound_acl_rules" {
 
 variable "private_outbound_acl_rules" {
   description = "Private subnets outbound network ACLs"
-  type        = list(map(string))
-
-  default = [
-    {
-      rule_number = 100
-      rule_action = "allow"
-      from_port   = 0
-      to_port     = 0
-      protocol    = "-1"
-      cidr_block  = "0.0.0.0/0"
-    },
-  ]
-}
-
-variable "outpost_inbound_acl_rules" {
-  description = "Outpost subnets inbound network ACLs"
-  type        = list(map(string))
-
-  default = [
-    {
-      rule_number = 100
-      rule_action = "allow"
-      from_port   = 0
-      to_port     = 0
-      protocol    = "-1"
-      cidr_block  = "0.0.0.0/0"
-    },
-  ]
-}
-
-variable "outpost_outbound_acl_rules" {
-  description = "Outpost subnets outbound network ACLs"
-  type        = list(map(string))
-
-  default = [
-    {
-      rule_number = 100
-      rule_action = "allow"
-      from_port   = 0
-      to_port     = 0
-      protocol    = "-1"
-      cidr_block  = "0.0.0.0/0"
-    },
-  ]
-}
-
-variable "intra_inbound_acl_rules" {
-  description = "Intra subnets inbound network ACLs"
-  type        = list(map(string))
-
-  default = [
-    {
-      rule_number = 100
-      rule_action = "allow"
-      from_port   = 0
-      to_port     = 0
-      protocol    = "-1"
-      cidr_block  = "0.0.0.0/0"
-    },
-  ]
-}
-
-variable "intra_outbound_acl_rules" {
-  description = "Intra subnets outbound network ACLs"
-  type        = list(map(string))
-
-  default = [
-    {
-      rule_number = 100
-      rule_action = "allow"
-      from_port   = 0
-      to_port     = 0
-      protocol    = "-1"
-      cidr_block  = "0.0.0.0/0"
-    },
-  ]
-}
-
-variable "database_inbound_acl_rules" {
-  description = "Database subnets inbound network ACL rules"
-  type        = list(map(string))
-
-  default = [
-    {
-      rule_number = 100
-      rule_action = "allow"
-      from_port   = 0
-      to_port     = 0
-      protocol    = "-1"
-      cidr_block  = "0.0.0.0/0"
-    },
-  ]
-}
-
-variable "database_outbound_acl_rules" {
-  description = "Database subnets outbound network ACL rules"
-  type        = list(map(string))
-
-  default = [
-    {
-      rule_number = 100
-      rule_action = "allow"
-      from_port   = 0
-      to_port     = 0
-      protocol    = "-1"
-      cidr_block  = "0.0.0.0/0"
-    },
-  ]
-}
-
-variable "eks_inbound_acl_rules" {
-  description = "eks subnets inbound network ACL rules"
-  type        = list(map(string))
-
-  default = [
-    {
-      rule_number = 100
-      rule_action = "allow"
-      from_port   = 0
-      to_port     = 0
-      protocol    = "-1"
-      cidr_block  = "0.0.0.0/0"
-    },
-  ]
-}
-
-variable "eks_outbound_acl_rules" {
-  description = "eks subnets outbound network ACL rules"
-  type        = list(map(string))
-
-  default = [
-    {
-      rule_number = 100
-      rule_action = "allow"
-      from_port   = 0
-      to_port     = 0
-      protocol    = "-1"
-      cidr_block  = "0.0.0.0/0"
-    },
-  ]
-}
-
-variable "cache_inbound_acl_rules" {
-  description = "cache subnets inbound network ACL rules"
-  type        = list(map(string))
-
-  default = [
-    {
-      rule_number = 100
-      rule_action = "allow"
-      from_port   = 0
-      to_port     = 0
-      protocol    = "-1"
-      cidr_block  = "0.0.0.0/0"
-    },
-  ]
-}
-
-variable "cache_outbound_acl_rules" {
-  description = "cache subnets outbound network ACL rules"
   type        = list(map(string))
 
   default = [
@@ -1335,18 +650,6 @@ variable "create_egress_only_igw" {
   default     = true
 }
 
-variable "outpost_arn" {
-  description = "ARN of Outpost you want to create a subnet in."
-  type        = string
-  default     = null
-}
-
-variable "outpost_az" {
-  description = "AZ where Outpost is anchored."
-  type        = string
-  default     = null
-}
-
 variable "flow_log_file_format" {
   description = "(Optional) The format for the flow log. Valid values: `plain-text`, `parquet`."
   type        = string
@@ -1370,4 +673,8 @@ variable "flow_log_per_hour_partition" {
   default     = false
 }
 
-
+variable "enable_nat_gateway_for_db" {
+    description = "Controls if nat gateway for db should be enabled"
+    type = bool
+    default = true
+}
