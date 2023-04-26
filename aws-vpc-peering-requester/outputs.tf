@@ -18,31 +18,6 @@ output "requester_vpc_cidr_block" {
   value = var.requester_vpc_cidr_block
 } 
 
-output "accepter_database_route_table_ids" {
-  description = "Database route table IDs of the accepter vpc"
-  value = var.accepter_database_route_table_ids
-} 
-output "accepter_eks_route_table_ids" {
-  description = "EKS route table IDs of the accepter vpc"
-  value = var.accepter_eks_route_table_ids
-} 
-
-output "accepter_mq_route_table_ids" {
-  description = "MQ route table IDs of the accepter vpc"
-  value = var.accepter_mq_route_table_ids
-} 
-
-
-output "accepter_ecs_route_table_ids" {
-  description = "ECS route table IDs of the accepter vpc"
-  value = var.accepter_ecs_route_table_ids
-} 
-
-
-output "accepter_cache_route_table_ids" {
-  description = "Cache route table IDs of the accepter vpc"
-  value = var.accepter_cache_route_table_ids
-} 
 output "accepter_private_route_table_ids" {
   description = "Private route table IDs of the accepter vpc"
   value = var.accepter_private_route_table_ids
