@@ -24,18 +24,10 @@ module "peering-requester" {
 }
 ```
 
-If you want to use this module with the vpc-peering-accepter module, set the `accepter_x_route_table_ids` variables. Because of the dependency cycle, the acceptor takes all of the variables from the requester.
+If you want to use this module with the vpc-peering-accepter module, set the `accepter_private_route_table_ids` variables which you can have them via an explicit dependency from peering requester module outputs. Because of the dependency cycle, the acceptor takes all of the variables from the requester.
 
-`accepter_x_route_table_ids`
-`requester_x_route_table_ids`
-available `x`values:
-
-- ecs
-- eks
-- private
-- public
-- cache
-- database
+`accepter_private_route_table_ids`
+`requester_private_route_table_ids`
 
 <!-- BEGIN_TF_DOCS -->
 ## Requirements
@@ -56,11 +48,6 @@ No modules.
 
 | Name | Type |
 |------|------|
-| [aws_route.requester_cache_route_table_route](https://registry.terraform.io/providers/hashicorp/aws/latest/docs/resources/route) | resource |
-| [aws_route.requester_database_route_table_route](https://registry.terraform.io/providers/hashicorp/aws/latest/docs/resources/route) | resource |
-| [aws_route.requester_ecs_route_table_route](https://registry.terraform.io/providers/hashicorp/aws/latest/docs/resources/route) | resource |
-| [aws_route.requester_eks_route_table_route](https://registry.terraform.io/providers/hashicorp/aws/latest/docs/resources/route) | resource |
-| [aws_route.requester_mq_route_table_route](https://registry.terraform.io/providers/hashicorp/aws/latest/docs/resources/route) | resource |
 | [aws_route.requester_private_route_table_route](https://registry.terraform.io/providers/hashicorp/aws/latest/docs/resources/route) | resource |
 | [aws_route.requester_public_route_table_route](https://registry.terraform.io/providers/hashicorp/aws/latest/docs/resources/route) | resource |
 | [aws_vpc_peering_connection.peer](https://registry.terraform.io/providers/hashicorp/aws/latest/docs/resources/vpc_peering_connection) | resource |
@@ -69,22 +56,12 @@ No modules.
 
 | Name | Description | Type | Default | Required |
 |------|-------------|------|---------|:--------:|
-| <a name="input_accepter_cache_route_table_ids"></a> [accepter\_cache\_route\_table\_ids](#input\_accepter\_cache\_route\_table\_ids) | Cache route table IDs of accepter VPC route tables | `list(string)` | `[]` | no |
-| <a name="input_accepter_database_route_table_ids"></a> [accepter\_database\_route\_table\_ids](#input\_accepter\_database\_route\_table\_ids) | Database route table IDs of accepter VPC route tables | `list(string)` | `[]` | no |
-| <a name="input_accepter_ecs_route_table_ids"></a> [accepter\_ecs\_route\_table\_ids](#input\_accepter\_ecs\_route\_table\_ids) | ECS route table IDs of accepter VPC route tables | `list(string)` | `[]` | no |
-| <a name="input_accepter_eks_route_table_ids"></a> [accepter\_eks\_route\_table\_ids](#input\_accepter\_eks\_route\_table\_ids) | EKS route table IDs of accepter VPC route tables | `list(string)` | `[]` | no |
-| <a name="input_accepter_mq_route_table_ids"></a> [accepter\_mq\_route\_table\_ids](#input\_accepter\_mq\_route\_table\_ids) | Private route table IDs of accepter VPC route tables | `list(string)` | `[]` | no |
 | <a name="input_accepter_private_route_table_ids"></a> [accepter\_private\_route\_table\_ids](#input\_accepter\_private\_route\_table\_ids) | Private route table IDs of accepter VPC route tables | `list(string)` | `[]` | no |
 | <a name="input_accepter_public_route_table_ids"></a> [accepter\_public\_route\_table\_ids](#input\_accepter\_public\_route\_table\_ids) | Public route table IDs of accepter VPC route tables | `list(string)` | `[]` | no |
 | <a name="input_accepter_vpc_cidr_block"></a> [accepter\_vpc\_cidr\_block](#input\_accepter\_vpc\_cidr\_block) | The CIDR Block of the accepter VPC | `string` | `""` | no |
 | <a name="input_accepter_vpc_id"></a> [accepter\_vpc\_id](#input\_accepter\_vpc\_id) | The ID of the VPC with which you are creating the VPC Peering Connection | `string` | `""` | no |
 | <a name="input_peer_owner_account_id"></a> [peer\_owner\_account\_id](#input\_peer\_owner\_account\_id) | The account ID of the peer owner | `string` | `""` | no |
 | <a name="input_peer_region"></a> [peer\_region](#input\_peer\_region) | The region of the accepter side | `string` | `""` | no |
-| <a name="input_requester_cache_route_table_ids"></a> [requester\_cache\_route\_table\_ids](#input\_requester\_cache\_route\_table\_ids) | Cache route table IDs of requester VPC route tables | `list(string)` | `[]` | no |
-| <a name="input_requester_database_route_table_ids"></a> [requester\_database\_route\_table\_ids](#input\_requester\_database\_route\_table\_ids) | Database route table IDs of requester VPC route tables | `list(string)` | `[]` | no |
-| <a name="input_requester_ecs_route_table_ids"></a> [requester\_ecs\_route\_table\_ids](#input\_requester\_ecs\_route\_table\_ids) | ECS route table IDs of requester VPC route tables | `list(string)` | `[]` | no |
-| <a name="input_requester_eks_route_table_ids"></a> [requester\_eks\_route\_table\_ids](#input\_requester\_eks\_route\_table\_ids) | EKS route table IDs of requester VPC route tables | `list(string)` | `[]` | no |
-| <a name="input_requester_mq_route_table_ids"></a> [requester\_mq\_route\_table\_ids](#input\_requester\_mq\_route\_table\_ids) | Cache route table IDs of requester VPC route tables | `list(string)` | `[]` | no |
 | <a name="input_requester_private_route_table_ids"></a> [requester\_private\_route\_table\_ids](#input\_requester\_private\_route\_table\_ids) | Private route table IDs of requester VPC route tables | `list(string)` | `[]` | no |
 | <a name="input_requester_public_route_table_ids"></a> [requester\_public\_route\_table\_ids](#input\_requester\_public\_route\_table\_ids) | Public route table IDs of requester VPC route tables | `list(string)` | `[]` | no |
 | <a name="input_requester_vpc_cidr_block"></a> [requester\_vpc\_cidr\_block](#input\_requester\_vpc\_cidr\_block) | The CIDR Block of the requester VPC | `string` | `""` | no |
@@ -94,12 +71,6 @@ No modules.
 
 | Name | Description |
 |------|-------------|
-| <a name="output_accepter_cache_route_table_ids"></a> [accepter\_cache\_route\_table\_ids](#output\_accepter\_cache\_route\_table\_ids) | Cache route table IDs of the accepter vpc |
-| <a name="output_accepter_database_route_table_ids"></a> [accepter\_database\_route\_table\_ids](#output\_accepter\_database\_route\_table\_ids) | Database route table IDs of the accepter vpc |
-| <a name="output_accepter_ecs_route_table_ids"></a> [accepter\_ecs\_route\_table\_ids](#output\_accepter\_ecs\_route\_table\_ids) | ECS route table IDs of the accepter vpc |
-| <a name="output_accepter_eks_route_table_ids"></a> [accepter\_eks\_route\_table\_ids](#output\_accepter\_eks\_route\_table\_ids) | EKS route table IDs of the accepter vpc |
-| <a name="output_accepter_mq-broker_route_table_ids"></a> [accepter\_mq-broker\_route\_table\_ids](#output\_accepter\_mq-broker\_route\_table\_ids) | ECS route table IDs of the accepter vpc |
-| <a name="output_accepter_mq_route_table_ids"></a> [accepter\_mq\_route\_table\_ids](#output\_accepter\_mq\_route\_table\_ids) | EKS route table IDs of the accepter vpc |
 | <a name="output_accepter_private_route_table_ids"></a> [accepter\_private\_route\_table\_ids](#output\_accepter\_private\_route\_table\_ids) | Private route table IDs of the accepter vpc |
 | <a name="output_accepter_public_route_table_ids"></a> [accepter\_public\_route\_table\_ids](#output\_accepter\_public\_route\_table\_ids) | Public route table IDs of the accepter vpc |
 | <a name="output_accepter_vpc_id"></a> [accepter\_vpc\_id](#output\_accepter\_vpc\_id) | ID of the accepter vpc |
