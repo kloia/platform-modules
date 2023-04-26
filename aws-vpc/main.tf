@@ -233,14 +233,14 @@ resource "aws_route" "public_internet_gateway_ipv6" {
 ################################################################################
 
 resource "aws_route_table" "private" {
-  count = local.create_vpc && var.create_private_subnet_route_table && local.max_subnet_length > 0 ? local.nat_gateway_count : 0
+  count = local.create_vpc && var.create_private_subnet_route_table && local.max_subnet_length > 0 ? length(var.private_subnets) : 0
 
   vpc_id = local.vpc_id
 
   tags = merge(
     {
       "Name" = var.single_nat_gateway ? "${var.name}-${var.private_subnet_suffix}" : format(
-        "${var.name}-${var.private_subnet_suffix}-%s",
+        "${var.name}-${var.private_subnets[count.index].name}-%s",
         element(var.azs, count.index),
       )
     },
@@ -252,7 +252,10 @@ resource "aws_route_table" "private" {
 
 
 resource "aws_route" "private_nat_gateway" {
-  count = local.create_vpc && var.create_private_subnet_route_table && var.enable_nat_gateway ? local.nat_gateway_count : 0
+  # not necessary for now however
+  # if you only want spesifik subnets to be routed to nat gateway (for private subnets to public internet, put them into private_subnets variable as first elements, e.g: 
+  # create a custom variable like, length of private subnets to be routed to nat gw, let's say give it 2 and put 2 subnets to 0. and 1. element at this private_subnets list and change length(var.private_subnets) to length(givenCount) )
+  count = local.create_vpc && var.create_private_subnet_route_table && var.enable_nat_gateway ? length(var.private_subnets) : 0
 
   route_table_id         = element(aws_route_table.private[*].id, count.index)
   destination_cidr_block = var.nat_gateway_destination_cidr_block
