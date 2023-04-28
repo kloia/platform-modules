@@ -410,8 +410,6 @@ variable "iam_role_additional_policies" {
   default     = []
 }
 
-# TODO - hopefully this can be removed once the AWS endpoint is named properly in China
-# https://github.com/terraform-aws-modules/terraform-aws-eks/issues/1904
 variable "cluster_iam_role_dns_suffix" {
   description = "Base DNS domain name for the current partition (e.g., amazonaws.com in AWS Commercial, amazonaws.com.cn in AWS China)"
   type        = string

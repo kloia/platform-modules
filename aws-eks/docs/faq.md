@@ -1,11 +1,11 @@
 # Frequently Asked Questions
 
-- [I received an error: `expect exactly one securityGroup tagged with kubernetes.io/cluster/<NAME> ...`](https://github.com/terraform-aws-modules/terraform-aws-eks/blob/master/docs/faq.md#i-received-an-error-expect-exactly-one-securitygroup-tagged-with-kubernetesioclustername-)
-- [I received an error: `Error: Invalid for_each argument ...`](https://github.com/terraform-aws-modules/terraform-aws-eks/blob/master/docs/faq.md#i-received-an-error-error-invalid-for_each-argument-)
-- [Why are nodes not being registered?](https://github.com/terraform-aws-modules/terraform-aws-eks/blob/master/docs/faq.md#why-are-nodes-not-being-registered)
-- [Why are there no changes when a node group's `desired_size` is modified?](https://github.com/terraform-aws-modules/terraform-aws-eks/blob/master/docs/faq.md#why-are-there-no-changes-when-a-node-groups-desired_size-is-modified)
-- [How can I deploy Windows based nodes?](https://github.com/terraform-aws-modules/terraform-aws-eks/blob/master/docs/faq.md#how-can-i-deploy-windows-based-nodes)
-- [How do I access compute resource attributes?](https://github.com/terraform-aws-modules/terraform-aws-eks/blob/master/docs/faq.md#how-do-i-access-compute-resource-attributes)
+- [I received an error: `expect exactly one securityGroup tagged with kubernetes.io/cluster/<NAME> ...`](https://github.com/kloia/platform-modules/tree/main/terraform-aws-eks/docs/docs/faq.md#i-received-an-error-expect-exactly-one-securitygroup-tagged-with-kubernetesioclustername-)
+- [I received an error: `Error: Invalid for_each argument ...`](https://github.com/kloia/platform-modules/tree/main/terraform-aws-eks/docs/docs/faq.md#i-received-an-error-error-invalid-for_each-argument-)
+- [Why are nodes not being registered?](https://github.com/kloia/platform-modules/tree/main/terraform-aws-eks/docs/docs/faq.md#why-are-nodes-not-being-registered)
+- [Why are there no changes when a node group's `desired_size` is modified?](https://github.com/kloia/platform-modules/tree/main/terraform-aws-eks/docs/docs/faq.md#why-are-there-no-changes-when-a-node-groups-desired_size-is-modified)
+- [How can I deploy Windows based nodes?](https://github.com/kloia/platform-modules/tree/main/terraform-aws-eks/docs/docs/faq.md#how-can-i-deploy-windows-based-nodes)
+- [How do I access compute resource attributes?](https://github.com/kloia/platform-modules/tree/main/terraform-aws-eks/docs/docs/faq.md#how-do-i-access-compute-resource-attributes)
 
 ### I received an error: `expect exactly one securityGroup tagged with kubernetes.io/cluster/<NAME> ...`
 
