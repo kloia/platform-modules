@@ -18,7 +18,7 @@ Terraform module which creates AWS RDS Aurora resources.
 
 ```hcl
 module "cluster" {
-  source  = "terraform-aws-modules/rds-aurora/aws"
+  source  = "terraform-modules/rds-aurora/aws"
 
   name           = "test-aurora-db-postgres96"
   engine         = "aurora-postgresql"
@@ -183,7 +183,7 @@ The following values are provided to toggle on/off creation of the associated re
 ```hcl
 # This RDS cluster will not be created
 module "cluster" {
-  source  = "terraform-aws-modules/rds-aurora/aws"
+  source  = "terraform-modules/rds-aurora/aws"
 
   # Disable creation of cluster and all resources
   create_cluster = false
@@ -206,17 +206,15 @@ module "cluster" {
 
 ## Examples
 
-- [Autoscaling](https://github.com/terraform-aws-modules/terraform-aws-rds-aurora/tree/master/examples/autoscaling): A PostgreSQL cluster with enhanced monitoring and autoscaling enabled
-- [Global Cluster](https://github.com/terraform-aws-modules/terraform-aws-rds-aurora/tree/master/examples/global-cluster): A PostgreSQL global cluster with clusters provisioned in two different region
-- [Multi-AZ](https://github.com/terraform-aws-modules/terraform-aws-rds-aurora/tree/master/examples/multi-az): A multi-AZ RDS cluster (not using Aurora engine)
-- [MySQL](https://github.com/terraform-aws-modules/terraform-aws-rds-aurora/tree/master/examples/mysql): A simple MySQL cluster
-- [PostgreSQL](https://github.com/terraform-aws-modules/terraform-aws-rds-aurora/tree/master/examples/postgresql): A simple PostgreSQL cluster
-- [S3 Import](https://github.com/terraform-aws-modules/terraform-aws-rds-aurora/tree/master/examples/s3-import): A MySQL cluster created from a Percona Xtrabackup stored in S3
-- [Serverless](https://github.com/terraform-aws-modules/terraform-aws-rds-aurora/tree/master/examples/serverless): Serverless V1 and V2 (PostgreSQL and MySQL)
+- [Autoscaling](https://github.com/ToggTrumore/terraform-modules/terraform-aws-rds-aurora/tree/main/examples/autoscaling): A PostgreSQL cluster with enhanced monitoring and autoscaling enabled
+- [Global Cluster](https://github.com/ToggTrumore/terraform-modules/terraform-aws-rds-aurora/tree/main/examples/global-cluster): A PostgreSQL global cluster with clusters provisioned in two different region
+- [Multi-AZ](https://github.com/ToggTrumore/terraform-modules/terraform-aws-rds-aurora/tree/main/examples/multi-az): A multi-AZ RDS cluster (not using Aurora engine)
+- [MySQL](https://github.com/ToggTrumore/terraform-modules/terraform-aws-rds-aurora/tree/main/examples/mysql): A simple MySQL cluster
+- [PostgreSQL](https://github.com/ToggTrumore/terraform-modules/terraform-aws-rds-aurora/tree/main/examples/postgresql): A simple PostgreSQL cluster
+- [S3 Import](https://github.com/ToggTrumore/terraform-modules/terraform-aws-rds-aurora/tree/main/examples/s3-import): A MySQL cluster created from a Percona Xtrabackup stored in S3
+- [Serverless](https://github.com/ToggTrumore/terraform-modules/terraform-aws-rds-aurora/tree/main/examples/serverless): Serverless V1 and V2 (PostgreSQL and MySQL)
 
 ## Documentation
-
-Terraform documentation is generated automatically using [pre-commit hooks](http://www.pre-commit.com/). Follow installation instructions [here](https://pre-commit.com/#install).
 
 <!-- BEGINNING OF PRE-COMMIT-TERRAFORM DOCS HOOK -->
 ## Requirements
@@ -400,13 +398,3 @@ No modules.
 | <a name="output_enhanced_monitoring_iam_role_unique_id"></a> [enhanced\_monitoring\_iam\_role\_unique\_id](#output\_enhanced\_monitoring\_iam\_role\_unique\_id) | Stable and unique string identifying the enhanced monitoring role |
 | <a name="output_security_group_id"></a> [security\_group\_id](#output\_security\_group\_id) | The security group ID of the cluster |
 <!-- END OF PRE-COMMIT-TERRAFORM DOCS HOOK -->
-
-## Authors
-
-Module is maintained by [Anton Babenko](https://github.com/antonbabenko) with help from [these awesome contributors](https://github.com/terraform-aws-modules/terraform-aws-rds-aurora/graphs/contributors).
-
-## License
-
-Apache 2 Licensed. See [LICENSE](https://github.com/terraform-aws-modules/terraform-aws-rds-aurora/tree/master/LICENSE) for full details.
-
-
