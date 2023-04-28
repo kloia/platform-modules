@@ -6,7 +6,7 @@ Terraform module which creates ACM certificates and validates them using Route53
 
 ```hcl
 module "acm" {
-  source  = "terraform-aws-modules/acm/aws"
+  source  = "terraform-modules/acm/aws"
   version = "~> 4.0"
 
   domain_name  = "my-domain.com"
@@ -29,7 +29,7 @@ module "acm" {
 
 ```hcl
 module "acm" {
-  source  = "terraform-aws-modules/acm/aws"
+  source  = "terraform-modules/acm/aws"
   version = "~> 4.0"
 
   domain_name = "weekly.tf"
@@ -61,7 +61,7 @@ provider "aws" {
 }
 
 module "acm" {
-  source = "terraform-aws-modules/acm/aws"
+  source = "terraform-modules/acm/aws"
 
   providers = {
     aws = aws.us-east-1
@@ -90,7 +90,7 @@ provider "aws" {
 }
 
 module "acm" {
-  source  = "terraform-aws-modules/acm/aws"
+  source  = "terraform-modules/acm/aws"
   version = "~> 4.0"
 
   providers = {
@@ -109,7 +109,7 @@ module "acm" {
 }
 
 module "route53_records" {
-  source  = "terraform-aws-modules/acm/aws"
+  source  = "terraform-modules/acm/aws"
   version = "~> 4.0"
 
   providers = {
@@ -128,10 +128,10 @@ module "route53_records" {
 
 ## Examples
 
-- [Complete example with DNS validation (recommended)](https://github.com/terraform-aws-modules/terraform-aws-acm/tree/master/examples/complete-dns-validation)
-- [Complete example with DNS validation via external DNS provider (CloudFlare)](https://github.com/terraform-aws-modules/terraform-aws-acm/tree/master/examples/complete-dns-validation-with-cloudflare)
-- [Complete example with EMAIL validation](https://github.com/terraform-aws-modules/terraform-aws-acm/tree/master/examples/complete-email-validation)
-- [Complete example with EMAIL validation and validation domain override](https://github.com/terraform-aws-modules/terraform-aws-acm/tree/master/examples/complete-email-validation-with-validation-domain)
+- [Complete example with DNS validation (recommended)](https://github.com/ToggTrumore/terraform-modules/terraform-aws-acm/tree/main/examples/complete-dns-validation)
+- [Complete example with DNS validation via external DNS provider (CloudFlare)](https://github.com/ToggTrumore/terraform-modules/terraform-aws-acm/tree/main/examples/complete-dns-validation-with-cloudflare)
+- [Complete example with EMAIL validation](https://github.com/ToggTrumore/terraform-modules/terraform-aws-acm/tree/main/examples/complete-email-validation)
+- [Complete example with EMAIL validation and validation domain override](https://github.com/ToggTrumore/terraform-modules/terraform-aws-acm/tree/main/examples/complete-email-validation-with-validation-domain)
 
 ## Conditional creation and validation
 
@@ -139,7 +139,7 @@ Sometimes you need to have a way to create ACM certificate conditionally but Ter
 
 ```hcl
 module "acm" {
-  source = "terraform-aws-modules/acm/aws"
+  source = "terraform-modules/acm/aws"
 
   create_certificate = false
   # ... omitted
@@ -157,10 +157,6 @@ module "acm" {
 }
 ```
 
-## Notes
-
-- For use in an automated pipeline consider setting the `wait_for_validation = false` to avoid waiting for validation to complete or error after a 45 minute timeout.
-- If you're upgrading to [v2.13.0](https://github.com/terraform-aws-modules/terraform-aws-acm/releases/v2.13.0) or above, you might be subject to [off-by-one validation record issue](https://github.com/terraform-aws-modules/terraform-aws-acm/pull/47#issuecomment-754778599). You can solve this without compromising existing validation records by issuing `terraform state rm <your_module_name>.validation[1]` where `[1]` can be a different index # depending on the number of validation records your module creates (you can check this with `terraform state list module.<your_module_name>.validation`).
 
 <!-- BEGINNING OF PRE-COMMIT-TERRAFORM DOCS HOOK -->
 ## Requirements
