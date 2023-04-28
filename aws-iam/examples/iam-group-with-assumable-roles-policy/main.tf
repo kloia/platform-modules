@@ -6,7 +6,7 @@ provider "aws" {
   region = "eu-west-1"
 
   assume_role {
-    role_arn = "arn:aws:iam::835367859851:role/anton-demo"
+    role_arn = "arn:aws:iam::835367859851:role/kloia-demo"
   }
 
   alias = "production"
