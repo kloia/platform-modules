@@ -13,7 +13,7 @@ Reference usage for EC2 AutoScaling service linked role to launch encrypted EBS 
 
 ```hcl
 module "kms" {
-  source = "terraform-aws-modules/kms/aws"
+  source = "platform-modules/kms/aws"
 
   description = "EC2 AutoScaling key usage"
   key_usage   = "ENCRYPT_DECRYPT"
@@ -39,7 +39,7 @@ Reference usage for external CMK (externally provided encryption material):
 
 ```hcl
 module "kms" {
-  source = "terraform-aws-modules/kms/aws"
+  source = "platform/kms/aws"
 
   description         = "External key example"
   key_material_base64 = "Wblj06fduthWggmsT0cLVoIMOkeLbc2kVfMud77i/JY="
@@ -81,7 +81,7 @@ Reference usage showing available configurations.
 
 ```hcl
 module "kms" {
-  source = "terraform-aws-modules/kms/aws"
+  source = "platform/kms/aws"
 
   description             = "Complete key example showing various configurations available"
   deletion_window_in_days = 7
