@@ -14,7 +14,6 @@ $ terraform apply
 
 Run `terraform destroy` when you don't need these resources.
 
-<!-- BEGINNING OF PRE-COMMIT-TERRAFORM DOCS HOOK -->
 ## Requirements
 
 | Name | Version |
@@ -46,4 +45,3 @@ No inputs.
 |------|-------------|
 | <a name="output_caller_identity_account_id"></a> [caller\_identity\_account\_id](#output\_caller\_identity\_account\_id) | The ID of the AWS account |
 | <a name="output_iam_account_password_policy_expire_passwords"></a> [iam\_account\_password\_policy\_expire\_passwords](#output\_iam\_account\_password\_policy\_expire\_passwords) | Indicates whether passwords in the account expire. Returns true if max\_password\_age contains a value greater than 0. Returns false if it is 0 or not present. |
-<!-- END OF PRE-COMMIT-TERRAFORM DOCS HOOK -->
