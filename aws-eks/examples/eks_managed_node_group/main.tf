@@ -69,8 +69,6 @@ module "eks" {
 
   cluster_tags = {
     # This should not affect the name of the cluster primary security group
-    # Ref: https://github.com/terraform-aws-modules/terraform-aws-eks/pull/2006
-    # Ref: https://github.com/terraform-aws-modules/terraform-aws-eks/pull/2008
     Name = local.name
   }
 
@@ -548,7 +546,7 @@ resource "aws_launch_template" "external" {
 
   # If you use a custom AMI, you need to supply via user-data, the bootstrap script as EKS DOESNT merge its managed user-data then
   # you can add more than the minimum code you see in the template, e.g. install SSM agent, see https://github.com/aws/containers-roadmap/issues/593#issuecomment-577181345
-  # (optionally you can use https://registry.terraform.io/providers/hashicorp/cloudinit/latest/docs/data-sources/cloudinit_config to render the script, example: https://github.com/terraform-aws-modules/terraform-aws-eks/pull/997#issuecomment-705286151)
+  # (optionally you can use https://registry.terraform.io/providers/hashicorp/cloudinit/latest/docs/data-sources/cloudinit_config to render the script, example:)
   # user_data = base64encode(data.template_file.launch_template_userdata.rendered)
 
   tag_specifications {

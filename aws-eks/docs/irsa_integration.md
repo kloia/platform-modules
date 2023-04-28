@@ -1,7 +1,7 @@
 
 ### IRSA Integration
 
-An [IAM role for service accounts](https://docs.aws.amazon.com/eks/latest/userguide/iam-roles-for-service-accounts.html) module has been created to work in conjunction with this module.Check [`policy.tf`](https://github.com/terraform-aws-modules/terraform-aws-iam/blob/master/modules/iam-role-for-service-accounts-eks/policies.tf) for a list of the policies currently supported. One example of this integration is shown below, and more can be found in the [`iam-role-for-service-accounts`](https://github.com/terraform-aws-modules/terraform-aws-iam/blob/master/examples/iam-role-for-service-accounts-eks/main.tf) example directory:
+An [IAM role for service accounts](https://docs.aws.amazon.com/eks/latest/userguide/iam-roles-for-service-accounts.html) module has been created to work in conjunction with this module.Check [`policy.tf`](https://github.com/kloia/platform-modules/tree/main/terraform-aws-iam/modules/iam-role-for-service-accounts-eks/policies.tf) for a list of the policies currently supported. One example of this integration is shown below, and more can be found in the [`iam-role-for-service-accounts`](https://github.com/kloia/platform-modules/tree/add-eks/terraform-aws-iam/examples/iam-role-for-service-accounts-eks/main.tf) example directory:
 
 ```hcl
 module "eks" {
