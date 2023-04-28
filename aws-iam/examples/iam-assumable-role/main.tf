@@ -9,8 +9,8 @@ module "iam_assumable_role_admin" {
   source = "../../modules/iam-assumable-role"
 
   trusted_role_arns = [
-    "arn:aws:iam::307990089504:root",
-    "arn:aws:iam::835367859851:user/anton",
+    "arn:aws:iam::111111111111:root",
+    "arn:aws:iam::111111111111:user/kloia",
   ]
 
   trusted_role_services = [
@@ -37,7 +37,7 @@ module "iam_assumable_role_custom" {
   source = "../../modules/iam-assumable-role"
 
   trusted_role_arns = [
-    "arn:aws:iam::307990089504:root",
+    "arn:aws:iam::111111111111:root",
   ]
 
   trusted_role_services = [
@@ -66,7 +66,7 @@ module "iam_assumable_role_sts" {
   source = "../../modules/iam-assumable-role"
 
   trusted_role_arns = [
-    "arn:aws:iam::307990089504:root",
+    "arn:aws:iam::111111111111:root",
   ]
 
   trusted_role_services = [

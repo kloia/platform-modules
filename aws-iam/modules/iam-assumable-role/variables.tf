@@ -142,3 +142,10 @@ variable "role_sts_externalid" {
   type        = any
   default     = []
 }
+
+
+variable "role_sts_orgid" {
+  description = "STS Organization ID condition values to use with a role (when MFA is not required)"
+  type        = any
+  default     = []
+}
