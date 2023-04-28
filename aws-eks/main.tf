@@ -11,6 +11,14 @@ locals {
 # Cluster
 ################################################################################
 
+data "aws_subnet_ids" "private_subnets_with_eks_tag" {
+  vpc_id = var.vpc_id
+  tags = {
+    Name = var.subnet_id_names
+  }
+}
+
+
 resource "aws_eks_cluster" "this" {
   count = local.create ? 1 : 0
 
@@ -21,7 +29,7 @@ resource "aws_eks_cluster" "this" {
 
   vpc_config {
     security_group_ids      = compact(distinct(concat(var.cluster_additional_security_group_ids, [local.cluster_security_group_id])))
-    subnet_ids              = coalescelist(var.control_plane_subnet_ids, var.subnet_ids)
+    subnet_ids              = try(data.aws_subnet_ids.private_subnets_with_eks_tag.ids, null)
     endpoint_private_access = var.cluster_endpoint_private_access
     endpoint_public_access  = var.cluster_endpoint_public_access
     public_access_cidrs     = var.cluster_endpoint_public_access_cidrs
