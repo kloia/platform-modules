@@ -44,16 +44,16 @@ variable "cluster_additional_security_group_ids" {
   default     = []
 }
 
-variable "control_plane_subnet_ids" {
-  description = "A list of subnet IDs where the EKS cluster control plane (ENIs) will be provisioned. Used for expanding the pool of subnets used by nodes/node groups without replacing the EKS control plane"
+variable "subnet_ids" {
+  description = "A list of subnet IDs where the nodes/node groups will be provisioned."
   type        = list(string)
   default     = []
 }
 
-variable "subnet_ids" {
-  description = "A list of subnet IDs where the nodes/node groups will be provisioned. If `control_plane_subnet_ids` is not provided, the EKS cluster control plane (ENIs) will be provisioned in these subnets"
-  type        = list(string)
-  default     = []
+variable "subnet_id_names" {
+  description = "name of subnet ID's"
+  type = string
+  default = "*"
 }
 
 variable "cluster_endpoint_private_access" {
@@ -410,8 +410,6 @@ variable "iam_role_additional_policies" {
   default     = []
 }
 
-# TODO - hopefully this can be removed once the AWS endpoint is named properly in China
-# https://github.com/terraform-aws-modules/terraform-aws-eks/issues/1904
 variable "cluster_iam_role_dns_suffix" {
   description = "Base DNS domain name for the current partition (e.g., amazonaws.com in AWS Commercial, amazonaws.com.cn in AWS China)"
   type        = string

@@ -1,6 +1,6 @@
 # User Data & Bootstrapping
 
-Users can see the various methods of using and providing user data through the [user data examples](https://github.com/terraform-aws-modules/terraform-aws-eks/tree/master/examples/user_data) as well more detailed information on the design and possible configurations via the [user data module itself](https://github.com/terraform-aws-modules/terraform-aws-eks/tree/master/modules/_user_data)
+Users can see the various methods of using and providing user data through the [user data examples](https://github.com/kloia/platform-modules/tree/add-eks/terraform-aws-eks/examples/_user_data) as well more detailed information on the design and possible configurations via the [user data module itself](https://github.com/kloia/platform-modules/tree/add-eks/terraform-aws-eks/modules/_user_data)
 
 ## Summary
 
@@ -13,7 +13,7 @@ Users can see the various methods of using and providing user data through the [
   - `bottlerocket` platform -> the user data template (TOML file) provided by the module is used as the default; users are able to provide their own user data template
   - `windows` platform -> the user data template (powershell/PS1 script) provided by the module is used as the default; users are able to provide their own user data template
 
-The templates provided by the module can be found under the [templates directory](https://github.com/terraform-aws-modules/terraform-aws-eks/tree/master/templates)
+The templates provided by the module can be found under the [templates directory](https://github.com/kloia/platform-modules/tree/add-eks/terraform-aws-eks/templates)
 
 ## EKS Managed Node Group
 

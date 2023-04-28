@@ -11,6 +11,14 @@ locals {
 # Cluster
 ################################################################################
 
+data "aws_subnet_ids" "private_subnets_with_eks_tag" {
+  vpc_id = var.vpc_id
+  tags = {
+    Name = var.subnet_id_names
+  }
+}
+
+
 resource "aws_eks_cluster" "this" {
   count = local.create ? 1 : 0
 
@@ -21,7 +29,7 @@ resource "aws_eks_cluster" "this" {
 
   vpc_config {
     security_group_ids      = compact(distinct(concat(var.cluster_additional_security_group_ids, [local.cluster_security_group_id])))
-    subnet_ids              = coalescelist(var.control_plane_subnet_ids, var.subnet_ids)
+    subnet_ids              = try(data.aws_subnet_ids.private_subnets_with_eks_tag.ids, null)
     endpoint_private_access = var.cluster_endpoint_private_access
     endpoint_public_access  = var.cluster_endpoint_public_access
     public_access_cidrs     = var.cluster_endpoint_public_access_cidrs
@@ -63,9 +71,6 @@ resource "aws_eks_cluster" "this" {
 }
 
 resource "aws_ec2_tag" "cluster_primary_security_group" {
-  # This should not affect the name of the cluster primary security group
-  # Ref: https://github.com/terraform-aws-modules/terraform-aws-eks/pull/2006
-  # Ref: https://github.com/terraform-aws-modules/terraform-aws-eks/pull/2008
   for_each = { for k, v in merge(var.tags, var.cluster_tags) : k => v if local.create && k != "Name" && var.create_cluster_primary_security_group_tags }
 
   resource_id = aws_eks_cluster.this[0].vpc_config[0].cluster_security_group_id
@@ -228,8 +233,7 @@ locals {
 
   cluster_encryption_policy_name = coalesce(var.cluster_encryption_policy_name, "${local.iam_role_name}-ClusterEncryption")
 
-  # TODO - hopefully this can be removed once the AWS endpoint is named properly in China
-  # https://github.com/terraform-aws-modules/terraform-aws-eks/issues/1904
+
   dns_suffix = coalesce(var.cluster_iam_role_dns_suffix, data.aws_partition.current.dns_suffix)
 }
 
@@ -259,7 +263,6 @@ resource "aws_iam_role" "this" {
   permissions_boundary  = var.iam_role_permissions_boundary
   force_detach_policies = true
 
-  # https://github.com/terraform-aws-modules/terraform-aws-eks/issues/920
   # Resources running on the cluster are still generaring logs when destroying the module resources
   # which results in the log group being re-created even after Terraform destroys it. Removing the
   # ability for the cluster role to create the log group prevents this log group from being re-created

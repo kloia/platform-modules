@@ -2,16 +2,13 @@
 
 Terraform module which creates AWS EKS (Kubernetes) resources
 
-## [Documentation](https://github.com/terraform-aws-modules/terraform-aws-eks/blob/master/docs)
+## [Documentation](https://github.com/kloia/platform-modules/tree/main/terraform-aws-eks/docs)
 
-- [Frequently Asked Questions](https://github.com/terraform-aws-modules/terraform-aws-eks/blob/master/docs/faq.md)
-- [Compute Resources](https://github.com/terraform-aws-modules/terraform-aws-eks/blob/master/docs/compute_resources.md)
-- [IRSA Integration](https://github.com/terraform-aws-modules/terraform-aws-eks/blob/master/docs/irsa_integration.md)
-- [User Data](https://github.com/terraform-aws-modules/terraform-aws-eks/blob/master/docs/user_data.md)
-- [Network Connectivity](https://github.com/terraform-aws-modules/terraform-aws-eks/blob/master/docs/network_connectivity.md)
-- Upgrade Guides
-  - [Upgrade to v17.x](https://github.com/terraform-aws-modules/terraform-aws-eks/blob/master/docs/UPGRADE-17.0.md)
-  - [Upgrade to v18.x](https://github.com/terraform-aws-modules/terraform-aws-eks/blob/master/docs/UPGRADE-18.0.md)
+- [Frequently Asked Questions](https://github.com/kloia/platform-modules/tree/main/terraform-aws-eks/docs/faq.md)
+- [Compute Resources](https://github.com/kloia/platform-modules/tree/main/terraform-aws-eks/docs/compute_resources.md)
+- [IRSA Integration](https://github.com/kloia/platform-modules/tree/main/terraform-aws-eks/docs/irsa_integration.md)
+- [User Data](https://github.com/kloia/platform-modules/tree/main/terraform-aws-eks/docs/user_data.md)
+- [Network Connectivity](https://github.com/kloia/platform-modules/tree/main/terraform-aws-eks/docs/network_connectivity.md)
 
 ### External Documentation
 
@@ -34,10 +31,6 @@ Please note that we strive to provide a comprehensive suite of documentation for
 - Support for creating node groups/profiles separate from the cluster through the use of sub-modules (same as what is used by root module)
 - Support for node group/profile "default" settings - useful for when creating multiple node groups/Fargate profiles where you want to set a common set of configurations once, and then individually control only select features on certain node groups/profiles
 
-### [IRSA Terraform Module](https://github.com/terraform-aws-modules/terraform-aws-iam/tree/master/modules/iam-role-for-service-accounts-eks)
-
-An IAM role for service accounts (IRSA) sub-module has been created to make deploying common addons/controllers easier. Instead of users having to create a custom IAM role with the necessary federated role assumption required for IRSA plus find and craft the associated policy required for the addon/controller, users can create the IRSA role and policy with a few lines of code. See the [`terraform-aws-iam/examples/iam-role-for-service-accounts`](https://github.com/terraform-aws-modules/terraform-aws-iam/blob/master/examples/iam-role-for-service-accounts-eks/main.tf) directory for examples on how to use the IRSA sub-module in conjunction with this (`terraform-aws-eks`) module.
-
 Some of the addon/controller policies that are currently supported include:
 
 - [Cluster Autoscaler](https://github.com/kubernetes/autoscaler/blob/master/cluster-autoscaler/cloudprovider/aws/README.md)
@@ -48,13 +41,12 @@ Some of the addon/controller policies that are currently supported include:
 - [Karpenter](https://karpenter.sh/preview/getting-started/getting-started-with-terraform/#create-the-karpentercontroller-iam-role)
 - [Load Balancer Controller](https://github.com/kubernetes-sigs/aws-load-balancer-controller/blob/main/docs/install/iam_policy.json)
 
-See [terraform-aws-iam/modules/iam-role-for-service-accounts](https://github.com/terraform-aws-modules/terraform-aws-iam/tree/master/modules/iam-role-for-service-accounts-eks) for current list of supported addon/controller policies as more are added to the project.
 
 ## Usage
 
 ```hcl
 module "eks" {
-  source  = "terraform-aws-modules/eks/aws"
+  source  = "terraform-modules/eks/aws"
   version = "~> 18.0"
 
   cluster_name    = "my-cluster"
@@ -186,19 +178,14 @@ module "eks" {
 
 ## Examples
 
-- [Complete](https://github.com/terraform-aws-modules/terraform-aws-eks/tree/master/examples/complete): EKS Cluster using all available node group types in various combinations demonstrating many of the supported features and configurations
-- [EKS Managed Node Group](https://github.com/terraform-aws-modules/terraform-aws-eks/tree/master/examples/eks_managed_node_group): EKS Cluster using EKS managed node groups
-- [Fargate Profile](https://github.com/terraform-aws-modules/terraform-aws-eks/tree/master/examples/fargate_profile): EKS cluster using [Fargate Profiles](https://docs.aws.amazon.com/eks/latest/userguide/fargate.html)
-- [Karpenter](https://github.com/terraform-aws-modules/terraform-aws-eks/tree/master/examples/karpenter): EKS Cluster with [Karpenter](https://karpenter.sh/) provisioned for managing compute resource scaling
-- [Self Managed Node Group](https://github.com/terraform-aws-modules/terraform-aws-eks/tree/master/examples/self_managed_node_group): EKS Cluster using self-managed node groups
-- [User Data](https://github.com/terraform-aws-modules/terraform-aws-eks/tree/master/examples/user_data): Various supported methods of providing necessary bootstrap scripts and configuration settings via user data
+- [Complete](https://github.com/kloia/platform-modules/tree/main/terraform-aws-eks/examples/complete): EKS Cluster using all available node group types in various combinations demonstrating many of the supported features and configurations
+- [EKS Managed Node Group](https://github.com/kloia/platform-modules/tree/main/terraform-aws-eks/examples/eks_managed_node_group): EKS Cluster using EKS managed node groups
+- [Fargate Profile](https://github.com/kloia/platform-modules/tree/main/terraform-aws-eks/examples/fargate_profile): EKS cluster using [Fargate Profiles](https://docs.aws.amazon.com/eks/latest/userguide/fargate.html)
+- [Karpenter](https://github.com/kloia/platform-modules/tree/main/terraform-aws-eks/examples/karpenter): EKS Cluster with [Karpenter](https://karpenter.sh/) provisioned for managing compute resource scaling
+- [Self Managed Node Group](https://github.com/kloia/platform-modules/tree/main/terraform-aws-eks/examples/self_managed_node_group): EKS Cluster using self-managed node groups
+- [User Data](https://github.com/kloia/platform-modules/tree/main/terraform-aws-eks/examples/user_data): Various supported methods of providing necessary bootstrap scripts and configuration settings via user data
 
-## Contributing
 
-We are grateful to the community for contributing bugfixes and improvements! Please see below to learn how you can take part.
-
-- [Code of Conduct](https://github.com/terraform-aws-modules/.github/blob/master/CODE_OF_CONDUCT.md)
-- [Contributing Guide](https://github.com/terraform-aws-modules/.github/blob/master/CONTRIBUTING.md)
 
 <!-- BEGINNING OF PRE-COMMIT-TERRAFORM DOCS HOOK -->
 ## Requirements
