@@ -25,7 +25,7 @@ This example creates a new `String` parameter called `/cp/prod/app/database/mast
 
 ```hcl
 module "store_write" {
-  source  = "ToggTrumore/ssm-parameter-store/aws"
+  source  = "togg-trumore/ssm-parameter-store/aws"
   # Cloud Posse recommends pinning every module to a specific version
   # version = "x.x.x"
 
@@ -49,7 +49,7 @@ This example reads a value from the parameter store with the name `/cp/prod/app/
 
 ```hcl
 module "store_read" {
-  source  = "ToggTrumore/ssm-parameter-store/aws"
+  source  = "togg-trumore/ssm-parameter-store/aws"
   # Cloud Posse recommends pinning every module to a specific version
   # version = "x.x.x"
 
