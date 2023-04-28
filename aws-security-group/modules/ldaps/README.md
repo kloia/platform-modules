@@ -4,14 +4,14 @@
 
 ```hcl
 module "ldaps_security_group" {
-  source  = "terraform-aws-modules/security-group/aws//modules/ldaps"
+  source  = "terraform-modules/security-group/aws//modules/ldaps"
   version = "~> 4.0"
 
   # omitted...
 }
 ```
 
-All automatic values **ldaps module** is using are available [here](https://github.com/terraform-aws-modules/terraform-aws-security-group/blob/master/modules/ldaps/auto_values.tf).
+All automatic values **ldaps module** is using are available [here](https://github.com/kloia/terraform-modules/terraform-aws-security-group/blob/main/modules/ldaps/auto_values.tf).
 
 <!-- BEGINNING OF PRE-COMMIT-TERRAFORM DOCS HOOK -->
 ## Requirements

@@ -4,14 +4,14 @@
 
 ```hcl
 module "rdp_security_group" {
-  source  = "terraform-aws-modules/security-group/aws//modules/rdp"
+  source  = "terraform-modules/security-group/aws//modules/rdp"
   version = "~> 4.0"
 
   # omitted...
 }
 ```
 
-All automatic values **rdp module** is using are available [here](https://github.com/terraform-aws-modules/terraform-aws-security-group/blob/master/modules/rdp/auto_values.tf).
+All automatic values **rdp module** is using are available [here](https://github.com/kloia/terraform-modules/terraform-aws-security-group/blob/main/modules/rdp/auto_values.tf).
 
 <!-- BEGINNING OF PRE-COMMIT-TERRAFORM DOCS HOOK -->
 ## Requirements

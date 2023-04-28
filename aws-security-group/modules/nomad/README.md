@@ -4,14 +4,14 @@
 
 ```hcl
 module "nomad_security_group" {
-  source  = "terraform-aws-modules/security-group/aws//modules/nomad"
+  source  = "terraform-modules/security-group/aws//modules/nomad"
   version = "~> 4.0"
 
   # omitted...
 }
 ```
 
-All automatic values **nomad module** is using are available [here](https://github.com/terraform-aws-modules/terraform-aws-security-group/blob/master/modules/nomad/auto_values.tf).
+All automatic values **nomad module** is using are available [here](https://github.com/kloia/terraform-modules/terraform-aws-security-group/blob/main/modules/nomad/auto_values.tf).
 
 <!-- BEGINNING OF PRE-COMMIT-TERRAFORM DOCS HOOK -->
 ## Requirements

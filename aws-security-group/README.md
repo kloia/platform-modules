@@ -11,34 +11,23 @@ This module aims to implement **ALL** combinations of arguments supported by AWS
 * [VPC endpoint prefix lists](http://docs.aws.amazon.com/AmazonVPC/latest/UserGuide/vpc-endpoints.html) (use data source [aws_prefix_list](https://www.terraform.io/docs/providers/aws/d/prefix_list.html))
 * Access from source security groups
 * Access from self
-* Named rules ([see the rules here](https://github.com/terraform-aws-modules/terraform-aws-security-group/blob/master/rules.tf))
-* Named groups of rules with ingress (inbound) and egress (outbound) ports open for common scenarios (eg, [ssh](https://github.com/terraform-aws-modules/terraform-aws-security-group/tree/master/modules/ssh), [http-80](https://github.com/terraform-aws-modules/terraform-aws-security-group/tree/master/modules/http-80), [mysql](https://github.com/terraform-aws-modules/terraform-aws-security-group/tree/master/modules/mysql), see the whole list [here](https://github.com/terraform-aws-modules/terraform-aws-security-group/blob/master/modules/README.md))
+* Named rules ([see the rules here](https://github.com/kloia/terraform-modules/terraform-aws-security-group/blob/main/rules.tf))
+* Named groups of rules with ingress (inbound) and egress (outbound) ports open for common scenarios (eg, [ssh](https://github.com/kloia/terraform-modules/terraform-aws-security-group/tree/main/modules/ssh), [http-80](https://github.com/kloia/terraform-modules/terraform-aws-security-group/tree/main/modules/http-80), [mysql](https://github.com/kloia/terraform-modules/terraform-aws-security-group/tree/main/modules/mysql), see the whole list [here](https://github.com/kloia/terraform-modules/terraform-aws-security-group/blob/main/modules/README.md))
 * Conditionally create security group and/or all required security group rules.
 
-Ingress and egress rules can be configured in a variety of ways. See [inputs section](#inputs) for all supported arguments and [complete example](https://github.com/terraform-aws-modules/terraform-aws-security-group/tree/master/examples/complete) for the complete use-case.
+Ingress and egress rules can be configured in a variety of ways. See [inputs section](#inputs) for all supported arguments and [complete example](https://github.com/kloia/terraform-modules/terraform-aws-security-group/tree/main/examples/complete) for the complete use-case.
 
-If there is a missing feature or a bug - [open an issue](https://github.com/terraform-aws-modules/terraform-aws-security-group/issues/new).
 
 ## Terraform versions
 
 For Terraform 0.13 or later use any version from `v4.5.0` of this module or newer.
 
-For Terraform 0.12 use any version from `v3.*` to `v4.4.0`.
-
-If you are using Terraform 0.11 you can use versions `v2.*`.
-
-## Usage
-
-There are two ways to create security groups using this module:
-
-1. [Specifying predefined rules (HTTP, SSH, etc)](https://github.com/terraform-aws-modules/terraform-aws-security-group#security-group-with-predefined-rules)
-1. [Specifying custom rules](https://github.com/terraform-aws-modules/terraform-aws-security-group#security-group-with-custom-rules)
 
 ### Security group with predefined rules
 
 ```hcl
 module "web_server_sg" {
-  source = "terraform-aws-modules/security-group/aws//modules/http-80"
+  source = "terraform-modules/security-group/aws//modules/http-80"
 
   name        = "web-server"
   description = "Security group for web-server with HTTP ports open within VPC"
@@ -52,7 +41,7 @@ module "web_server_sg" {
 
 ```hcl
 module "vote_service_sg" {
-  source = "terraform-aws-modules/security-group/aws"
+  source = "terraform-modules/security-group/aws"
 
   name        = "user-service"
   description = "Security group for user-service with custom ports open within VPC, and PostgreSQL publicly open"
@@ -74,54 +63,7 @@ module "vote_service_sg" {
     },
   ]
 }
-```
-
-### Note about "value of 'count' cannot be computed"
-
-Terraform 0.11 has a limitation which does not allow **computed** values inside `count` attribute on resources (issues: [#16712](https://github.com/hashicorp/terraform/issues/16712), [#18015](https://github.com/hashicorp/terraform/issues/18015), ...)
-
-Computed values are values provided as outputs from `module`. Non-computed values are all others - static values, values referenced as `variable` and from data-sources.
-
-When you need to specify computed value inside security group rule argument you need to specify it using an argument which starts with `computed_` and provide a number of elements in the argument which starts with `number_of_computed_`. See these examples:
-
-```hcl
-module "http_sg" {
-  source = "terraform-aws-modules/security-group/aws"
-  # omitted for brevity
-}
-
-module "db_computed_source_sg" {
-  # omitted for brevity
-
-  vpc_id = "vpc-12345678" # these are valid values also - `module.vpc.vpc_id` and `local.vpc_id`
-
-  computed_ingress_with_source_security_group_id = [
-    {
-      rule                     = "mysql-tcp"
-      source_security_group_id = module.http_sg.security_group_id
-    }
-  ]
-  number_of_computed_ingress_with_source_security_group_id = 1
-}
-
-module "db_computed_sg" {
-  # omitted for brevity
-
-  ingress_cidr_blocks = ["10.10.0.0/16", data.aws_security_group.default.id]
-
-  computed_ingress_cidr_blocks           = [module.vpc.vpc_cidr_block]
-  number_of_computed_ingress_cidr_blocks = 1
-}
-
-module "db_computed_merged_sg" {
-  # omitted for brevity
-
-  computed_ingress_cidr_blocks           = ["10.10.0.0/16", module.vpc.vpc_cidr_block]
-  number_of_computed_ingress_cidr_blocks = 2
-}
-```
-
-Note that `db_computed_sg` and `db_computed_merged_sg` are equal, because it is possible to put both computed and non-computed values in arguments starting with `computed_`.
+``
 
 ## Conditional creation
 
@@ -130,7 +72,7 @@ Sometimes you need a way to conditionally create a security group. If you're usi
 ```hcl
 # This security group will not be created
 module "vote_service_sg" {
-  source = "terraform-aws-modules/security-group/aws"
+  source = "terraform-modules/security-group/aws"
 
   create = false
   # ... omitted
@@ -139,16 +81,16 @@ module "vote_service_sg" {
 
 ## Examples
 
-* [Complete Security Group example](https://github.com/terraform-aws-modules/terraform-aws-security-group/tree/master/examples/complete) shows all available parameters to configure security group.
-* [Security Group "Rules Only" example](https://github.com/terraform-aws-modules/terraform-aws-security-group/tree/master/examples/complete) shows how to manage just rules of a security group that is created outside.
-* [HTTP Security Group example](https://github.com/terraform-aws-modules/terraform-aws-security-group/tree/master/examples/http) shows more applicable security groups for common web-servers.
-* [Disable creation of Security Group example](https://github.com/terraform-aws-modules/terraform-aws-security-group/tree/master/examples/disabled) shows how to disable creation of security group.
-* [Dynamic values inside Security Group rules example](https://github.com/terraform-aws-modules/terraform-aws-security-group/tree/master/examples/dynamic) shows how to specify values inside security group rules (data-sources and variables are allowed).
-* [Computed values inside Security Group rules example](https://github.com/terraform-aws-modules/terraform-aws-security-group/tree/master/examples/computed) shows how to specify computed values inside security group rules (solution for `value of 'count' cannot be computed` problem).
+* [Complete Security Group example](https://github.com/kloia/terraform-modules/terraform-aws-security-group/tree/main/examples/complete) shows all available parameters to configure security group.
+* [Security Group "Rules Only" example](https://github.com/kloia/terraform-modules/terraform-aws-security-group/tree/main/examples/complete) shows how to manage just rules of a security group that is created outside.
+* [HTTP Security Group example](https://github.com/kloia/terraform-modules/terraform-aws-security-group/tree/main/examples/http) shows more applicable security groups for common web-servers.
+* [Disable creation of Security Group example](https://github.com/kloia/terraform-modules/terraform-aws-security-group/tree/main/examples/disabled) shows how to disable creation of security group.
+* [Dynamic values inside Security Group rules example](https://github.com/kloia/terraform-modules/terraform-aws-security-group/tree/main/examples/dynamic) shows how to specify values inside security group rules (data-sources and variables are allowed).
+* [Computed values inside Security Group rules example](https://github.com/kloia/terraform-modules/terraform-aws-security-group/tree/main/examples/computed) shows how to specify computed values inside security group rules (solution for `value of 'count' cannot be computed` problem).
 
 ## How to add/update rules/groups?
 
-Rules and groups are defined in [rules.tf](https://github.com/terraform-aws-modules/terraform-aws-security-group/blob/master/rules.tf). Run `update_groups.sh` when content of that file has changed to recreate content of all automatic modules.
+Rules and groups are defined in [rules.tf](https://github.com/kloia/terraform-modules/terraform-aws-security-group/blob/main/rules.tf). Run `update_groups.sh` when content of that file has changed to recreate content of all automatic modules.
 
 ## Known issues
 

@@ -4,14 +4,14 @@
 
 ```hcl
 module "consul_security_group" {
-  source  = "terraform-aws-modules/security-group/aws//modules/consul"
+  source  = "terraform-modules/security-group/aws//modules/consul"
   version = "~> 4.0"
 
   # omitted...
 }
 ```
 
-All automatic values **consul module** is using are available [here](https://github.com/terraform-aws-modules/terraform-aws-security-group/blob/master/modules/consul/auto_values.tf).
+All automatic values **consul module** is using are available [here](https://github.com/kloia/terraform-modules/terraform-aws-security-group/blob/main/modules/consul/auto_values.tf).
 
 <!-- BEGINNING OF PRE-COMMIT-TERRAFORM DOCS HOOK -->
 ## Requirements
