@@ -4,14 +4,14 @@
 
 ```hcl
 module "https_443_security_group" {
-  source  = "terraform-aws-modules/security-group/aws//modules/https-443"
+  source  = "terraform-modules/security-group/aws//modules/https-443"
   version = "~> 4.0"
 
   # omitted...
 }
 ```
 
-All automatic values **https-443 module** is using are available [here](https://github.com/terraform-aws-modules/terraform-aws-security-group/blob/master/modules/https-443/auto_values.tf).
+All automatic values **https-443 module** is using are available [here](https://github.com/kloia/terraform-modules/terraform-aws-security-group/blob/main/modules/https-443/auto_values.tf).
 
 <!-- BEGINNING OF PRE-COMMIT-TERRAFORM DOCS HOOK -->
 ## Requirements
