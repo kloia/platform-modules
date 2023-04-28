@@ -39,6 +39,7 @@ resource "aws_iam_role" "this" {
   description = var.role_description
 
   assume_role_policy    = data.aws_iam_policy_document.this[0].json
+  # assume_role_policy = "{\"Version\":\"2012-10-17\",\"Statement\":[{\"Effect\":\"Allow\",\"Principal\":{\"Federated\":\"arn:aws:iam::099558987540:oidc-provider/oidc.eks.eu-west-1.amazonaws.com/id/98C02881BF4F95FDF96B1AEAED2900B4\"},\"Action\":\"sts:AssumeRole\",\"Condition\":{}}]}"
   max_session_duration  = var.max_session_duration
   permissions_boundary  = var.role_permissions_boundary_arn
   force_detach_policies = var.force_detach_policies

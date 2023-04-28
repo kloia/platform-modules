@@ -1,5 +1,6 @@
 locals {
   role_sts_externalid = flatten([var.role_sts_externalid])
+  role_sts_orgid = flatten([var.role_sts_orgid])
 }
 
 data "aws_iam_policy_document" "assume_role" {
@@ -18,6 +19,15 @@ data "aws_iam_policy_document" "assume_role" {
     principals {
       type        = "Service"
       identifiers = var.trusted_role_services
+    }
+
+    dynamic "condition" {
+      for_each = length(local.role_sts_externalid) != 0 ? [true] : []
+      content {
+        test     = "StringEquals"
+        variable = "aws:PrincipalOrgID"
+        values   = local.role_sts_externalid
+      }
     }
 
     dynamic "condition" {

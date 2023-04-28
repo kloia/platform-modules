@@ -1,6 +1,6 @@
 # iam-eks-role
 
-Creates an IAM role that can be assumed by one or more EKS `ServiceAccount` in one or more EKS clusters. Unlike [iam-assumable-role-with-oidc](https://github.com/terraform-aws-modules/terraform-aws-iam/blob/master/modules/iam-assumable-role-with-oidc/), this module:
+Creates an IAM role that can be assumed by one or more EKS `ServiceAccount` in one or more EKS clusters. Unlike [iam-assumable-role-with-oidc](https://github.com/ToggTrumore/terraform-modules/tree/main/terraform-aws-iam/modules/iam-assumable-role-with-oidc/), this module:
 
 - Does not require any knowledge of cluster OIDC information as `data` resources are used
 - Supports assuming the role from multiple EKS clusters, for example used in DR or when a workload is spread across clusters
@@ -73,7 +73,7 @@ module "iam_eks_role" {
 }
 ```
 
-<!-- BEGINNING OF PRE-COMMIT-TERRAFORM DOCS HOOK -->
+
 ## Requirements
 
 | Name | Version |
@@ -126,4 +126,4 @@ No modules.
 | <a name="output_iam_role_name"></a> [iam\_role\_name](#output\_iam\_role\_name) | Name of IAM role |
 | <a name="output_iam_role_path"></a> [iam\_role\_path](#output\_iam\_role\_path) | Path of IAM role |
 | <a name="output_iam_role_unique_id"></a> [iam\_role\_unique\_id](#output\_iam\_role\_unique\_id) | Unique ID of IAM role |
-<!-- END OF PRE-COMMIT-TERRAFORM DOCS HOOK -->
+

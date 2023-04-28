@@ -40,11 +40,11 @@ module "iam_eks_role" {
 }
 ```
 
-This module has been designed in conjunction with the [`terraform-aws-eks`](https://github.com/terraform-aws-modules/terraform-aws-eks) module to easily integrate with it:
+This module can be used in conjunction with the [`terraform-aws-eks`](https://github.com/ToggTrumore/terraform-modules/tree/main/terraform-aws-eks/examples) module to easily integrate with it:
 
 ```hcl
 module "vpc_cni_irsa_role" {
-  source    = "terraform-aws-modules/iam/aws//modules/iam-role-for-service-accounts-eks"
+  source    = "terraform-modules/iam/aws//modules/iam-role-for-service-accounts-eks"
 
   role_name = "vpc-cni"
 
@@ -60,7 +60,7 @@ module "vpc_cni_irsa_role" {
 }
 
 module "karpenter_irsa_role" {
-  source    = "terraform-aws-modules/iam/aws//modules/iam-role-for-service-accounts-eks"
+  source    = "terraform-modules/iam/aws//modules/iam-role-for-service-accounts-eks"
 
   role_name                          = "karpenter_controller"
   attach_karpenter_controller_policy = true
@@ -80,7 +80,7 @@ module "karpenter_irsa_role" {
 }
 
 module "eks" {
-  source  = "terraform-aws-modules/eks/aws"
+  source  = "terraform-modules/eks/aws"
   version = "~> 18.6"
 
   cluster_name    = "my-cluster"
@@ -95,7 +95,6 @@ module "eks" {
 }
 ```
 
-<!-- BEGINNING OF PRE-COMMIT-TERRAFORM DOCS HOOK -->
 ## Requirements
 
 | Name | Version |
@@ -230,4 +229,3 @@ No modules.
 | <a name="output_iam_role_name"></a> [iam\_role\_name](#output\_iam\_role\_name) | Name of IAM role |
 | <a name="output_iam_role_path"></a> [iam\_role\_path](#output\_iam\_role\_path) | Path of IAM role |
 | <a name="output_iam_role_unique_id"></a> [iam\_role\_unique\_id](#output\_iam\_role\_unique\_id) | Unique ID of IAM role |
-<!-- END OF PRE-COMMIT-TERRAFORM DOCS HOOK -->
