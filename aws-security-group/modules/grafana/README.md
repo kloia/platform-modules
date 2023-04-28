@@ -4,14 +4,14 @@
 
 ```hcl
 module "grafana_security_group" {
-  source  = "terraform-aws-modules/security-group/aws//modules/grafana"
+  source  = "terraform-modules/security-group/aws//modules/grafana"
   version = "~> 4.0"
 
   # omitted...
 }
 ```
 
-All automatic values **grafana module** is using are available [here](https://github.com/terraform-aws-modules/terraform-aws-security-group/blob/master/modules/grafana/auto_values.tf).
+All automatic values **grafana module** is using are available [here](https://github.com/kloia/terraform-modules/terraform-aws-security-group/blob/main/modules/grafana/auto_values.tf).
 
 <!-- BEGINNING OF PRE-COMMIT-TERRAFORM DOCS HOOK -->
 ## Requirements
