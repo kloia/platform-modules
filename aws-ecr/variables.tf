@@ -8,9 +8,11 @@ variable "create" {
 }
 
 # The name of the ECR repository
-variable "ecr_repo_name" {
+variable "ecr_repo_names" {
   description = "name defines the name of the repository, by default it will be interpolated to {namespace}-{name}"
+  type        = list
 }
+
 
 variable "allowed_read_principals" {
   description = "allowed_read_principals defines which external principals are allowed to read from the ECR repository"
