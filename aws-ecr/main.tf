@@ -2,8 +2,9 @@ data "aws_caller_identity" "current" {}
 
 # aws_ecr_repository creates the aws_ecr_repository resource
 resource "aws_ecr_repository" "this" {
-  count = var.create ? 1 : 0
-  name  = var.ecr_repo_name
+  for_each = toset(var.ecr_repo_names) 
+  #count = var.create ? 1 : 0 
+  name  = each.value
 
   image_tag_mutability = var.image_tag_mutability
 
@@ -88,8 +89,9 @@ data "aws_iam_policy_document" "ecr_read_and_write_perms" {
 # when var.allowed_write_principals contains no principals, only the data.aws_iam_policy_document.ecs_ecr_read_perms.json will
 # be used to populate the iam policy.
 resource "aws_ecr_repository_policy" "this" {
-  count      = var.create ? 1 : 0
-  repository = aws_ecr_repository.this[0].name
+  #count      = var.create ? 1 : 0
+  for_each = toset(var.allowed_read_principals) 
+  repository = each.value
 
   policy = length(var.allowed_write_principals) > 0 ? data.aws_iam_policy_document.ecr_read_and_write_perms[0].json : data.aws_iam_policy_document.ecs_ecr_read_perms[0].json
 }
