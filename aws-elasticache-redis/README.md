@@ -35,7 +35,7 @@ module "redis" {
   family            = "redis6.x"
   description       = "Test elasticache redis."
 
-  subnet_ids = module.vpc.private_subnets
+  subnet_id_names = "*cache*" # subnet tag.Name, you can use regex as given
   vpc_id     = module.vpc.vpc_id
 
   ingress_cidr_blocks = ["0.0.0.0/0"]
@@ -193,6 +193,7 @@ No modules.
 | [aws_security_group_rule.redis_ingress_cidr_blocks](https://registry.terraform.io/providers/hashicorp/aws/latest/docs/resources/security_group_rule) | resource |
 | [aws_security_group_rule.redis_ingress_self](https://registry.terraform.io/providers/hashicorp/aws/latest/docs/resources/security_group_rule) | resource |
 | [random_id.redis_pg](https://registry.terraform.io/providers/hashicorp/random/latest/docs/resources/id) | resource |
+| [aws_subnet_ids.private_subnets_with_cache_tag](https://registry.terraform.io/providers/hashicorp/aws/latest/docs/data-sources/subnet_ids) | data source |
 
 ## Inputs
 
@@ -229,6 +230,7 @@ No modules.
 | <a name="input_security_group_ids"></a> [security\_group\_ids](#input\_security\_group\_ids) | List of Security Groups. | `list(string)` | `[]` | no |
 | <a name="input_snapshot_retention_limit"></a> [snapshot\_retention\_limit](#input\_snapshot\_retention\_limit) | The number of days for which ElastiCache will retain automatic cache cluster snapshots before deleting them. | `number` | `30` | no |
 | <a name="input_snapshot_window"></a> [snapshot\_window](#input\_snapshot\_window) | The daily time range (in UTC) during which ElastiCache will begin taking a daily snapshot of your cache cluster. | `string` | `""` | no |
+| <a name="input_subnet_id_names"></a> [subnet\_id\_names](#input\_subnet\_id\_names) | name of subnet ID's | `string` | `"*"` | no |
 | <a name="input_subnet_ids"></a> [subnet\_ids](#input\_subnet\_ids) | List of VPC Subnet IDs for the cache subnet group. | `list(string)` | n/a | yes |
 | <a name="input_tags"></a> [tags](#input\_tags) | A mapping of tags to assign to all resources. | `map(string)` | `{}` | no |
 | <a name="input_transit_encryption_enabled"></a> [transit\_encryption\_enabled](#input\_transit\_encryption\_enabled) | Whether to enable encryption in transit. | `bool` | `true` | no |

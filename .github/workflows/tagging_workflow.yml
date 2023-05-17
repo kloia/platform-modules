@@ -8,23 +8,26 @@ on:
 jobs:
   create_tag:
     runs-on: ubuntu-latest
+    if: "!contains(github.event.head_commit.message, 'Bump version')"
 
     steps:
     - name: Checkout repository
       uses: actions/checkout@v2
+      with:
+        token: ${{ secrets.GH_PAT }}
 
     - name: Set up Python
       uses: actions/setup-python@v2
       with:
         python-version: '3.x'
 
-    - name: Install bump2versionn
+    - name: Install bump2version
       run: pip install bump2version
 
     - name: Configure Git
       run: |
-        git config --global user.email "workflow@github.com"
-        git config --global user.name "workflow"
+        git config --global user.email "action@github.com"
+        git config --global user.name "GitHub Action"
 
     - name: Bump version and tag
       run: |
