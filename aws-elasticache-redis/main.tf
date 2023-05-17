@@ -86,9 +86,16 @@ resource "aws_elasticache_parameter_group" "redis" {
   tags = var.tags
 }
 
+data "aws_subnet_ids" "private_subnets_with_cache_tag" {
+  vpc_id = var.vpc_id
+  tags = {
+    Name = var.subnet_id_names
+  }
+}
+
 resource "aws_elasticache_subnet_group" "redis" {
   name        = var.global_replication_group_id == null ? "${var.name_prefix}-redis-sg" : "${var.name_prefix}-redis-sg-replica"
-  subnet_ids  = var.subnet_ids
+  subnet_ids  = var.data.aws_subnet_ids.private_subnets_with_cache_tag.ids
   description = var.description
 
   tags = var.tags

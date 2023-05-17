@@ -20,6 +20,12 @@ variable "node_type" {
   description = "The compute and memory capacity of the nodes in the node group."
 }
 
+variable "subnet_id_names" {
+  description = "name of subnet ID's"
+  type = string
+  default = "*"
+}
+
 variable "subnet_ids" {
   type        = list(string)
   description = "List of VPC Subnet IDs for the cache subnet group."
