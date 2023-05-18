@@ -90,7 +90,7 @@ data "aws_iam_policy_document" "ecr_read_and_write_perms" {
 # be used to populate the iam policy.
 resource "aws_ecr_repository_policy" "this" {
   #count      = var.create ? 1 : 0
-  for_each = toset(var.allowed_read_principals) 
+  for_each = toset(var.ecr_repo_names) 
   repository = each.value
 
   policy = length(var.allowed_write_principals) > 0 ? data.aws_iam_policy_document.ecr_read_and_write_perms[0].json : data.aws_iam_policy_document.ecs_ecr_read_perms[0].json
