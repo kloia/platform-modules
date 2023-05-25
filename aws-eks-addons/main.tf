@@ -3,7 +3,7 @@ resource "kubernetes_service_account" "service-common-service-account" {
     name      = "service-common"
     namespace = "default"
     annotations = {
-      "eks.amazonaws.com/role-arn"               = var.service_common_iam_role_arn
+      "eks.amazonaws.com/role-arn" = var.service_common_iam_role_arn
     }
   }
 }
@@ -24,8 +24,8 @@ resource "kubernetes_service_account" "service-account" {
 
 }
 
-
 resource "helm_release" "aws_lb_controller" {
+  count      = var.deploy_aws_loadbalancer ? 1 : 0
   name       = "aws-load-balancer-controller"
   repository = "https://aws.github.io/eks-charts"
   chart      = "aws-load-balancer-controller"
@@ -65,13 +65,13 @@ resource "helm_release" "aws_lb_controller" {
   }
 }
 resource "helm_release" "ingress_nginx" {
-  name       = "ingress-nginx"
-  repository = "https://kubernetes.github.io/ingress-nginx"
-  chart      = "ingress-nginx"
-  namespace  = "ingress-nginx"
-  version = "4.4.0"
+  name             = "ingress-nginx"
+  repository       = "https://kubernetes.github.io/ingress-nginx"
+  chart            = "ingress-nginx"
+  namespace        = "ingress-nginx"
+  version          = "4.4.0"
   create_namespace = true
-  
+
   set {
     name  = "controller.service.type"
     value = "NodePort"
@@ -87,7 +87,7 @@ resource "kubernetes_ingress_v1" "alb_ingress_connect_nginx" {
 
     annotations = {
       "alb.ingress.kubernetes.io/load-balancer-name" = "ms-platform-lb-last"
-  
+
       "alb.ingress.kubernetes.io/backend-protocol" = "HTTP"
 
       "alb.ingress.kubernetes.io/scheme" = "internet-facing"
@@ -131,11 +131,12 @@ resource "kubernetes_ingress_v1" "alb_ingress_connect_nginx" {
     }
   }
   depends_on = [
-    helm_release.aws_lb_controller,helm_release.ingress_nginx
+    helm_release.aws_lb_controller, helm_release.ingress_nginx
   ]
 }
 
 resource "kubernetes_ingress_v1" "alb_ingress_connect_nginx_gitops" {
+  count                  = var.deploy_ingress_nginx_resources ? 1 : 0
   wait_for_load_balancer = true
   metadata {
     name      = "alb-ingress-connect-nginx-gitops"
@@ -182,11 +183,12 @@ resource "kubernetes_ingress_v1" "alb_ingress_connect_nginx_gitops" {
     }
   }
   depends_on = [
-    helm_release.aws_lb_controller,helm_release.ingress_nginx
+    helm_release.aws_lb_controller, helm_release.ingress_nginx
   ]
 }
 
 resource "kubernetes_ingress_v1" "alb_ingress_connect_nginx_grpc" {
+  count                  = var.deploy_ingress_nginx_resources ? 1 : 0
   wait_for_load_balancer = true
   metadata {
     name      = "alb-ingress-connect-nginx-grpc"
@@ -235,12 +237,12 @@ resource "kubernetes_ingress_v1" "alb_ingress_connect_nginx_grpc" {
     }
   }
   depends_on = [
-    helm_release.aws_lb_controller,helm_release.ingress_nginx
+    helm_release.aws_lb_controller, helm_release.ingress_nginx
   ]
 }
 
 resource "helm_release" "argocd" {
-  count = var.create_argocd_resources ? 1 : 0
+  count            = var.deploy_argocd ? 1 : 0
   name             = "argocd"
   repository       = "https://argoproj.github.io/argo-helm"
   chart            = "argo-cd"
@@ -354,6 +356,7 @@ resource "helm_release" "argocd" {
 }
 
 resource "helm_release" "crossplane" {
+  count            = var.deploy_crossplane ? 1 : 0
   name             = "crossplane"
   repository       = "https://charts.crossplane.io/stable"
   chart            = "crossplane"
@@ -363,6 +366,7 @@ resource "helm_release" "crossplane" {
 
 
 resource "kubectl_manifest" "crossplane_aws_controller" {
+  count      = var.deploy_crossplane ? 1 : 0
   yaml_body  = <<YAML
 apiVersion: pkg.crossplane.io/v1alpha1
 kind: ControllerConfig
@@ -378,6 +382,7 @@ YAML
 }
 
 resource "kubectl_manifest" "crossplane_aws_provider" {
+  count      = var.deploy_crossplane ? 1 : 0
   yaml_body  = <<YAML
 apiVersion: pkg.crossplane.io/v1
 kind: Provider
@@ -392,6 +397,7 @@ YAML
 }
 
 resource "kubectl_manifest" "crossplane_aws_provider_config" {
+  count     = var.deploy_crossplane ? 1 : 0
   yaml_body = <<YAML
 apiVersion: aws.crossplane.io/v1beta1
 kind: ProviderConfig
@@ -409,6 +415,7 @@ YAML
 
 
 resource "helm_release" "external-secrets" {
+  count            = var.deploy_external_secrets ? 1 : 0
   name             = "external-secrets"
   repository       = "https://charts.external-secrets.io"
   chart            = "external-secrets"
