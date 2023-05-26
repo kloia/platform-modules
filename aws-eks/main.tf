@@ -11,11 +11,16 @@ locals {
 # Cluster
 ################################################################################
 
-data "aws_subnet_ids" "private_subnets_with_eks_tag" {
-  vpc_id = var.vpc_id
-  tags = {
-    Name = var.subnet_id_names
+data "aws_subnets" "private_subnets_with_eks_tag" {
+  filter {
+    name   = "vpc-id"
+    values = [var.vpc_id]
   }
+  filter {
+    name   = "tag:Name"
+    values = ["${var.subnet_id_names}"] 
+  }
+
 }
 
 
