@@ -140,6 +140,12 @@ variable "key_asymmetric_sign_verify_users" {
   default     = []
 }
 
+variable "key_services" {
+  description = "A list of IAM ARNs for service accounts"
+  type        = list(string)
+  default     = []
+}
+
 variable "source_policy_documents" {
   description = "List of IAM policy documents that are merged together into the exported document. Statements must have unique `sid`s"
   type        = list(string)

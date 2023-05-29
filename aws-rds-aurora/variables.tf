@@ -54,6 +54,12 @@ variable "network_type" {
   default     = null
 }
 
+variable "subnet_id_names" {
+  description = "name of subnet ID's"
+  type = string
+  default = "*"
+}
+
 ################################################################################
 # Cluster
 ################################################################################
@@ -666,4 +672,10 @@ variable "db_parameter_group_parameters" {
 variable "kms_key_id" {
   description = "The key ID of the KMS key"
   default = null
+}
+
+variable "kms_multi_region" {
+  description = "Determine whether the KMS key is multi region support"
+  type = bool
+  default = false
 }
