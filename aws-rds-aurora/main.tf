@@ -42,12 +42,19 @@ resource "random_id" "snapshot_identifier" {
 # DB Subnet Group
 ################################################################################
 
+data "aws_subnet_ids" "private_subnets_with_database_tag" {
+  vpc_id = var.vpc_id
+  tags = {
+    Name = var.subnet_id_names
+  }
+}
+
 resource "aws_db_subnet_group" "this" {
   count = local.create_cluster && var.create_db_subnet_group ? 1 : 0
 
   name        = local.internal_db_subnet_group_name
   description = "For Aurora cluster ${var.name}"
-  subnet_ids  = var.subnets
+  subnet_ids  = try(data.aws_subnet_ids.private_subnets_with_database_tag.ids, null)
 
   tags = var.tags
 }
@@ -464,5 +471,6 @@ data "aws_iam_policy_document" "rds" {
 
 resource "aws_kms_key" "kms" {
   policy = data.aws_iam_policy_document.rds.json
+  multi_region = var.kms_multi_region
 }
 

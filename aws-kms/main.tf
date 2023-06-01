@@ -242,6 +242,25 @@ data "aws_iam_policy_document" "this" {
       }
     }
   }
+
+  dynamic "statement" {
+  for_each = length(var.key_services) > 0 ? [1] : []
+  content {
+    sid = "KeyService"
+    actions = [
+      "kms:Decrypt",
+      "kms:DescribeKey",
+      "kms:Encrypt",
+      "kms:GenerateDataKey*",
+      "kms:ReEncrypt*",
+    ]
+    resources = ["*"]
+    principals {
+      type        = "Service"
+      identifiers = var.key_services
+    }
+    }
+  }
 }
 
 ################################################################################
