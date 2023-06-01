@@ -24,6 +24,29 @@ resource "kubernetes_service_account" "service-account" {
 
 }
 
+resource "kubectl_manifest" "aws-node-daemonset-patch" {
+  count     = var.deploy_cilium ? 1 : 0
+  yaml_body = file("${path.module}/manifests/aws-node-daemonset.yaml")
+}
+
+resource "helm_release" "cilium" {
+  count      = var.deploy_cilium ? 1 : 0
+  name       = "cilium"
+  repository = "https://helm.cilium.io"
+  chart      = "cilium"
+  namespace  = "kube-system"
+
+  set {
+    name  = "ipam.mode"
+    value = var.cilium_ipam_mode
+  }
+
+  set {
+    name  = "ipam.operator.clusterPoolIPv4PodCIDRList[0]"
+    value = var.cilium_ipam_IPv4CIDR
+  }
+}
+
 resource "helm_release" "aws_lb_controller" {
   count      = var.deploy_aws_loadbalancer ? 1 : 0
   name       = "aws-load-balancer-controller"

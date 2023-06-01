@@ -122,3 +122,20 @@ variable "deploy_external_secrets" {
   type        = bool
   default     = false
 }
+
+variable "cilium_ipam_mode" {
+  description = "IPAM mode of cilium"
+  type        = string
+  default     = "cluster-pool"
+}
+
+variable "cilium_ipam_IPv4CIDR" {
+  description = "Cilium IPv4 CIDR"
+  type        = string
+}
+
+variable "deploy_cilium" {
+  description = "Deploy Cilium CNI flag"
+  type        = bool
+  default     = false
+}
