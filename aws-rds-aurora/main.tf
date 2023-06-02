@@ -42,10 +42,14 @@ resource "random_id" "snapshot_identifier" {
 # DB Subnet Group
 ################################################################################
 
-data "aws_subnet_ids" "private_subnets_with_database_tag" {
-  vpc_id = var.vpc_id
-  tags = {
-    Name = var.subnet_id_names
+data "aws_subnets" "private_subnets_with_database_tag" {
+  filter {
+    name   = "vpc-id"
+    values = [var.vpc_id]
+  }
+  filter {
+    name   = "tag:Name"
+    values = ["${var.subnet_id_names}"] 
   }
 }
 
@@ -54,7 +58,7 @@ resource "aws_db_subnet_group" "this" {
 
   name        = local.internal_db_subnet_group_name
   description = "For Aurora cluster ${var.name}"
-  subnet_ids  = try(data.aws_subnet_ids.private_subnets_with_database_tag.ids, null)
+  subnet_ids  = try(data.aws_subnets.private_subnets_with_database_tag.ids, null)
 
   tags = var.tags
 }
