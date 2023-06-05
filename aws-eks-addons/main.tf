@@ -25,8 +25,12 @@ resource "kubernetes_service_account" "service-account" {
 }
 
 resource "kubectl_manifest" "aws-node-daemonset-patch" {
-  count     = var.deploy_cilium ? 1 : 0
+  #count     = var.deploy_cilium ? 1 : 0
   yaml_body = file("${path.module}/manifests/aws-node-daemonset.yaml")
+
+  lifecycle {
+    ignore_changes = all
+  }
 }
 
 resource "helm_release" "cilium" {
@@ -98,6 +102,11 @@ resource "helm_release" "ingress_nginx" {
   set {
     name  = "controller.service.type"
     value = "NodePort"
+  }
+
+  set {
+    name = "controller.config.use-forwarded-headers"
+    value = "true"
   }
 
 }
@@ -454,4 +463,35 @@ resource "helm_release" "external-secrets" {
   }
 }
 
+resource "helm_release" "rancher" {
+  count            = var.deploy_rancher ? 1 : 0
+  name             = "rancher"
+  repository       = "https://releases.rancher.com/server-charts/stable"
+  chart            = "rancher"
+  namespace        = "cattle-system"
+  create_namespace = true
 
+  depends_on = [
+    kubernetes_ingress_v1.alb_ingress_connect_nginx
+  ]
+
+  set {
+    name = "hostname"
+    value = var.rancher_hostname
+  }
+
+  set {
+    name = "tls"
+    value = "external"
+  }
+
+  set {
+    name = "bootstrapPassword"
+    value = "admin"
+  }
+
+  set {
+    name = "ingress.ingressClassName"
+    value = "nginx"
+  }
+}

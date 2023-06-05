@@ -139,3 +139,14 @@ variable "deploy_cilium" {
   type        = bool
   default     = false
 }
+
+variable "deploy_rancher" {
+  description = "Deploy Rancher flag"
+  type = bool
+  default = false
+}
+
+variable "rancher_hostname" {
+  description = "Rancher Hostname"
+  type = string
+}
