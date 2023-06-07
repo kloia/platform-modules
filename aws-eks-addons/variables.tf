@@ -23,6 +23,12 @@ variable "vpc_id" {
   default     = ""
 }
 
+variable "loadbalancer_name" {
+  description = "Load balancer name "
+  type        = string
+  default     = ""
+}
+
 variable "acm_certificate_arn" {
   description = "ACM Certificate arn for ingress"
   type        = string

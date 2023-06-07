@@ -112,13 +112,16 @@ resource "helm_release" "ingress_nginx" {
 }
 
 resource "kubernetes_ingress_v1" "alb_ingress_connect_nginx" {
+  lifecycle {
+    ignore_changes = [metadata["*cattle*"]]
+  }
   wait_for_load_balancer = true
   metadata {
     name      = "alb-ingress-connect-nginx"
     namespace = "ingress-nginx"
 
     annotations = {
-      "alb.ingress.kubernetes.io/load-balancer-name" = "ms-platform-lb-last"
+      "alb.ingress.kubernetes.io/load-balancer-name" = var.loadbalancer_name
 
       "alb.ingress.kubernetes.io/backend-protocol" = "HTTP"
 
