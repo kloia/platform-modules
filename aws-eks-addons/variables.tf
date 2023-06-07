@@ -29,6 +29,12 @@ variable "loadbalancer_name" {
   default     = ""
 }
 
+variable "argocd_ssl_redirect_annotation" {
+  description = "Argocd ssl redirect configuration "
+  type        = bool
+  default     = false
+}
+
 variable "acm_certificate_arn" {
   description = "ACM Certificate arn for ingress"
   type        = string

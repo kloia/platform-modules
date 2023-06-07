@@ -181,7 +181,7 @@ resource "kubernetes_ingress_v1" "alb_ingress_connect_nginx_gitops" {
       "alb.ingress.kubernetes.io/backend-protocol" = "HTTP"
 
       "alb.ingress.kubernetes.io/certificate-arn" = var.acm_certificate_arn
-
+      "nginx.ingress.kubernetes.io/ssl-redirect" =  var.argocd_ssl_redirect_annotation
       "alb.ingress.kubernetes.io/group.name" = "external"
 
       "alb.ingress.kubernetes.io/healthcheck-path" = "/healthz"
