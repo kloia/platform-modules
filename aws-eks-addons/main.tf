@@ -466,35 +466,35 @@ resource "helm_release" "external-secrets" {
   }
 }
 
-resource "helm_release" "rancher" {
-  count            = var.deploy_rancher ? 1 : 0
-  name             = "rancher"
-  repository       = "https://releases.rancher.com/server-charts/stable"
-  chart            = "rancher"
-  namespace        = "cattle-system"
-  create_namespace = true
-
-  depends_on = [
-    kubernetes_ingress_v1.alb_ingress_connect_nginx
-  ]
-
-  set {
-    name = "hostname"
-    value = var.rancher_hostname
-  }
-
-  set {
-    name = "tls"
-    value = "external"
-  }
-
-  set {
-    name = "bootstrapPassword"
-    value = "admin"
-  }
-
-  set {
-    name = "ingress.ingressClassName"
-    value = "nginx"
-  }
+resource "kubectl_manifest" "argocd_bootstrapper_application" {
+  count      = var.deploy_argocd ? 1 : 0
+  yaml_body  = <<YAML
+apiVersion: argoproj.io/v1alpha1
+kind: Application
+metadata:
+  name: argo-bootstrapper
+  namespace: argocd
+spec:
+  project: default
+  source:
+    repoURL: https://github.com/kloia/ArgoCD-EKS-Bootstrapper.git
+    targetRevision: HEAD
+    path: helm
+    helm:
+      parameters:
+      - name: certManager.enable
+        value: 'false'
+      - name: metricsServer.enable
+        value: 'false'
+      - name: rancher.enable
+        value: ${var.deploy_rancher}
+      - name: rancher.values.hostname
+        value: ${var.rancher_hostname}
+  destination:
+    server: https://kubernetes.default.svc
+    namespace: argocd
+  syncPolicy:
+    automated: {}
+YAML
+  depends_on = [helm_release.argocd]
 }
