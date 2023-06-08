@@ -23,6 +23,18 @@ variable "vpc_id" {
   default     = ""
 }
 
+variable "loadbalancer_name" {
+  description = "Load balancer name "
+  type        = string
+  default     = ""
+}
+
+variable "argocd_ssl_redirect_annotation" {
+  description = "Argocd ssl redirect configuration "
+  type        = bool
+  default     = false
+}
+
 variable "acm_certificate_arn" {
   description = "ACM Certificate arn for ingress"
   type        = string
@@ -138,4 +150,15 @@ variable "deploy_cilium" {
   description = "Deploy Cilium CNI flag"
   type        = bool
   default     = false
+}
+
+variable "deploy_rancher" {
+  description = "Deploy Rancher flag"
+  type = bool
+  default = false
+}
+
+variable "rancher_hostname" {
+  description = "Rancher Hostname"
+  type = string
 }

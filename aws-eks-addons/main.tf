@@ -25,8 +25,12 @@ resource "kubernetes_service_account" "service-account" {
 }
 
 resource "kubectl_manifest" "aws-node-daemonset-patch" {
-  count     = var.deploy_cilium ? 1 : 0
+  #count     = var.deploy_cilium ? 1 : 0
   yaml_body = file("${path.module}/manifests/aws-node-daemonset.yaml")
+
+  lifecycle {
+    ignore_changes = all
+  }
 }
 
 resource "helm_release" "cilium" {
@@ -100,16 +104,24 @@ resource "helm_release" "ingress_nginx" {
     value = "NodePort"
   }
 
+  set {
+    name = "controller.config.use-forwarded-headers"
+    value = "true"
+  }
+
 }
 
 resource "kubernetes_ingress_v1" "alb_ingress_connect_nginx" {
+  lifecycle {
+    ignore_changes = [metadata["*cattle*"]]
+  }
   wait_for_load_balancer = true
   metadata {
     name      = "alb-ingress-connect-nginx"
     namespace = "ingress-nginx"
 
     annotations = {
-      "alb.ingress.kubernetes.io/load-balancer-name" = "ms-platform-lb-last"
+      "alb.ingress.kubernetes.io/load-balancer-name" = var.loadbalancer_name
 
       "alb.ingress.kubernetes.io/backend-protocol" = "HTTP"
 
@@ -169,7 +181,7 @@ resource "kubernetes_ingress_v1" "alb_ingress_connect_nginx_gitops" {
       "alb.ingress.kubernetes.io/backend-protocol" = "HTTP"
 
       "alb.ingress.kubernetes.io/certificate-arn" = var.acm_certificate_arn
-
+      "nginx.ingress.kubernetes.io/ssl-redirect" =  var.argocd_ssl_redirect_annotation
       "alb.ingress.kubernetes.io/group.name" = "external"
 
       "alb.ingress.kubernetes.io/healthcheck-path" = "/healthz"
@@ -454,4 +466,35 @@ resource "helm_release" "external-secrets" {
   }
 }
 
-
+resource "kubectl_manifest" "argocd_bootstrapper_application" {
+  count      = var.deploy_argocd ? 1 : 0
+  yaml_body  = <<YAML
+apiVersion: argoproj.io/v1alpha1
+kind: Application
+metadata:
+  name: argo-bootstrapper
+  namespace: argocd
+spec:
+  project: default
+  source:
+    repoURL: https://github.com/kloia/ArgoCD-EKS-Bootstrapper.git
+    targetRevision: HEAD
+    path: helm
+    helm:
+      parameters:
+      - name: certManager.enable
+        value: 'false'
+      - name: metricsServer.enable
+        value: 'false'
+      - name: rancher.enable
+        value: ${var.deploy_rancher}
+      - name: rancher.values.hostname
+        value: ${var.rancher_hostname}
+  destination:
+    server: https://kubernetes.default.svc
+    namespace: argocd
+  syncPolicy:
+    automated: {}
+YAML
+  depends_on = [helm_release.argocd]
+}
