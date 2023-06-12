@@ -1,6 +1,6 @@
 locals {
   cilium_pod_cidrs = [for cidr in concat([var.cilium_ipam_IPv4CIDR], var.cilium_ipam_IPv4CIDRs) : cidr if cidr != ""]
-  argocd_bootstrapper_helm_parameters = set(concat(var.argocd_bootstrapper_helm_parameters, [
+  argocd_bootstrapper_helm_parameters = toset(concat(var.argocd_bootstrapper_helm_parameters, [
     {
       name  = "rancher.enable"
       value = var.deploy_rancher
