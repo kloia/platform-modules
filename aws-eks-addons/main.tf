@@ -420,47 +420,57 @@ resource "helm_release" "crossplane" {
 
 
 resource "kubectl_manifest" "crossplane_aws_controller" {
-  count      = var.deploy_crossplane ? 1 : 0
-  yaml_body  = <<YAML
-apiVersion: pkg.crossplane.io/v1alpha1
-kind: ControllerConfig
-metadata:
-  name: aws-config
-  annotations:
-    eks.amazonaws.com/role-arn: ${var.crossplane_irsa_arn}
-spec:
-  podSecurityContext:
-    fsGroup: 2000
-YAML
+  count     = var.deploy_crossplane ? 1 : 0
+  yaml_body = yamlencode({
+    "apiVersion" = "pkg.crossplane.io/v1alpha1"
+    "kind"       = "ControllerConfig"
+    "metadata"   = {
+      "annotations" = {
+        "eks.amazonaws.com/role-arn" = var.crossplane_irsa_arn
+      }
+      "name" = "aws-config"
+    }
+    "spec" = {
+      "podSecurityContext" = {
+        "fsGroup" = 2000
+      }
+    }
+  })
   depends_on = [helm_release.crossplane]
 }
 
 resource "kubectl_manifest" "crossplane_aws_provider" {
-  count      = var.deploy_crossplane ? 1 : 0
-  yaml_body  = <<YAML
-apiVersion: pkg.crossplane.io/v1
-kind: Provider
-metadata:
-  name: provider-aws
-spec:
-  package: crossplanecontrib/provider-aws:v0.34.0
-  controllerConfigRef:
-    name: aws-config
-YAML
+  count     = var.deploy_crossplane ? 1 : 0
+  yaml_body = yamlencode({
+    "apiVersion" = "pkg.crossplane.io/v1"
+    "kind"       = "Provider"
+    "metadata"   = {
+      "name" = "provider-aws"
+    }
+    "spec" = {
+      "package"             = "crossplanecontrib/provider-aws:v0.34.0"
+      "controllerConfigRef" = {
+        "name" = "aws-config"
+      }
+    }
+  })
   depends_on = [helm_release.crossplane, kubectl_manifest.crossplane_aws_controller]
 }
 
 resource "kubectl_manifest" "crossplane_aws_provider_config" {
   count     = var.deploy_crossplane ? 1 : 0
-  yaml_body = <<YAML
-apiVersion: aws.crossplane.io/v1beta1
-kind: ProviderConfig
-metadata:
-  name: aws-provider
-spec:
-  credentials:
-    source: InjectedIdentity
-YAML
+  yaml_body = yamlencode({
+    "apiVersion" = "aws.crossplane.io/v1beta1"
+    "kind"       = "ProviderConfig"
+    "metadata"   = {
+      "name" = "aws-provider"
+    }
+    "spec" = {
+      "credentials" = {
+        "source" = "InjectedIdentity"
+      }
+    }
+  })
   depends_on = [
     kubectl_manifest.crossplane_aws_controller,
     kubectl_manifest.crossplane_aws_provider
