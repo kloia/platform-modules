@@ -1,3 +1,7 @@
+locals {
+  cilium_pod_cidrs = [for cidr in concat([var.cilium_ipam_IPv4CIDR], var.cilium_ipam_IPv4CIDRs) : cidr if cidr != ""]
+}
+
 resource "kubernetes_service_account" "service-common-service-account" {
   metadata {
     name      = "service-common"
@@ -45,9 +49,12 @@ resource "helm_release" "cilium" {
     value = var.cilium_ipam_mode
   }
 
-  set {
-    name  = "ipam.operator.clusterPoolIPv4PodCIDRList[0]"
-    value = var.cilium_ipam_IPv4CIDR
+  dynamic "set" {
+    for_each = local.cilium_pod_cidrs
+    content {
+      name  = format("ipam.operator.clusterPoolIPv4PodCIDRList[%d]", index(local.cilium_pod_cidrs, set.key))
+      value = set.key
+    }
   }
 }
 

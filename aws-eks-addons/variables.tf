@@ -150,6 +150,13 @@ variable "cilium_ipam_mode" {
 variable "cilium_ipam_IPv4CIDR" {
   description = "Cilium IPv4 CIDR"
   type        = string
+  default     = ""
+}
+
+variable "cilium_ipam_IPv4CIDRs" {
+  description = "Cilium IPv4 CIDR"
+  type        = list(string)
+  default     = []
 }
 
 variable "deploy_cilium" {
