@@ -52,3 +52,8 @@ output "cluster_name" {
   description = "MSK Cluster name"
   value       = join("", aws_msk_cluster.default.*.cluster_name)
 }
+
+output "bootstrap_brokers_public_sasl_scram" {
+  value       = one(aws_msk_cluster.default[*].bootstrap_brokers_public_sasl_scram)
+  description = "Comma separated list of one or more DNS names (or IP addresses) and SASL SCRAM port pairs for public access to the Kafka cluster using SASL/SCRAM"
+}

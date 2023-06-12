@@ -63,13 +63,74 @@ locals {
       enabled = var.node_exporter_enabled
       port    = 11002
     }
+
   }
+
+    credential = var.client_sasl_scram_enabled ? jsonencode({
+      username = "msk"
+      password = random_password.password[0].result
+    }) : null
 }
 
 data "aws_msk_broker_nodes" "default" {
   count = local.enabled ? 1 : 0
 
   cluster_arn = join("", aws_msk_cluster.default.*.arn)
+}
+
+data "aws_subnets" "private_subnets_with_queue_tag" {
+  filter {
+    name   = "vpc-id"
+    values = [var.vpc_id]
+  }
+  filter {
+    name   = "tag:Name"
+    values = ["${var.subnet_id_names}"] 
+  }
+}
+
+resource "random_password" "password" {
+  count            = local.enabled && var.client_sasl_scram_enabled ? 1 : 0
+  length           = 10
+  special          = false
+}
+
+
+resource "aws_secretsmanager_secret" "sm" {
+  count                   = local.enabled && var.client_sasl_scram_enabled ? 1 : 0
+  name                    = var.secret_name
+  description             = "MSK sasl scram auth secret"
+  recovery_window_in_days = 30
+  kms_key_id              = var.encryption_at_rest_kms_key_arn
+  depends_on  = [random_password.password[0]]
+}
+
+resource "aws_secretsmanager_secret_version" "sm-sv" {
+  count            = local.enabled && var.client_sasl_scram_enabled ? 1 : 0
+  secret_id     = aws_secretsmanager_secret.sm[0].arn
+  secret_string = local.credential
+}
+
+data "aws_iam_policy_document" "sm-policy" {
+  count            = local.enabled && var.client_sasl_scram_enabled ? 1 : 0
+  statement {
+    sid    = "AWSKafkaResourcePolicy"
+    effect = "Allow"
+
+    principals {
+      type        = "Service"
+      identifiers = ["kafka.amazonaws.com"]
+    }
+
+    actions   = ["secretsmanager:getSecretValue"]
+    resources = [aws_secretsmanager_secret.sm[0].arn]
+  }
+}
+
+resource "aws_secretsmanager_secret_policy" "policy" {
+  count            = local.enabled && var.client_sasl_scram_enabled ? 1 : 0
+  secret_arn = aws_secretsmanager_secret.sm[0].arn
+  policy     = data.aws_iam_policy_document.sm-policy[0].json
 }
 
 resource "aws_msk_configuration" "config" {
@@ -88,17 +149,22 @@ resource "aws_msk_cluster" "default" {
   count                  = local.enabled ? 1 : 0
   cluster_name           = var.name
   kafka_version          = var.kafka_version
-  number_of_broker_nodes = var.broker_per_zone * length(var.subnet_ids)
+  number_of_broker_nodes = var.broker_per_zone * length(length(try(data.aws_subnets.private_subnets_with_queue_tag.ids, null)) == 0 ? var.subnet_ids: try(data.aws_subnets.private_subnets_with_queue_tag.ids, null)) 
   enhanced_monitoring    = var.enhanced_monitoring
 
   broker_node_group_info {
     instance_type   = var.broker_instance_type
     #ebs_volume_size = var.broker_volume_size
-    client_subnets  = var.subnet_ids
+    client_subnets  = length(data.aws_subnets.private_subnets_with_queue_tag.ids) == 0 ? var.subnet_ids: try(data.aws_subnets.private_subnets_with_queue_tag.ids, null)
     security_groups = [var.associated_security_group_ids]
     storage_info {
       ebs_storage_info {
         volume_size = var.broker_volume_size
+      }
+    }
+    connectivity_info {
+      public_access {
+        type = var.public_access_enabled ? "SERVICE_PROVIDED_EIPS" : "DISABLED"
       }
     }
   }
@@ -167,7 +233,7 @@ resource "aws_msk_cluster" "default" {
   lifecycle {
     ignore_changes = [
       # Ignore changes to ebs_volume_size in favor of autoscaling policy
-      broker_node_group_info[0].ebs_volume_size,
+      broker_node_group_info[0].storage_info[0].ebs_storage_info[0].volume_size,
     ]
   }
 
@@ -178,7 +244,7 @@ resource "aws_msk_scram_secret_association" "default" {
   count = local.enabled && var.client_sasl_scram_enabled ? 1 : 0
 
   cluster_arn     = aws_msk_cluster.default[0].arn
-  secret_arn_list = var.client_sasl_scram_secret_association_arns
+  secret_arn_list = [aws_secretsmanager_secret.sm[0].arn]
 }
 
 resource "aws_appautoscaling_target" "default" {
