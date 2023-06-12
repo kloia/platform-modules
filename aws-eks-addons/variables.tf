@@ -111,6 +111,12 @@ variable "deploy_aws_loadbalancer" {
   default     = false
 }
 
+variable "deploy_ingress_nginx" {
+  description = "Deploy ingress-nginx itself"
+  type        = bool
+  default     = true
+}
+
 variable "deploy_ingress_nginx_resources" {
   description = "Deploy Ingress Nginx resources"
   type        = bool
