@@ -147,6 +147,7 @@ variable "cilium_ipam_mode" {
   default     = "cluster-pool"
 }
 
+# TODO: Deprecate
 variable "cilium_ipam_IPv4CIDR" {
   description = "Cilium IPv4 CIDR"
   type        = string

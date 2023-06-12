@@ -185,7 +185,9 @@ resource "kubernetes_ingress_v1" "alb_ingress_connect_nginx" {
     }
   }
   depends_on = [
-    helm_release.aws_lb_controller, helm_release.ingress_nginx
+    helm_release.aws_lb_controller,
+    # TODO: faulty dependency if ingress_nginx is not enabled
+    helm_release.ingress_nginx
   ]
 }
 
