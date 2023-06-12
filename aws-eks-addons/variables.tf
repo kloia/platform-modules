@@ -175,3 +175,25 @@ variable "rancher_hostname" {
   description = "Rancher Hostname"
   type = string
 }
+
+variable "argocd_bootstrapper_helm_parameters" {
+  description = <<EOF
+Helm Parameters to override the ArgoCD EKS Bootstrapper Values
+
+Keep in mind, certain parameters like "rancher.enable" and "rancher.values.hostname" will be automatically
+derived from other variables, such as "var.deploy_rancher" and "var.rancher_hostname" respectively.
+Review the plan for conflicts.
+
+EOF
+  type        = list(object({ name = string, value = any }))
+  default     = [
+    {
+      "name"  = "certManager.enable"
+      "value" = "false"
+    },
+    {
+      "name"  = "metricsServer.enable"
+      "value" = "false"
+    },
+  ]
+}

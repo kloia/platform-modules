@@ -1,5 +1,15 @@
 locals {
   cilium_pod_cidrs = [for cidr in concat([var.cilium_ipam_IPv4CIDR], var.cilium_ipam_IPv4CIDRs) : cidr if cidr != ""]
+  argocd_bootstrapper_helm_parameters = set(concat(var.argocd_bootstrapper_helm_parameters, [
+    {
+      name  = "rancher.enable"
+      value = var.deploy_rancher
+    },
+    {
+      name  = "rancher.values.hostname"
+      value = var.rancher_hostname
+    }
+  ]))
 }
 
 resource "kubernetes_service_account" "service-common-service-account" {
@@ -477,33 +487,31 @@ resource "helm_release" "external-secrets" {
 
 resource "kubectl_manifest" "argocd_bootstrapper_application" {
   count      = var.deploy_argocd ? 1 : 0
-  yaml_body  = <<YAML
-apiVersion: argoproj.io/v1alpha1
-kind: Application
-metadata:
-  name: argo-bootstrapper
-  namespace: argocd
-spec:
-  project: default
-  source:
-    repoURL: https://github.com/kloia/ArgoCD-EKS-Bootstrapper.git
-    targetRevision: HEAD
-    path: helm
-    helm:
-      parameters:
-      - name: certManager.enable
-        value: 'false'
-      - name: metricsServer.enable
-        value: 'false'
-      - name: rancher.enable
-        value: ${var.deploy_rancher}
-      - name: rancher.values.hostname
-        value: ${var.rancher_hostname}
-  destination:
-    server: https://kubernetes.default.svc
-    namespace: argocd
-  syncPolicy:
-    automated: {}
-YAML
+  yaml_body  = yamlencode({
+    "apiVersion" = "argoproj.io/v1alpha1"
+    "kind" = "Application"
+    "metadata" = {
+      "name" = "argo-bootstrapper"
+      "namespace" = "argocd"
+    }
+    "spec" = {
+      "destination" = {
+        "namespace" = "argocd"
+        "server" = "https://kubernetes.default.svc"
+      }
+      "project" = "default"
+      "source" = {
+        "helm" = {
+          "parameters" = local.argocd_bootstrapper_helm_parameters
+        }
+        "path" = "helm"
+        "repoURL" = "https://github.com/kloia/ArgoCD-EKS-Bootstrapper.git"
+        "targetRevision" = "HEAD"
+      }
+      "syncPolicy" = {
+        "automated" = {}
+      }
+    }
+  })
   depends_on = [helm_release.argocd]
 }
