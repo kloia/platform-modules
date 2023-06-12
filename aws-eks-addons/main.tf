@@ -52,8 +52,8 @@ resource "helm_release" "cilium" {
   dynamic "set" {
     for_each = local.cilium_pod_cidrs
     content {
-      name  = format("ipam.operator.clusterPoolIPv4PodCIDRList[%d]", index(local.cilium_pod_cidrs, set.key))
-      value = set.key
+      name  = format("ipam.operator.clusterPoolIPv4PodCIDRList[%d]", set.key)
+      value = set.value
     }
   }
 }
