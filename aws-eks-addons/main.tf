@@ -130,7 +130,12 @@ resource "helm_release" "ingress_nginx" {
 
 }
 
+locals {
+  can_connect_alb_to_nginx = var.connect_alb_to_nginx && var.deploy_aws_loadbalancer && var.deploy_ingress_nginx
+}
+
 resource "kubernetes_ingress_v1" "alb_ingress_connect_nginx" {
+  count = local.can_connect_alb_to_nginx ? 1 : 0
   lifecycle {
     ignore_changes = [metadata["*cattle*"]]
   }
@@ -186,7 +191,6 @@ resource "kubernetes_ingress_v1" "alb_ingress_connect_nginx" {
   }
   depends_on = [
     helm_release.aws_lb_controller,
-    # TODO: faulty dependency if ingress_nginx is not enabled
     helm_release.ingress_nginx
   ]
 }
