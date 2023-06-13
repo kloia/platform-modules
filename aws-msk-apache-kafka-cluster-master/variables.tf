@@ -44,10 +44,16 @@ variable "vpc_id" {
 variable "subnet_ids" {
   type        = list(string)
   description = "Subnet IDs for Client Broker"
-#  validation {
-#    condition     = length(var.subnet_ids) > 0
-#    error_message = "The subnet_ids list must have at atleast 1 value."
-#  }
+  validation {
+    condition     = length(var.subnet_ids) > 0
+    error_message = "The subnet_ids list must have at atleast 1 value."
+  }
+}
+
+variable "subnet_id_names" {
+  description = "name of subnet ID's"
+  type = string
+  default = "*"
 }
 
 # Intentionally not deprecated via security_group_inputs.tf since it cannot effectively be replaced via var.additional_security_group_rules.
@@ -213,4 +219,17 @@ variable "tags" {
   type        = map(string)
   default     = {}
   description = "tags for the MSK cluster"
+}
+
+variable "public_access_enabled" {
+  type        = bool
+  default     = false
+  description = "Enable public access to MSK cluster (given that all of the requirements are met)"
+  nullable    = false
+}
+
+variable "secret_name" {
+  type        = string
+  default     = "AmazonMSK_credential"
+  description = "AWS Secret Manager Secret name for MSK client_sasl_scram auth method."
 }
