@@ -1,5 +1,7 @@
 locals {
-  cilium_pod_cidrs = [for cidr in concat([var.cilium_ipam_IPv4CIDR], var.cilium_ipam_IPv4CIDRs) : cidr if cidr != ""]
+  cilium_pod_cidrs                    = [
+    for cidr in concat([var.cilium_ipam_IPv4CIDR], var.cilium_ipam_IPv4CIDRs) :cidr if cidr != ""
+  ]
   argocd_bootstrapper_helm_parameters = toset(concat(var.argocd_bootstrapper_helm_parameters, [
     {
       name  = "rancher.enable"
@@ -14,8 +16,8 @@ locals {
 
 resource "kubernetes_service_account" "service-common-service-account" {
   metadata {
-    name      = "service-common"
-    namespace = "default"
+    name        = "service-common"
+    namespace   = "default"
     annotations = {
       "eks.amazonaws.com/role-arn" = var.service_common_iam_role_arn
     }
@@ -26,7 +28,7 @@ resource "kubernetes_service_account" "service-account" {
   metadata {
     name      = "aws-load-balancer-controller"
     namespace = "kube-system"
-    labels = {
+    labels    = {
       "app.kubernetes.io/name"      = "aws-load-balancer-controller"
       "app.kubernetes.io/component" = "controller"
     }
@@ -124,7 +126,7 @@ resource "helm_release" "ingress_nginx" {
   }
 
   set {
-    name = "controller.config.use-forwarded-headers"
+    name  = "controller.config.use-forwarded-headers"
     value = "true"
   }
 
@@ -206,8 +208,8 @@ resource "kubernetes_ingress_v1" "alb_ingress_connect_nginx_gitops" {
       "alb.ingress.kubernetes.io/backend-protocol" = "HTTP"
 
       "alb.ingress.kubernetes.io/certificate-arn" = var.acm_certificate_arn
-      "nginx.ingress.kubernetes.io/ssl-redirect" =  var.argocd_ssl_redirect_annotation
-      "alb.ingress.kubernetes.io/group.name" = "external"
+      "nginx.ingress.kubernetes.io/ssl-redirect"  = var.argocd_ssl_redirect_annotation
+      "alb.ingress.kubernetes.io/group.name"      = "external"
 
       "alb.ingress.kubernetes.io/healthcheck-path" = "/healthz"
 
@@ -502,26 +504,26 @@ resource "helm_release" "external-secrets" {
 }
 
 resource "kubectl_manifest" "argocd_bootstrapper_application" {
-  count      = var.deploy_argocd ? 1 : 0
-  yaml_body  = yamlencode({
+  count     = var.deploy_argocd ? 1 : 0
+  yaml_body = yamlencode({
     "apiVersion" = "argoproj.io/v1alpha1"
-    "kind" = "Application"
-    "metadata" = {
-      "name" = "argo-bootstrapper"
+    "kind"       = "Application"
+    "metadata"   = {
+      "name"      = "argo-bootstrapper"
       "namespace" = "argocd"
     }
     "spec" = {
       "destination" = {
         "namespace" = "argocd"
-        "server" = "https://kubernetes.default.svc"
+        "server"    = "https://kubernetes.default.svc"
       }
       "project" = "default"
-      "source" = {
+      "source"  = {
         "helm" = {
           "parameters" = local.argocd_bootstrapper_helm_parameters
         }
-        "path" = "helm"
-        "repoURL" = "https://github.com/kloia/ArgoCD-EKS-Bootstrapper.git"
+        "path"           = "helm"
+        "repoURL"        = "https://github.com/kloia/ArgoCD-EKS-Bootstrapper.git"
         "targetRevision" = "HEAD"
       }
       "syncPolicy" = {

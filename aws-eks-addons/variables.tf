@@ -174,13 +174,13 @@ variable "deploy_cilium" {
 
 variable "deploy_rancher" {
   description = "Deploy Rancher flag"
-  type = bool
-  default = false
+  type        = bool
+  default     = false
 }
 
 variable "rancher_hostname" {
   description = "Rancher Hostname"
-  type = string
+  type        = string
 }
 
 variable "argocd_bootstrapper_helm_parameters" {
