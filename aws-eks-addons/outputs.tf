@@ -10,5 +10,6 @@ output "appliedEKSCluster" {
 
 output "load_balancer_hostname" {
   description = "Load balancer Hostname"
-  value = kubernetes_ingress_v1.alb_ingress_connect_nginx.status.0.load_balancer.0.ingress.0.hostname
+  # TODO: This might be invalid after var.connect_alb_to_nginx option
+  value = kubernetes_ingress_v1.alb_ingress_connect_nginx.0.status.0.load_balancer.0.ingress.0.hostname
 }
