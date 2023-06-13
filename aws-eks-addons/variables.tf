@@ -120,7 +120,7 @@ variable "deploy_ingress_nginx" {
 variable "connect_alb_to_nginx" {
   description = "Create an ingress definition routing alb to ingress-nginx"
   type        = bool
-  default     = false
+  default     = true
 }
 
 variable "deploy_ingress_nginx_resources" {
