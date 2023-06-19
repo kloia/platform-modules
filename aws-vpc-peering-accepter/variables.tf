@@ -40,3 +40,12 @@ variable "tags"{
   default = {}
   type = map(string)
 }
+
+variable "requester_peer_info"{
+  description = "Tags for the peering connection"
+  default = []
+  type = list(object({
+    requester_cidr = string
+    peer_id = string
+  }))
+}

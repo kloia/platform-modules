@@ -30,7 +30,7 @@ resource "mongodbatlas_project" "project" {
     for_each = var.teams
 
     content {
-      team_id    = mongodbatlas_teams.team[teams.key].team_id
+      team_id    = mongodbatlas_team.team[teams.key].team_id
       role_names = [teams.value.role]
     }
   }
@@ -126,7 +126,7 @@ resource "mongodbatlas_cluster" "cluster" {
     dynamic "regions_config" {
       for_each = var.replication_specs_region_configs
       content {
-        region_name     = lookup(regions_config.value, "region_name")
+        region_name     = upper(lookup(regions_config.value, "region_name"))
         electable_nodes = lookup(regions_config.value, "electable_nodes")
         priority        = lookup(regions_config.value, "priority")
         read_only_nodes = lookup(regions_config.value, "read_only_nodes")
@@ -178,9 +178,6 @@ resource "mongodbatlas_network_peering" "mongo_peer" {
 data "mongodbatlas_network_containers" "aws_containers" {
   project_id     = data.mongodbatlas_project.project.id
   provider_name  = "AWS"
-  depends_on = [
-    mongodbatlas_cluster.cluster
-  ]
 }
 
 
