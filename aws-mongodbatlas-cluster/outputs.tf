@@ -88,7 +88,7 @@ output "cluster_name" {
 
 output "project_id"{
   description = "Mongoatlas project ID"
-  value = data.mongodbatlas_project.project.id
+  value = var.create_mongodbatlas_project ? mongodbatlas_project.project[0].id : data.mongodbatlas_project.project[0].id
 }
 
 output "mongodbatlas_aws_containers"{

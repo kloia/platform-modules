@@ -16,8 +16,8 @@ locals {
 # ---------------------------------------------------------------------------------------------------------------------
 
 data "mongodbatlas_project" "project" {
+  count  = var.create_mongodbatlas_project ? 0 : 1
   name = var.project_name
-
 }
 
 resource "mongodbatlas_project" "project" {
@@ -61,7 +61,7 @@ resource "random_password" "password" {
 
 resource "mongodbatlas_database_user" "admin" {
 
-  project_id    = data.mongodbatlas_project.project.id
+  project_id    = var.create_mongodbatlas_project ? mongodbatlas_project.project[0].id : data.mongodbatlas_project.project[0].id
   username      = "${var.cluster_name}-admin"
   password = random_password.password.result
   auth_database_name = "admin"
@@ -86,7 +86,7 @@ resource "mongodbatlas_database_user" "admin" {
 resource "mongodbatlas_project_ip_access_list" "whitelists_with_cidr" {
   for_each = var.white_lists_with_cidr
 
-  project_id = data.mongodbatlas_project.project.id
+  project_id = var.create_mongodbatlas_project ? mongodbatlas_project.project[0].id : data.mongodbatlas_project.project[0].id
   comment    = each.key
   cidr_block = each.value
 }
@@ -94,7 +94,7 @@ resource "mongodbatlas_project_ip_access_list" "whitelists_with_cidr" {
 resource "mongodbatlas_project_ip_access_list" "whitelists_with_aws_sg" {
   for_each = var.white_lists_with_security_group
 
-  project_id = data.mongodbatlas_project.project.id
+  project_id = var.create_mongodbatlas_project ? mongodbatlas_project.project[0].id : data.mongodbatlas_project.project[0].id
   comment    = each.key
   aws_security_group = each.value
 }
@@ -105,7 +105,7 @@ resource "mongodbatlas_project_ip_access_list" "whitelists_with_aws_sg" {
 # ---------------------------------------------------------------------------------------------------------------------
 
 resource "mongodbatlas_cluster" "cluster" {
-  project_id                   = data.mongodbatlas_project.project.id
+  project_id                   = var.create_mongodbatlas_project ? mongodbatlas_project.project[0].id : data.mongodbatlas_project.project[0].id
   name                         = var.cluster_name
   disk_size_gb                 = var.disk_size_gb
   num_shards                   = var.num_shards
@@ -148,7 +148,7 @@ resource "mongodbatlas_cluster" "cluster" {
 
 resource "mongodbatlas_encryption_at_rest" "aws_encryption" {
   for_each = var.encryption_at_rest_provider != "" ? var.aws_kms_config : {}
-  project_id = data.mongodbatlas_project.project.id
+  project_id = var.create_mongodbatlas_project ? mongodbatlas_project.project[0].id : data.mongodbatlas_project.project[0].id
 
   aws_kms_config {
     enabled                = true
@@ -167,7 +167,7 @@ resource "mongodbatlas_network_peering" "mongo_peer" {
   for_each = var.vpc_peer
 
   accepter_region_name   = each.value.accepter_region
-  project_id             = data.mongodbatlas_project.project.id
+  project_id             = var.create_mongodbatlas_project ? mongodbatlas_project.project[0].id : data.mongodbatlas_project.project[0].id
   container_id           = lookup(local.network_containers[each.value.atlas_region],"id",null)
   provider_name          = local.cloud_provider
   route_table_cidr_block = each.value.route_table_cidr_block
@@ -176,12 +176,12 @@ resource "mongodbatlas_network_peering" "mongo_peer" {
 }
 
 data "mongodbatlas_network_containers" "aws_containers" {
-  project_id     = data.mongodbatlas_project.project.id
+  project_id     = var.create_mongodbatlas_project ? mongodbatlas_project.project[0].id : data.mongodbatlas_project.project[0].id
   provider_name  = "AWS"
 }
 
 
 resource "mongodbatlas_custom_dns_configuration_cluster_aws" "aws" {
-  project_id    = data.mongodbatlas_project.project.id
+  project_id    = var.create_mongodbatlas_project ? mongodbatlas_project.project[0].id : data.mongodbatlas_project.project[0].id
   enabled = true
 }
