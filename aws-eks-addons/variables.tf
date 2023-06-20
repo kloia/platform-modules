@@ -162,3 +162,15 @@ variable "rancher_hostname" {
   description = "Rancher Hostname"
   type = string
 }
+
+variable "deploy_rancher_istio" {
+  description = "Deploy Ranchers' flavor of Istio flag"
+  type        = bool
+  default     = false
+}
+
+variable "connect_alb_to_istio" {
+  description = "Setup an ALB Ingress to connect public ALB to Istio"
+  type        = bool
+  default     = false
+}

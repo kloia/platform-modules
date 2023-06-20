@@ -1,3 +1,7 @@
+locals {
+  can_connect_alb_to_istio = var.deploy_rancher_istio && var.connect_alb_to_istio
+}
+
 resource "kubernetes_service_account" "service-common-service-account" {
   metadata {
     name      = "service-common"
@@ -112,6 +116,8 @@ resource "helm_release" "ingress_nginx" {
 }
 
 resource "kubernetes_ingress_v1" "alb_ingress_connect_nginx" {
+  # routing alb to istio will disable routing of generic traffic to ingress-nginx
+  count = !local.can_connect_alb_to_istio ? 1 : 0
   lifecycle {
     ignore_changes = [metadata["*cattle*"]]
   }
@@ -468,33 +474,72 @@ resource "helm_release" "external-secrets" {
 
 resource "kubectl_manifest" "argocd_bootstrapper_application" {
   count      = var.deploy_argocd ? 1 : 0
-  yaml_body  = <<YAML
-apiVersion: argoproj.io/v1alpha1
-kind: Application
-metadata:
-  name: argo-bootstrapper
-  namespace: argocd
-spec:
-  project: default
-  source:
-    repoURL: https://github.com/kloia/ArgoCD-EKS-Bootstrapper.git
-    targetRevision: HEAD
-    path: helm
-    helm:
-      parameters:
-      - name: certManager.enable
-        value: 'false'
-      - name: metricsServer.enable
-        value: 'false'
-      - name: rancher.enable
-        value: ${var.deploy_rancher}
-      - name: rancher.values.hostname
-        value: ${var.rancher_hostname}
-  destination:
-    server: https://kubernetes.default.svc
-    namespace: argocd
-  syncPolicy:
-    automated: {}
-YAML
+  yaml_body = yamlencode({
+    apiVersion: "argoproj.io/v1alpha1"
+    kind: "Application"
+    metadata: {
+      name: "argo-bootstrapper"
+      namespace: "argocd"
+    }
+    spec: {
+      project: "default"
+      source: {
+        repoURL: "https://github.com/kloia/ArgoCD-EKS-Bootstrapper.git"
+        targetRevision: "HEAD"
+        path: "helm"
+        helm: {
+          values: yamlencode({
+            certManger: {
+              enable: false
+            }
+            metricsServer: {
+              enable: false
+            }
+            rancher: {
+              enable: var.deploy_rancher
+              values: {
+                hostname: {
+                  value: var.rancher_hostname
+                }
+              }
+            }
+            rancherMonitoringCrd: {
+              enable: var.deploy_rancher_istio
+            }
+            rancherMonitoring: {
+              enable: var.deploy_rancher_istio
+            }
+            rancherIstio: {
+              enable: var.deploy_rancher_istio
+            }
+            connectAlbToIstio: {
+              enable: local.can_connect_alb_to_istio
+              values: {
+                alb: {
+                  "certificate-arn": [
+                    var.acm_certificate_arn
+                  ]
+                }
+              }
+            }
+
+          })
+          parameters: [
+            {
+              name: "connectAlbToIstio.values.spec.rules[0].host"
+              value: var.resful_alb_hostname
+            }
+          ]
+        }
+      }
+      destination: {
+        server: "https://kubernetes.default.svc"
+        namespace: "argocd"
+      }
+      syncPolicy: {
+        automated: {}
+      }
+    }
+  })
   depends_on = [helm_release.argocd]
 }
