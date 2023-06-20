@@ -39,3 +39,8 @@ output "application_password" {
   description = "AmazonMQ application user password"
   sensitive   = true
 }
+
+output "endpoints" {
+  value       = aws_mq_broker.default[0].instances.0.endpoints
+  description = "Endpoints of the MQ instances"
+}
