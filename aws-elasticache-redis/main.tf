@@ -95,7 +95,7 @@ data "aws_subnet_ids" "private_subnets_with_cache_tag" {
 
 resource "aws_elasticache_subnet_group" "redis" {
   name        = var.global_replication_group_id == null ? "${var.name_prefix}-redis-sg" : "${var.name_prefix}-redis-sg-replica"
-  subnet_ids  = var.data.aws_subnet_ids.private_subnets_with_cache_tag.ids
+  subnet_ids  = data.aws_subnet_ids.private_subnets_with_cache_tag.ids
   description = var.description
 
   tags = var.tags
