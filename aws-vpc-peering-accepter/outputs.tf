@@ -17,3 +17,7 @@ output "accepter_public_route_table_ids" {
   description = "The eks route table IDs of accepter VPC route tables"
   value = var.accepter_public_route_table_ids
 }
+
+output "routes_with_requester_peer_info" {
+  value = local.routes
+}
