@@ -26,11 +26,6 @@ variable "subnet_id_names" {
   default = "*"
 }
 
-variable "subnet_ids" {
-  type        = list(string)
-  description = "List of VPC Subnet IDs for the cache subnet group."
-}
-
 variable "vpc_id" {
   type        = string
   description = "VPC Id to associate with Redis ElastiCache."
