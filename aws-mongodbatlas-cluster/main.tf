@@ -126,7 +126,7 @@ resource "mongodbatlas_cluster" "cluster" {
     dynamic "regions_config" {
       for_each = var.replication_specs_region_configs
       content {
-        region_name     = upper(lookup(regions_config.value, "region_name"))
+        region_name     = lookup(regions_config.value, "region_name")
         electable_nodes = lookup(regions_config.value, "electable_nodes")
         priority        = lookup(regions_config.value, "priority")
         read_only_nodes = lookup(regions_config.value, "read_only_nodes")
