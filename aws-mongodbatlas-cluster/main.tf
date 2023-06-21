@@ -178,6 +178,8 @@ resource "mongodbatlas_network_peering" "mongo_peer" {
 data "mongodbatlas_network_containers" "aws_containers" {
   project_id     = var.create_mongodbatlas_project ? mongodbatlas_project.project[0].id : data.mongodbatlas_project.project[0].id
   provider_name  = "AWS"
+
+  depends_on = [ mongodbatlas_cluster.cluster ]
 }
 
 
