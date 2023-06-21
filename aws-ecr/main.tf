@@ -1,9 +1,8 @@
 data "aws_caller_identity" "current" {}
 
-# aws_ecr_repository creates the aws_ecr_repository resource
 resource "aws_ecr_repository" "this" {
   for_each = toset(var.ecr_repo_names) 
-  #count = var.create ? 1 : 0 
+
   name  = each.value
 
   image_tag_mutability = var.image_tag_mutability
@@ -15,12 +14,9 @@ resource "aws_ecr_repository" "this" {
   tags = var.tags
 }
 
- #ecs_ecr_read_perms defines the regular read and login perms for principals defined in var.allowed_read_principals
 data "aws_iam_policy_document" "ecs_ecr_read_perms" {
-  count = var.create ? 1 : 0
-
   statement {
-    sid = "ECRREad"
+    sid = "ECRRead"
 
     effect = "Allow"
 
@@ -47,12 +43,33 @@ data "aws_iam_policy_document" "ecs_ecr_read_perms" {
   }
 }
 
-# ecr_read_and_write_perms defines the ecr_read_and_write_perms for principals defined in var.allowed_write_principals
 data "aws_iam_policy_document" "ecr_read_and_write_perms" {
-  count = var.create ? 1 : 0
+  statement {
+    sid = "ECRRead"
 
-  # The previously created ecs_ecr_read_perms will be merged into this document.
-  source_json = data.aws_iam_policy_document.ecs_ecr_read_perms[0].json
+    effect = "Allow"
+
+    actions = [
+      "ecr:BatchCheckLayerAvailability",
+      "ecr:GetAuthorizationToken",
+      "ecr:GetDownloadUrlForLayer",
+      "ecr:GetRepositoryPolicy",
+      "ecr:DescribeRepositories",
+      "ecr:ListImages",
+      "ecr:DescribeImages",
+      "ecr:BatchGetImage",
+    ]
+
+    principals {
+      identifiers = var.allowed_read_principals
+      type        = "AWS"
+    }
+    condition  {
+      test     = "StringLike"
+      variable = "aws:PrincipalOrgID"
+      values   = [var.organization_id]
+    }
+  }
 
   statement {
     sid = "ECRWrite"
@@ -85,17 +102,13 @@ data "aws_iam_policy_document" "ecr_read_and_write_perms" {
   }
 }
 
-# aws_ecr_repository_policy defines the policy for the ECR repository
-# when var.allowed_write_principals contains no principals, only the data.aws_iam_policy_document.ecs_ecr_read_perms.json will
-# be used to populate the iam policy.
 resource "aws_ecr_repository_policy" "this" {
-  #count      = var.create ? 1 : 0
   for_each = toset(var.ecr_repo_names) 
+
   repository = each.value
 
-  policy = length(var.allowed_write_principals) > 0 ? data.aws_iam_policy_document.ecr_read_and_write_perms[0].json : data.aws_iam_policy_document.ecs_ecr_read_perms[0].json
+  policy = length(var.allowed_write_principals) > 0 ? data.aws_iam_policy_document.ecr_read_and_write_perms.json : data.aws_iam_policy_document.ecs_ecr_read_perms.json
 }
-
 
 resource "aws_ecr_replication_configuration" "example" {
   replication_configuration {
