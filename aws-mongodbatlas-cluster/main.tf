@@ -147,7 +147,7 @@ resource "mongodbatlas_cluster" "cluster" {
 
 
 resource "mongodbatlas_encryption_at_rest" "aws_encryption" {
-  for_each = var.encryption_at_rest_provider != "" ? var.aws_kms_config : {}
+  count = var.encryption_at_rest_provider != "" ? 1 : 0
   project_id = var.create_mongodbatlas_project ? mongodbatlas_project.project[0].id : data.mongodbatlas_project.project[0].id
 
   aws_kms_config {
