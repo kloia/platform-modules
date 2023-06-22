@@ -99,8 +99,8 @@ output "vpc_peering_info_primary" {
   value = [ 
     for k, v  in local.network_containers :
     {
-      cidr = v.atlas_cidr_block
-      id = length([ for p in mongodbatlas_network_peering.mongo_peer : p.connection_id if p.container_id == v.id && p.accepter_region_name == var.region]) > 0 ? element([ for p in mongodbatlas_network_peering.mongo_peer : p.connection_id if p.container_id == v.id && p.accepter_region_name == var.region],0) : ""
+      requester_cidr = v.atlas_cidr_block
+      peer_id = length([ for p in mongodbatlas_network_peering.mongo_peer : p.connection_id if p.container_id == v.id && p.accepter_region_name == var.region]) > 0 ? element([ for p in mongodbatlas_network_peering.mongo_peer : p.connection_id if p.container_id == v.id && p.accepter_region_name == var.region],0) : ""
     }
     if k == var.region
 ]
@@ -111,8 +111,8 @@ output "vpc_peering_info_secondary" {
   value = [
     for k, v  in local.network_containers :  
     {
-      cidr = v.atlas_cidr_block
-      id = length([ for p in mongodbatlas_network_peering.mongo_peer : p.connection_id if p.container_id == v.id && p.accepter_region_name != var.region]) > 0 ? element([ for p in mongodbatlas_network_peering.mongo_peer : p.connection_id if p.container_id == v.id && p.accepter_region_name != var.region],0) : ""
+      requester_cidr = v.atlas_cidr_block
+      peer_id = length([ for p in mongodbatlas_network_peering.mongo_peer : p.connection_id if p.container_id == v.id && p.accepter_region_name != var.region]) > 0 ? element([ for p in mongodbatlas_network_peering.mongo_peer : p.connection_id if p.container_id == v.id && p.accepter_region_name != var.region],0) : ""
     }
     if k != var.region
     ]
