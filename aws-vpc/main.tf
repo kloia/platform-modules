@@ -327,7 +327,8 @@ resource "aws_subnet" "private" {
     },
     var.tags,
     var.private_subnet_tags,
-  )
+    try(var.private_subnets[count.index].additional_tags, {})
+  ) 
 }
 
 
