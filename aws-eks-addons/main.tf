@@ -1,5 +1,7 @@
 locals {
-  can_connect_alb_to_istio = var.deploy_rancher_istio && var.connect_alb_to_istio
+  can_connect_alb_to_nginx = var.deploy_aws_loadbalancer && (length(var.connect_hostnames_from_alb_to_nginx) > 0)
+  can_connect_alb_to_istio = var.deploy_aws_loadbalancer && var.deploy_rancher_istio && (length(var.connect_hostnames_from_alb_to_istio) > 0)
+  can_connect_nginx_to_argocd = var.deploy_aws_loadbalancer && var.deploy_argocd
 }
 
 resource "kubernetes_service_account" "service-common-service-account" {
@@ -95,6 +97,7 @@ resource "helm_release" "aws_lb_controller" {
     value = var.cluster_name
   }
 }
+
 resource "helm_release" "ingress_nginx" {
   name             = "ingress-nginx"
   repository       = "https://kubernetes.github.io/ingress-nginx"
@@ -116,54 +119,42 @@ resource "helm_release" "ingress_nginx" {
 }
 
 resource "kubernetes_ingress_v1" "alb_ingress_connect_nginx" {
-  # routing alb to istio will disable routing of generic traffic to ingress-nginx
-  count = !local.can_connect_alb_to_istio ? 1 : 0
+  count = local.can_connect_alb_to_nginx ? 1 : 0
   lifecycle {
     ignore_changes = [metadata["*cattle*"]]
   }
   wait_for_load_balancer = true
   metadata {
-    name      = "alb-ingress-connect-nginx"
+    name = var.connect_hostnames_from_alb_ing_prefix ? "${var.connect_hostnames_from_alb_ing_prefix}-nginx" : "ing-nginx"
     namespace = "ingress-nginx"
 
     annotations = {
       "alb.ingress.kubernetes.io/load-balancer-name" = var.loadbalancer_name
-
-      "alb.ingress.kubernetes.io/backend-protocol" = "HTTP"
-
+      "alb.ingress.kubernetes.io/certificate-arn" = var.acm_certificate_arn
       "alb.ingress.kubernetes.io/scheme" = "internet-facing"
-
       "alb.ingress.kubernetes.io/target-type" = "instance"
-
-      "alb.ingress.kubernetes.io/certificate-arn" = var.acm_certificate_arn
-
       "alb.ingress.kubernetes.io/group.name" = "external"
-
-      "alb.ingress.kubernetes.io/healthcheck-path" = "/healhtz"
-
-      "alb.ingress.kubernetes.io/listen-ports" = "[{\"HTTPS\": 443}]"
-
+      "alb.ingress.kubernetes.io/ssl-redirect" = "443"
+      "alb.ingress.kubernetes.io/listen-ports" = "[{\"HTTP\": 80}, {\"HTTPS\": 443}]"
     }
-
   }
 
   spec {
     ingress_class_name = "alb"
-
-    rule {
-      host = var.resful_alb_hostname
-
-      http {
-        path {
-          path      = "/"
-          path_type = "Prefix"
-
-          backend {
-            service {
-              name = "ingress-nginx-controller"
-
-              port {
-                number = 80
+    dynamic "rule" {
+      for_each = toset(var.connect_hostnames_from_alb_to_nginx)
+      content {
+        host = rule.key
+        http {
+          path {
+            path      = "/"
+            path_type = "Prefix"
+            backend {
+              service {
+                name = "ingress-nginx-controller"
+                port {
+                  number = 80
+                }
               }
             }
           }
@@ -176,46 +167,43 @@ resource "kubernetes_ingress_v1" "alb_ingress_connect_nginx" {
   ]
 }
 
-resource "kubernetes_ingress_v1" "alb_ingress_connect_nginx_gitops" {
-  count                  = var.deploy_ingress_nginx_resources ? 1 : 0
+resource "kubernetes_ingress_v1" "alb_ingress_connect_istio" {
+  count = local.can_connect_alb_to_istio ? 1 : 0
+  lifecycle {
+    ignore_changes = [metadata["*cattle*"]]
+  }
   wait_for_load_balancer = true
   metadata {
-    name      = "alb-ingress-connect-nginx-gitops"
-    namespace = "ingress-nginx"
+    name = var.connect_hostnames_from_alb_ing_prefix ? "${var.connect_hostnames_from_alb_ing_prefix}-istio" : "ing-istio"
+    namespace = "istio-system"
 
     annotations = {
-      "alb.ingress.kubernetes.io/backend-protocol" = "HTTP"
-
+      "alb.ingress.kubernetes.io/load-balancer-name" = var.loadbalancer_name
       "alb.ingress.kubernetes.io/certificate-arn" = var.acm_certificate_arn
-      "nginx.ingress.kubernetes.io/ssl-redirect" =  var.argocd_ssl_redirect_annotation
+      "alb.ingress.kubernetes.io/scheme" = "internet-facing"
+      "alb.ingress.kubernetes.io/target-type" = "instance"
       "alb.ingress.kubernetes.io/group.name" = "external"
-
-      "alb.ingress.kubernetes.io/healthcheck-path" = "/healthz"
-
-      "alb.ingress.kubernetes.io/listen-ports" = "[{\"HTTPS\": 443}]"
-
-      "kubectl.kubernetes.io/last-applied-configuration" = ""
+      "alb.ingress.kubernetes.io/ssl-redirect" = "443"
+      "alb.ingress.kubernetes.io/listen-ports" = "[{\"HTTP\": 80}, {\"HTTPS\": 443}]"
     }
-
   }
 
   spec {
     ingress_class_name = "alb"
-
-    rule {
-      host = var.argocd_ingress_host
-
-      http {
-        path {
-          path      = "/"
-          path_type = "Prefix"
-
-          backend {
-            service {
-              name = "ingress-nginx-controller"
-
-              port {
-                number = 80
+    dynamic "rule" {
+      for_each = toset(var.connect_hostnames_from_alb_to_istio)
+      content {
+        host = rule.key
+        http {
+          path {
+            path      = "/"
+            path_type = "Prefix"
+            backend {
+              service {
+                name = "istio-ingressgateway"
+                port {
+                  number = 80
+                }
               }
             }
           }
@@ -224,61 +212,7 @@ resource "kubernetes_ingress_v1" "alb_ingress_connect_nginx_gitops" {
     }
   }
   depends_on = [
-    helm_release.aws_lb_controller, helm_release.ingress_nginx
-  ]
-}
-
-resource "kubernetes_ingress_v1" "alb_ingress_connect_nginx_grpc" {
-  count                  = var.deploy_ingress_nginx_resources ? 1 : 0
-  wait_for_load_balancer = true
-  metadata {
-    name      = "alb-ingress-connect-nginx-grpc"
-    namespace = "ingress-nginx"
-
-    annotations = {
-      "alb.ingress.kubernetes.io/backend-protocol" = "HTTPS"
-
-      "alb.ingress.kubernetes.io/backend-protocol-version" = "HTTP2"
-
-      "alb.ingress.kubernetes.io/certificate-arn" = var.acm_certificate_arn
-
-      "alb.ingress.kubernetes.io/group.name" = "external"
-
-      "alb.ingress.kubernetes.io/healthcheck-path" = "/healthz"
-
-      "alb.ingress.kubernetes.io/listen-ports" = "[{\"HTTPS\": 443}]"
-
-
-    }
-
-  }
-
-  spec {
-    ingress_class_name = "alb"
-
-    rule {
-      host = var.grpc_alb_hostname
-
-      http {
-        path {
-          path      = "/"
-          path_type = "Prefix"
-
-          backend {
-            service {
-              name = "ingress-nginx-controller"
-
-              port {
-                number = 443
-              }
-            }
-          }
-        }
-      }
-    }
-  }
-  depends_on = [
-    helm_release.aws_lb_controller, helm_release.ingress_nginx
+    helm_release.aws_lb_controller
   ]
 }
 
@@ -394,6 +328,42 @@ resource "helm_release" "argocd" {
     kubernetes_ingress_v1.alb_ingress_connect_nginx
   ]
 
+}
+
+# TODO: implement grpc
+resource "kubernetes_ingress_v1" "nginx_ingress_connect_argocd" {
+  count = local.can_connect_nginx_to_argocd ? 1 : 0
+  lifecycle {
+    ignore_changes = [metadata["*cattle*"]]
+  }
+  metadata {
+    name = "argocd-server"
+    namespace = "argocd"
+  }
+  spec {
+    ingress_class_name = "nginx"
+    rule {
+      host = var.argocd_ingress_host
+      http {
+        path {
+          path = "/"
+          path_type = "Prefix"
+          backend {
+            service {
+              name = "argocd-server"
+              port {
+                number = 443
+              }
+            }
+          }
+        }
+      }
+    }
+  }
+  depends_on = [
+    helm_release.ingress_nginx,
+    helm_release.argocd,
+  ]
 }
 
 resource "helm_release" "crossplane" {
@@ -512,24 +482,7 @@ resource "kubectl_manifest" "argocd_bootstrapper_application" {
             rancherIstio: {
               enable: var.deploy_rancher_istio
             }
-            connectAlbToIstio: {
-              enable: local.can_connect_alb_to_istio
-              values: {
-                alb: {
-                  "certificate-arn": [
-                    var.acm_certificate_arn
-                  ]
-                }
-              }
-            }
-
           })
-          parameters: [
-            {
-              name: "connectAlbToIstio.values.spec.rules[0].host"
-              value: var.resful_alb_hostname
-            }
-          ]
         }
       }
       destination: {
