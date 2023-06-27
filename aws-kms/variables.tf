@@ -189,3 +189,10 @@ variable "grants" {
   type        = any
   default     = {}
 }
+
+
+variable "create_public_key" {
+  description = "Determines whether output public key of kms"
+  type        = bool
+  default     = false
+}

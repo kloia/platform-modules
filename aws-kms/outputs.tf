@@ -49,3 +49,12 @@ output "grants" {
   description = "A map of grants created and their attributes"
   value       = aws_kms_grant.this
 }
+
+################################################################################
+# Public Key
+################################################################################
+
+output "public_key" {
+  value = try(data.aws_kms_public_key.by_id, null)
+  sensitive = true
+}
