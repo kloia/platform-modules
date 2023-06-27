@@ -21,6 +21,15 @@ resource "aws_kms_key" "this" {
   tags = var.tags
 }
 
+
+# for public key output
+
+data "aws_kms_public_key" "by_id" {
+  count = var.create && !var.create_external && var.create_public_key ? 1 : 0
+  key_id = "${aws_kms_key.this[0].id}"
+}
+
+
 ################################################################################
 # External Key
 ################################################################################
