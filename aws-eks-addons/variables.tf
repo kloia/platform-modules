@@ -95,24 +95,8 @@ variable "assume_role_arn" {
   type        = string
 }
 
-variable "resful_alb_hostname" {
-  description = "REST alb hostname"
-  type        = string
-}
-
-variable "grpc_alb_hostname" {
-  description = "GRPC alb hostname"
-  type        = string
-}
-
 variable "deploy_aws_loadbalancer" {
   description = "Deploy AWS Loadbalancer flag"
-  type        = bool
-  default     = false
-}
-
-variable "deploy_ingress_nginx_resources" {
-  description = "Deploy Ingress Nginx resources"
   type        = bool
   default     = false
 }
@@ -135,23 +119,6 @@ variable "deploy_external_secrets" {
   default     = false
 }
 
-variable "cilium_ipam_mode" {
-  description = "IPAM mode of cilium"
-  type        = string
-  default     = "cluster-pool"
-}
-
-variable "cilium_ipam_IPv4CIDR" {
-  description = "Cilium IPv4 CIDR"
-  type        = string
-}
-
-variable "deploy_cilium" {
-  description = "Deploy Cilium CNI flag"
-  type        = bool
-  default     = false
-}
-
 variable "deploy_rancher" {
   description = "Deploy Rancher flag"
   type = bool
@@ -169,11 +136,25 @@ variable "deploy_rancher_istio" {
   default     = false
 }
 
-variable "connect_alb_to_istio" {
-  description = "Setup an ALB Ingress to connect public ALB to Istio"
-  type        = bool
-  default     = false
+
+variable "connect_hostnames_from_alb_ing_prefix" {
+  description = "Prefix to give ingress names when connecting alb hostnames"
+  type = string
+  default = "ing-{servicename}"
 }
+
+variable "connect_hostnames_from_alb_to_nginx" {
+  description = "Incoming ALB connections with the matching hostnames will be handled internally by nginx"
+  type        = list(string)
+  default     = []
+}
+
+variable "connect_hostnames_from_alb_to_istio" {
+  description = "Incoming ALB connections with the matching hostnames will be handled internally by istio"
+  type        = list(string)
+  default     = []
+}
+
 
 
 # karpenter
@@ -292,4 +273,3 @@ variable "karpenter_node_template_throughput" {
   default = "125"
   type = string
 }
-
