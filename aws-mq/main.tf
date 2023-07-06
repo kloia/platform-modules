@@ -63,7 +63,7 @@ resource "aws_mq_broker" "default" {
   auto_minor_version_upgrade = var.auto_minor_version_upgrade
   apply_immediately          = var.apply_immediately
   publicly_accessible        = var.publicly_accessible
-  subnet_ids                 = data.aws_subnets.private_subnets_with_queue_tag.ids
+  subnet_ids                 = [data.aws_subnets.private_subnets_with_queue_tag.ids[0], data.aws_subnets.private_subnets_with_queue_tag.ids[1]]
   tags                       = var.tags
 
   security_groups = local.broker_security_groups
