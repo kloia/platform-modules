@@ -153,3 +153,122 @@ variable "connect_hostnames_from_alb_to_istio" {
   type        = list(string)
   default     = []
 }
+
+
+
+# karpenter
+
+variable "deploy_karpenter" {
+  description = "Deploy controller flag"
+  default = false
+  type = bool
+}
+
+variable "oidc_provider_arn" {
+  description = "oidc provider arn"
+  default = ""
+  type = string
+}
+
+
+variable "eks_managed_node_groups_iam_role_arn" {
+  description = "iam role arn"
+  default = ""
+  type = string
+}
+
+variable "stateful_capacity_types" {
+  description = "instance types"
+  default = "[\"on-demand\"]"
+  type = string
+}
+
+variable "stateless_capacity_types" {
+  description = "instance types"
+  default = "[\"spot\"]"
+  type = string
+}
+
+variable "stateful_instance_types" {
+  description = "instance types"
+  default = "[\"c5n.xlarge\", \"c5n.2xlarge\", \"c5n.4xlarge\",\"c5n.9xlarge\"]"
+  type = string
+}
+
+variable "stateless_instance_types" {
+  description = "instance types"
+  default = "[\"c5n.xlarge\", \"c5n.2xlarge\", \"c5n.4xlarge\",\"c5n.9xlarge\"]"
+  type = string
+}
+
+variable "stateful_instance_zones" {
+  description = "instance types"
+  default = "[\"eu-west-1a\"]"
+  type = string
+}
+
+variable "stateless_instance_zones" {
+  description = "instance types"
+  default = "[\"eu-west-1a\"]"
+  type = string
+}
+
+variable "stateful_arch_types" {
+  description = "instance types"
+  default = "[\"amd64\"]"
+  type = string
+}
+
+variable "stateless_arch_types" {
+  description = "instance types"
+  default = "[\"amd64\"]"
+  type = string
+}
+
+variable "stateful_application_toleration_value" {
+  description = "stateful application tolerance value for scheduling"
+  default = "stateful-application"
+  type = string
+}
+
+variable "stateful_total_cpu_limit" {
+  description = "cpu limit"
+  default = "400"
+  type = string
+}
+
+variable "stateless_total_cpu_limit" {
+  description = "cpu limit"
+  default = "400"
+  type = string
+}
+
+variable "karpenter_node_template_volume_size" {
+  description = "Node Volume Size"
+  default = "40Gi"
+  type = string
+}
+
+variable "karpenter_node_template_volume_type" {
+  description = "Node Volume Type"
+  default = "gp3"
+  type = string
+}
+
+variable "karpenter_node_template_volume_iops" {
+  description = "Node Volume IOPS"
+  default = "3000"
+  type = string
+}
+
+variable "karpenter_node_template_delete_on_termination" {
+  description = "Termination deletion policy check"
+  default = true
+  type = bool
+}
+
+variable "karpenter_node_template_throughput" {
+  description = "Node Throughput"
+  default = "125"
+  type = string
+}

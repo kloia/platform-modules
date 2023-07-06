@@ -469,3 +469,208 @@ resource "kubectl_manifest" "argocd_bootstrapper_application" {
   })
   depends_on = [helm_release.argocd]
 }
+
+
+
+# Karpenter Configuration
+
+provider "aws" {
+  region = "us-east-1"
+  alias = "virginia"
+}
+
+data "aws_ecrpublic_authorization_token" "token" {
+  provider = aws.virginia
+}
+
+module "karpenter" {
+  count = var.deploy_karpenter ? 1 : 0
+  source  = "terraform-aws-modules/eks/aws//modules/karpenter"
+  version = "18.31.0"
+
+  cluster_name = var.cluster_name
+
+  irsa_oidc_provider_arn          = var.oidc_provider_arn
+  irsa_namespace_service_accounts = ["karpenter:karpenter"]
+
+  # Since Karpenter is running on an EKS Managed Node group,
+  # we can re-use the role that was created for the node group
+  create_iam_role = false
+  iam_role_arn    = var.eks_managed_node_groups_iam_role_arn
+}
+
+resource "helm_release" "karpenter" {
+  depends_on = [
+    module.karpenter[0]
+  ]
+  count = var.deploy_karpenter ? 1 : 0
+
+  namespace        = "karpenter"
+  create_namespace = true
+
+  name                = "karpenter"
+  repository          = "oci://public.ecr.aws/karpenter"
+  repository_username = data.aws_ecrpublic_authorization_token.token.user_name
+  repository_password = data.aws_ecrpublic_authorization_token.token.password
+  chart               = "karpenter"
+  version             = "v0.28.1"
+
+  set {
+    name  = "settings.aws.clusterName"
+    value = var.cluster_name
+  }
+
+  set {
+    name  = "settings.aws.clusterEndpoint"
+    value = var.cluster_endpoint
+  }
+
+  set {
+    name  = "serviceAccount.annotations.eks\\.amazonaws\\.com/role-arn"
+    value = module.karpenter[0].irsa_arn
+  }
+
+  set {
+    name  = "settings.aws.defaultInstanceProfile"
+    value = module.karpenter[0].instance_profile_name
+  }
+
+  set {
+    name  = "settings.aws.interruptionQueueName"
+    value = module.karpenter[0].queue_name
+  }
+
+  set {
+    name = "tolerations[0].effect"
+    value = "NoSchedule"
+  }
+
+  set {
+    name = "tolerations[0].key"
+    value = "workload"
+  }
+
+  set {
+    name = "tolerations[0].operator"
+    value = "Equal"
+  }
+
+  set {
+    name = "tolerations[0].value"
+    value = "system"
+  }
+
+  set {
+    name = "hostNetwork"
+    value = true
+  }
+
+}
+
+resource "kubectl_manifest" "karpenter_stateful_provisioner" {
+  count = var.deploy_karpenter ? 1 : 0
+  yaml_body = <<-YAML
+    apiVersion: karpenter.sh/v1alpha5
+    kind: Provisioner
+    metadata:
+      name: stateful-application
+    spec:
+      requirements:
+        - key: karpenter.sh/capacity-type
+          operator: In
+          values: ${var.stateful_capacity_types}
+        - key: node.kubernetes.io/instance-type
+          operator: In
+          values: ${var.stateful_instance_types}
+        - key: "topology.kubernetes.io/zone"
+          operator: In
+          values: ${var.stateful_instance_zones}
+        - key: "kubernetes.io/arch"
+          operator: In
+          values: ${var.stateful_arch_types}
+      taints:
+      - effect: NoSchedule
+        key: workload
+        value: ${var.stateful_application_toleration_value}
+      limits:
+        resources:
+          cpu: ${var.stateful_total_cpu_limit}
+      providerRef:
+        name: default
+      consolidation:
+        enabled: false
+  YAML
+
+  depends_on = [
+    helm_release.karpenter[0]
+  ]
+}
+
+
+# there is no taint necessary for stateless applicatinos (system workloads will be scheduled at default eks node group(it will have system workload taint ))
+resource "kubectl_manifest" "karpenter_stateless_provisioner" {
+  count = var.deploy_karpenter ? 1 : 0 
+  yaml_body = <<-YAML
+    apiVersion: karpenter.sh/v1alpha5
+    kind: Provisioner
+    metadata:
+      name: stateless-provisioner
+    spec:
+      requirements:
+        - key: karpenter.sh/capacity-type
+          operator: In
+          values: ${var.stateless_capacity_types}
+        - key: node.kubernetes.io/instance-type
+          operator: In
+          values: ${var.stateless_instance_types}
+        - key: "topology.kubernetes.io/zone"
+          operator: In
+          values: ${var.stateless_instance_zones}
+        - key: "kubernetes.io/arch"
+          operator: In
+          values: ${var.stateless_arch_types}
+      limits:
+        resources:
+          cpu: ${var.stateless_total_cpu_limit}
+      providerRef:
+        name: default
+      consolidation:
+        enabled: true
+  YAML
+
+  depends_on = [
+    helm_release.karpenter[0]
+  ]
+}
+
+
+
+resource "kubectl_manifest" "karpenter_node_template" {
+  count = var.deploy_karpenter ? 1 : 0
+  yaml_body = <<-YAML
+    apiVersion: karpenter.k8s.aws/v1alpha1
+    kind: AWSNodeTemplate
+    metadata:
+      name: default
+    spec:
+      blockDeviceMappings:
+        - deviceName: /dev/xvda
+          ebs:
+            volumeSize: ${var.karpenter_node_template_volume_size}
+            volumeType: ${var.karpenter_node_template_volume_type}
+            iops: ${var.karpenter_node_template_volume_iops}
+            deleteOnTermination: ${var.karpenter_node_template_delete_on_termination}
+            throughput: ${var.karpenter_node_template_throughput}
+
+      subnetSelector:
+        karpenter.sh/discovery: "true"
+      securityGroupSelector:
+        karpenter.sh/discovery: ${var.cluster_name}
+      tags:
+        karpenter.sh/discovery: ${var.cluster_name}
+  YAML
+
+  depends_on = [
+    helm_release.karpenter[0]
+  ]
+}
