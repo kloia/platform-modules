@@ -98,7 +98,7 @@ resource "kubernetes_ingress_v1" "alb_ingress_connect_nginx" {
   }
   wait_for_load_balancer = true
   metadata {
-    name = var.connect_hostnames_from_alb_ing_prefix ? "${var.connect_hostnames_from_alb_ing_prefix}-nginx" : "ing-nginx"
+    name = var.connect_hostnames_from_alb_ing_prefix != "" ? "${var.connect_hostnames_from_alb_ing_prefix}-nginx" : "ing-nginx"
     namespace = "ingress-nginx"
 
     annotations = {
@@ -147,7 +147,7 @@ resource "kubernetes_ingress_v1" "alb_ingress_connect_istio" {
   }
   wait_for_load_balancer = true
   metadata {
-    name = var.connect_hostnames_from_alb_ing_prefix ? "${var.connect_hostnames_from_alb_ing_prefix}-istio" : "ing-istio"
+    name = var.connect_hostnames_from_alb_ing_prefix != "" ? "${var.connect_hostnames_from_alb_ing_prefix}-istio" : "ing-istio"
     namespace = "istio-system"
 
     annotations = {
