@@ -303,42 +303,6 @@ resource "helm_release" "argocd" {
 
 }
 
-# TODO: implement grpc
-resource "kubernetes_ingress_v1" "nginx_ingress_connect_argocd" {
-  count = local.can_connect_nginx_to_argocd ? 1 : 0
-  lifecycle {
-    ignore_changes = [metadata["*cattle*"]]
-  }
-  metadata {
-    name = "argocd-server"
-    namespace = "argocd"
-  }
-  spec {
-    ingress_class_name = "nginx"
-    rule {
-      host = var.argocd_ingress_host
-      http {
-        path {
-          path = "/"
-          path_type = "Prefix"
-          backend {
-            service {
-              name = "argocd-server"
-              port {
-                number = 443
-              }
-            }
-          }
-        }
-      }
-    }
-  }
-  depends_on = [
-    helm_release.ingress_nginx,
-    helm_release.argocd,
-  ]
-}
-
 resource "helm_release" "crossplane" {
   count            = var.deploy_crossplane ? 1 : 0
   name             = "crossplane"
@@ -484,7 +448,7 @@ data "aws_ecrpublic_authorization_token" "token" {
 }
 
 module "karpenter" {
-  count = var.deploy_karpenter ? 1 : 0
+
   source  = "terraform-aws-modules/eks/aws//modules/karpenter"
   version = "18.31.0"
 
@@ -501,7 +465,7 @@ module "karpenter" {
 
 resource "helm_release" "karpenter" {
   depends_on = [
-    module.karpenter[0]
+    module.karpenter
   ]
   count = var.deploy_karpenter ? 1 : 0
 
@@ -527,17 +491,17 @@ resource "helm_release" "karpenter" {
 
   set {
     name  = "serviceAccount.annotations.eks\\.amazonaws\\.com/role-arn"
-    value = module.karpenter[0].irsa_arn
+    value = module.karpenter.irsa_arn
   }
 
   set {
     name  = "settings.aws.defaultInstanceProfile"
-    value = module.karpenter[0].instance_profile_name
+    value = module.karpenter.instance_profile_name
   }
 
   set {
     name  = "settings.aws.interruptionQueueName"
-    value = module.karpenter[0].queue_name
+    value = module.karpenter.queue_name
   }
 
   set {
