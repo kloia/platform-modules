@@ -154,6 +154,11 @@ variable "connect_hostnames_from_alb_to_istio" {
   default     = []
 }
 
+variable "enable_shield_advanced_protection_from_alb_to_istio" {
+  description = "Setup Shield for traffic from ALB to Istio"
+  type        = bool
+  default     = false
+}
 
 
 # karpenter
