@@ -38,3 +38,17 @@ module "resource_type_protection_group" {
     }
   ]
 }
+
+module "not_group" {
+  source = "../"
+  name_resource_arn_map = {
+    cloudfront_x = {
+      arn = "xyz"
+      cross_account_shield = false
+    },
+    route53_y = {
+      arn = "xyz"
+      cross_account_shield = true
+    }
+  }
+}

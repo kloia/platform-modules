@@ -12,12 +12,13 @@ resource "random_string" "log_s3_name" {
 }
 
 module "lb_logs_s3" {
-  source = "../terraform-aws-s3"
+  #source = "../../aws-s3"
+  source = "github.com/kloia/platform-modules.git//aws-s3?ref=v0.0.11"
   count  = var.enable_s3_logs ? 1 : 0
 
 
   bucket = "alb-log-bucket-${random_string.log_s3_name[0].result}"
-  acl    = "log-delivery-write"
+  #acl    = "log-delivery-write"
 
   # Allow deletion of non-empty bucket
   force_destroy = true
@@ -28,8 +29,12 @@ module "lb_logs_s3" {
 
 }
 
+locals {
+  create_lb = var.create_lb
+}
+
 #------------------------------------------------------------------------------
-# APPLICATION LOAD BALANCER
+# ALB LOAD BALANCER
 #------------------------------------------------------------------------------
 resource "random_string" "lb_name" {
   count   = var.use_random_name_for_lb ? 1 : 0
@@ -39,24 +44,38 @@ resource "random_string" "lb_name" {
 }
 
 resource "aws_lb" "lb" {
+  count = local.create_lb ? 1 : 0
   name = var.use_random_name_for_lb ? random_string.lb_name[0].result : substr("${var.name_prefix}-lb", 0, 31)
 
   internal                         = var.internal
-  load_balancer_type               = "application"
+  load_balancer_type               = var.load_balancer_type
   drop_invalid_header_fields       = var.drop_invalid_header_fields
-  subnets                          = var.internal ? var.private_subnets : var.public_subnets
+  subnets                          = var.load_balancer_type == "application" ? var.subnets : null
   idle_timeout                     = var.idle_timeout
   enable_deletion_protection       = var.enable_deletion_protection
   enable_cross_zone_load_balancing = var.enable_cross_zone_load_balancing
   enable_http2                     = var.enable_http2
   ip_address_type                  = var.ip_address_type
-  security_groups                  = compact(var.security_groups)
+  security_groups                  = var.load_balancer_type == "application" ? compact(var.security_groups) : null
+
 
   dynamic "access_logs" {
     for_each = var.enable_s3_logs ? [1] : []
     content {
       bucket  = module.lb_logs_s3[0].s3_bucket_id
       enabled = var.enable_s3_logs
+    }
+  }
+
+  # Required for NLB
+  dynamic "subnet_mapping" {
+    for_each = var.load_balancer_type == "network" ? [for i, eip in aws_eip.this : { allocation_id : eip.id, subnet_id : var.subnets[i] }] : null
+
+    content {
+      subnet_id            = subnet_mapping.value.subnet_id
+      allocation_id        = lookup(subnet_mapping.value, "allocation_id", null)
+      #private_ipv4_address = lookup(subnet_mapping.value, "private_ipv4_address", null)
+      #ipv6_address         = lookup(subnet_mapping.value, "ipv6_address", null)
     }
   }
 
@@ -69,220 +88,752 @@ resource "aws_lb" "lb" {
 }
 
 resource "aws_wafv2_web_acl_association" "waf_association" {
-  count        = var.waf_web_acl_arn != "" ? 1 : 0
-  resource_arn = aws_lb.lb.arn
+  count        = local.create_lb && var.waf_web_acl_arn != "" && var.load_balancer_type == "application" ? 1 : 0
+  resource_arn = aws_lb.lb[0].arn
   web_acl_arn  = var.waf_web_acl_arn
+}
+
+
+# Required for NLB
+# Use `subnet_mapping` to attach EIPs
+resource "aws_eip" "this" {
+  count = var.load_balancer_type == "network" ? length(var.subnets) : 0
+  domain = "vpc"
 }
 
 #------------------------------------------------------------------------------
 # AWS LOAD BALANCER - Target Groups
 #------------------------------------------------------------------------------
-resource "aws_lb_target_group" "lb_http_tgs" {
-  for_each = {
-    for name, config in var.http_ports : name => config
-    if lookup(config, "type", "") == "" || lookup(config, "type", "") == "forward"
-  }
-  name                          = "${var.name_prefix}-http-${each.value.target_group_port}"
-  port                          = each.value.target_group_port
-  protocol                      = lookup(each.value, "target_group_protocol", "") == "" ? "HTTP" : each.value.target_group_protocol
-  vpc_id                        = var.vpc_id
-  deregistration_delay          = var.deregistration_delay
-  slow_start                    = var.slow_start
-  load_balancing_algorithm_type = var.load_balancing_algorithm_type
-  dynamic "stickiness" {
-    for_each = var.stickiness == null ? [] : [var.stickiness]
+
+resource "aws_lb_target_group" "main" {
+  count = local.create_lb ? length(var.target_groups) : 0
+
+  name        = lookup(var.target_groups[count.index], "name", null)
+  name_prefix = lookup(var.target_groups[count.index], "name_prefix", null)
+
+  vpc_id           = var.vpc_id
+  port             = try(var.target_groups[count.index].backend_port, null)
+  protocol         = try(upper(var.target_groups[count.index].backend_protocol), null)
+  protocol_version = try(upper(var.target_groups[count.index].protocol_version), null)
+  target_type      = try(var.target_groups[count.index].target_type, null)
+
+  connection_termination             = try(var.target_groups[count.index].connection_termination, null)
+  deregistration_delay               = try(var.target_groups[count.index].deregistration_delay, null)
+  slow_start                         = try(var.target_groups[count.index].slow_start, null)
+  proxy_protocol_v2                  = try(var.target_groups[count.index].proxy_protocol_v2, false)
+  lambda_multi_value_headers_enabled = try(var.target_groups[count.index].lambda_multi_value_headers_enabled, false)
+  load_balancing_algorithm_type      = try(var.target_groups[count.index].load_balancing_algorithm_type, null)
+  preserve_client_ip                 = try(var.target_groups[count.index].preserve_client_ip, null)
+  ip_address_type                    = try(var.target_groups[count.index].ip_address_type, null)
+  load_balancing_cross_zone_enabled  = try(var.target_groups[count.index].load_balancing_cross_zone_enabled, null)
+
+  dynamic "health_check" {
+    for_each = try([var.target_groups[count.index].health_check], [])
+
     content {
-      type            = stickiness.value.type
-      cookie_duration = stickiness.value.cookie_duration
-      enabled         = stickiness.value.enabled
+      enabled             = try(health_check.value.enabled, null)
+      interval            = try(health_check.value.interval, null)
+      path                = try(health_check.value.path, null)
+      port                = try(health_check.value.port, null)
+      healthy_threshold   = try(health_check.value.healthy_threshold, null)
+      unhealthy_threshold = try(health_check.value.unhealthy_threshold, null)
+      timeout             = try(health_check.value.timeout, null)
+      protocol            = try(health_check.value.protocol, null)
+      matcher             = try(health_check.value.matcher, null)
     }
   }
-  health_check {
-    enabled             = var.target_group_health_check_enabled
-    interval            = var.target_group_health_check_interval
-    path                = var.target_group_health_check_path
-    protocol            = lookup(each.value, "target_group_protocol", "") == "" ? "HTTP" : each.value.target_group_protocol
-    timeout             = var.target_group_health_check_timeout
-    healthy_threshold   = var.target_group_health_check_healthy_threshold
-    unhealthy_threshold = var.target_group_health_check_unhealthy_threshold
-    matcher             = var.target_group_health_check_matcher
+
+  dynamic "stickiness" {
+    for_each = try([var.target_groups[count.index].stickiness], [])
+
+    content {
+      enabled         = try(stickiness.value.enabled, null)
+      cookie_duration = try(stickiness.value.cookie_duration, null)
+      type            = try(stickiness.value.type, null)
+      cookie_name     = try(stickiness.value.cookie_name, null)
+    }
   }
-  target_type = "ip"
+
   tags = merge(
     var.tags,
+    var.target_group_tags,
+    lookup(var.target_groups[count.index], "tags", {}),
     {
-      Name = "${var.name_prefix}-http-${each.value.target_group_port}"
+      "Name" = try(var.target_groups[count.index].name, var.target_groups[count.index].name_prefix, "")
     },
   )
+
   lifecycle {
     create_before_destroy = true
   }
-  depends_on = [aws_lb.lb]
-}
-
-resource "aws_lb_target_group" "lb_https_tgs" {
-  for_each = {
-    for name, config in var.https_ports : name => config
-    if lookup(config, "type", "") == "" || lookup(config, "type", "") == "forward"
-  }
-  name                          = "${var.name_prefix}-https-${each.value.target_group_port}"
-  port                          = each.value.target_group_port
-  protocol                      = lookup(each.value, "target_group_protocol", "") == "" ? "HTTPS" : each.value.target_group_protocol
-  vpc_id                        = var.vpc_id
-  deregistration_delay          = var.deregistration_delay
-  slow_start                    = var.slow_start
-  load_balancing_algorithm_type = var.load_balancing_algorithm_type
-  dynamic "stickiness" {
-    for_each = var.stickiness == null ? [] : [var.stickiness]
-    content {
-      type            = stickiness.value.type
-      cookie_duration = stickiness.value.cookie_duration
-      enabled         = stickiness.value.enabled
-    }
-  }
-  health_check {
-    enabled             = var.target_group_health_check_enabled
-    interval            = var.target_group_health_check_interval
-    path                = var.target_group_health_check_path
-    protocol            = lookup(each.value, "target_group_protocol", "") == "" ? "HTTPS" : each.value.target_group_protocol
-    timeout             = var.target_group_health_check_timeout
-    healthy_threshold   = var.target_group_health_check_healthy_threshold
-    unhealthy_threshold = var.target_group_health_check_unhealthy_threshold
-    matcher             = var.target_group_health_check_matcher
-  }
-  target_type = "ip"
-  tags = merge(
-    var.tags,
-    {
-      Name = "${var.name_prefix}-https-${each.value.target_group_port}"
-    },
-  )
-  lifecycle {
-    create_before_destroy = true
-  }
-  depends_on = [aws_lb.lb]
-}
-
-#------------------------------------------------------------------------------
-# AWS LOAD BALANCER - Listeners
-#------------------------------------------------------------------------------
-resource "aws_lb_listener" "lb_http_listeners" {
-  for_each          = var.http_ports
-  load_balancer_arn = aws_lb.lb.arn
-  port              = each.value.listener_port
-  protocol          = "HTTP"
-
-  dynamic "default_action" {
-    for_each = lookup(each.value, "type", "") == "redirect" ? [1] : []
-    content {
-      type = "redirect"
-
-      redirect {
-        host        = lookup(each.value, "host", "#{host}")
-        path        = lookup(each.value, "path", "/#{path}")
-        port        = lookup(each.value, "port", "#{port}")
-        protocol    = lookup(each.value, "protocol", "#{protocol}")
-        query       = lookup(each.value, "query", "#{query}")
-        status_code = lookup(each.value, "status_code", "HTTP_301")
-      }
-    }
-  }
-
-  dynamic "default_action" {
-    for_each = lookup(each.value, "type", "") == "fixed-response" ? [1] : []
-    content {
-      type = "fixed-response"
-
-      fixed_response {
-        content_type = lookup(each.value, "content_type", "text/plain")
-        message_body = lookup(each.value, "message_body", "Fixed response content")
-        status_code  = lookup(each.value, "status_code", "200")
-      }
-    }
-  }
-
-  # We fallback to using forward type action if type is not defined
-  dynamic "default_action" {
-    for_each = (lookup(each.value, "type", "") == "" || lookup(each.value, "type", "") == "forward") ? [1] : []
-    content {
-      target_group_arn = aws_lb_target_group.lb_http_tgs[each.key].arn
-      type             = "forward"
-    }
-  }
-
-  tags = var.tags
-}
-
-resource "aws_lb_listener" "lb_https_listeners" {
-  for_each          = var.https_ports
-  load_balancer_arn = aws_lb.lb.arn
-  port              = each.value.listener_port
-  protocol          = "HTTPS"
-  ssl_policy        = var.ssl_policy
-  certificate_arn   = var.default_certificate_arn
-
-  dynamic "default_action" {
-    for_each = lookup(each.value, "type", "") == "redirect" ? [1] : []
-    content {
-      type = "redirect"
-
-      redirect {
-        host        = lookup(each.value, "host", "#{host}")
-        path        = lookup(each.value, "path", "/#{path}")
-        port        = lookup(each.value, "port", "#{port}")
-        protocol    = lookup(each.value, "protocol", "#{protocol}")
-        query       = lookup(each.value, "query", "#{query}")
-        status_code = lookup(each.value, "status_code", "HTTP_301")
-      }
-    }
-  }
-
-  dynamic "default_action" {
-    for_each = lookup(each.value, "type", "") == "fixed-response" ? [1] : []
-    content {
-      type = "fixed-response"
-
-      fixed_response {
-        content_type = lookup(each.value, "content_type", "text/plain")
-        message_body = lookup(each.value, "message_body", "Fixed response content")
-        status_code  = lookup(each.value, "status_code", "200")
-      }
-    }
-  }
-
-  # We fallback to using forward type action if type is not defined
-  dynamic "default_action" {
-    for_each = (lookup(each.value, "type", "") == "" || lookup(each.value, "type", "") == "forward") ? [1] : []
-    content {
-      target_group_arn = aws_lb_target_group.lb_https_tgs[each.key].arn
-      type             = "forward"
-    }
-  }
-
-  tags = var.tags
 }
 
 locals {
-  list_maps_listener_certificate_arns = flatten([
-    for cert_arn in var.additional_certificates_arn_for_https_listeners : [
-      for listener in aws_lb_listener.lb_https_listeners : {
-        name            = "${listener}-${cert_arn}"
-        listener_arn    = listener.arn
-        certificate_arn = cert_arn
+  # Merge the target group index into a product map of the targets so we
+  # can figure out what target group we should attach each target to.
+  # Target indexes can be dynamically defined, but need to match
+  # the function argument reference. This means any additional arguments
+  # can be added later and only need to be updated in the attachment resource below.
+  # https://registry.terraform.io/providers/hashicorp/aws/latest/docs/resources/lb_target_group_attachment#argument-reference
+  target_group_attachments = merge(flatten([
+    for index, group in var.target_groups : [
+      for k, targets in group : {
+        for target_key, target in targets : join(".", [index, target_key]) => merge({ tg_index = index }, target)
       }
+      if k == "targets"
     ]
-  ])
+  ])...)
 
-  map_listener_certificate_arns = {
-    for obj in local.list_maps_listener_certificate_arns : obj.name => {
-      listener_arn    = obj.listener_arn,
-      certificate_arn = obj.certificate_arn
-    }
+  # Filter out the attachments for lambda functions. The ALB target group needs permission to forward a request on to
+  # the specified lambda function. This filtered list is used to create those permission resources.
+  # To get the lambda_function_name, the 6th index is taken from the lambda_function_arn format below
+  # arn:aws:lambda:<region>:<account-id>:function:my-function-name:<version-number>
+  target_group_attachments_lambda = {
+    for k, v in local.target_group_attachments :
+    (k) => merge(v, { lambda_function_name = split(":", v.target_id)[6] })
+    if try(v.attach_lambda_permission, false)
   }
 }
 
-resource "aws_lb_listener_certificate" "additional_certificates_for_https_listeners" {
-  for_each        = local.map_listener_certificate_arns
-  listener_arn    = each.value.listener_arn
-  certificate_arn = each.value.certificate_arn
+resource "aws_lambda_permission" "lb" {
+  for_each = { for k, v in local.target_group_attachments_lambda : k => v if local.create_lb }
+
+  function_name = each.value.lambda_function_name
+  qualifier     = try(each.value.lambda_qualifier, null)
+
+  statement_id       = try(each.value.lambda_statement_id, "AllowExecutionFromLb")
+  action             = try(each.value.lambda_action, "lambda:InvokeFunction")
+  principal          = try(each.value.lambda_principal, "elasticloadbalancing.amazonaws.com")
+  source_arn         = aws_lb_target_group.main[each.value.tg_index].arn
+  source_account     = try(each.value.lambda_source_account, null)
+  event_source_token = try(each.value.lambda_event_source_token, null)
+}
+
+resource "aws_lb_target_group_attachment" "this" {
+  for_each = { for k, v in local.target_group_attachments : k => v if local.create_lb }
+
+  target_group_arn  = aws_lb_target_group.main[each.value.tg_index].arn
+  target_id         = each.value.target_id
+  port              = lookup(each.value, "port", null)
+  availability_zone = lookup(each.value, "availability_zone", null)
+
+  depends_on = [aws_lambda_permission.lb]
+}
+
+resource "aws_lb_listener_rule" "https_listener_rule" {
+  count = local.create_lb ? length(var.https_listener_rules) : 0
+
+  listener_arn = aws_lb_listener.frontend_https[lookup(var.https_listener_rules[count.index], "https_listener_index", count.index)].arn
+  priority     = lookup(var.https_listener_rules[count.index], "priority", null)
+
+  # authenticate-cognito actions
+  dynamic "action" {
+    for_each = [
+      for action_rule in var.https_listener_rules[count.index].actions :
+      action_rule
+      if action_rule.type == "authenticate-cognito"
+    ]
+
+    content {
+      type = action.value["type"]
+      authenticate_cognito {
+        authentication_request_extra_params = lookup(action.value, "authentication_request_extra_params", null)
+        on_unauthenticated_request          = lookup(action.value, "on_authenticated_request", null)
+        scope                               = lookup(action.value, "scope", null)
+        session_cookie_name                 = lookup(action.value, "session_cookie_name", null)
+        session_timeout                     = lookup(action.value, "session_timeout", null)
+        user_pool_arn                       = action.value["user_pool_arn"]
+        user_pool_client_id                 = action.value["user_pool_client_id"]
+        user_pool_domain                    = action.value["user_pool_domain"]
+      }
+    }
+  }
+
+  # authenticate-oidc actions
+  dynamic "action" {
+    for_each = [
+      for action_rule in var.https_listener_rules[count.index].actions :
+      action_rule
+      if action_rule.type == "authenticate-oidc"
+    ]
+
+    content {
+      type = action.value["type"]
+      authenticate_oidc {
+        # Max 10 extra params
+        authentication_request_extra_params = lookup(action.value, "authentication_request_extra_params", null)
+        authorization_endpoint              = action.value["authorization_endpoint"]
+        client_id                           = action.value["client_id"]
+        client_secret                       = action.value["client_secret"]
+        issuer                              = action.value["issuer"]
+        on_unauthenticated_request          = lookup(action.value, "on_unauthenticated_request", null)
+        scope                               = lookup(action.value, "scope", null)
+        session_cookie_name                 = lookup(action.value, "session_cookie_name", null)
+        session_timeout                     = lookup(action.value, "session_timeout", null)
+        token_endpoint                      = action.value["token_endpoint"]
+        user_info_endpoint                  = action.value["user_info_endpoint"]
+      }
+    }
+  }
+
+  # redirect actions
+  dynamic "action" {
+    for_each = [
+      for action_rule in var.https_listener_rules[count.index].actions :
+      action_rule
+      if action_rule.type == "redirect"
+    ]
+
+    content {
+      type = action.value["type"]
+      redirect {
+        host        = lookup(action.value, "host", null)
+        path        = lookup(action.value, "path", null)
+        port        = lookup(action.value, "port", null)
+        protocol    = lookup(action.value, "protocol", null)
+        query       = lookup(action.value, "query", null)
+        status_code = action.value["status_code"]
+      }
+    }
+  }
+
+  # fixed-response actions
+  dynamic "action" {
+    for_each = [
+      for action_rule in var.https_listener_rules[count.index].actions :
+      action_rule
+      if action_rule.type == "fixed-response"
+    ]
+
+    content {
+      type = action.value["type"]
+      fixed_response {
+        message_body = lookup(action.value, "message_body", null)
+        status_code  = lookup(action.value, "status_code", null)
+        content_type = action.value["content_type"]
+      }
+    }
+  }
+
+  # forward actions
+  dynamic "action" {
+    for_each = [
+      for action_rule in var.https_listener_rules[count.index].actions :
+      action_rule
+      if action_rule.type == "forward"
+    ]
+
+    content {
+      type             = action.value["type"]
+      target_group_arn = aws_lb_target_group.main[lookup(action.value, "target_group_index", count.index)].id
+    }
+  }
+
+  # weighted forward actions
+  dynamic "action" {
+    for_each = [
+      for action_rule in var.https_listener_rules[count.index].actions :
+      action_rule
+      if action_rule.type == "weighted-forward"
+    ]
+
+    content {
+      type = "forward"
+      forward {
+        dynamic "target_group" {
+          for_each = action.value["target_groups"]
+
+          content {
+            arn    = aws_lb_target_group.main[target_group.value["target_group_index"]].id
+            weight = target_group.value["weight"]
+          }
+        }
+        dynamic "stickiness" {
+          for_each = [lookup(action.value, "stickiness", {})]
+
+          content {
+            enabled  = try(stickiness.value["enabled"], false)
+            duration = try(stickiness.value["duration"], 1)
+          }
+        }
+      }
+    }
+  }
+
+  # Path Pattern condition
+  dynamic "condition" {
+    for_each = [
+      for condition_rule in var.https_listener_rules[count.index].conditions :
+      condition_rule
+      if length(lookup(condition_rule, "path_patterns", [])) > 0
+    ]
+
+    content {
+      path_pattern {
+        values = condition.value["path_patterns"]
+      }
+    }
+  }
+
+  # Host header condition
+  dynamic "condition" {
+    for_each = [
+      for condition_rule in var.https_listener_rules[count.index].conditions :
+      condition_rule
+      if length(lookup(condition_rule, "host_headers", [])) > 0
+    ]
+
+    content {
+      host_header {
+        values = condition.value["host_headers"]
+      }
+    }
+  }
+
+  # Http header condition
+  dynamic "condition" {
+    for_each = [
+      for condition_rule in var.https_listener_rules[count.index].conditions :
+      condition_rule
+      if length(lookup(condition_rule, "http_headers", [])) > 0
+    ]
+
+    content {
+      dynamic "http_header" {
+        for_each = condition.value["http_headers"]
+
+        content {
+          http_header_name = http_header.value["http_header_name"]
+          values           = http_header.value["values"]
+        }
+      }
+    }
+  }
+
+  # Http request method condition
+  dynamic "condition" {
+    for_each = [
+      for condition_rule in var.https_listener_rules[count.index].conditions :
+      condition_rule
+      if length(lookup(condition_rule, "http_request_methods", [])) > 0
+    ]
+
+    content {
+      http_request_method {
+        values = condition.value["http_request_methods"]
+      }
+    }
+  }
+
+  # Query string condition
+  dynamic "condition" {
+    for_each = [
+      for condition_rule in var.https_listener_rules[count.index].conditions :
+      condition_rule
+      if length(lookup(condition_rule, "query_strings", [])) > 0
+    ]
+
+    content {
+      dynamic "query_string" {
+        for_each = condition.value["query_strings"]
+
+        content {
+          key   = lookup(query_string.value, "key", null)
+          value = query_string.value["value"]
+        }
+      }
+    }
+  }
+
+  # Source IP address condition
+  dynamic "condition" {
+    for_each = [
+      for condition_rule in var.https_listener_rules[count.index].conditions :
+      condition_rule
+      if length(lookup(condition_rule, "source_ips", [])) > 0
+    ]
+
+    content {
+      source_ip {
+        values = condition.value["source_ips"]
+      }
+    }
+  }
+
+  tags = merge(
+    var.tags,
+    var.https_listener_rules_tags,
+    lookup(var.https_listener_rules[count.index], "tags", {}),
+  )
+}
+
+resource "aws_lb_listener_rule" "http_tcp_listener_rule" {
+  count = local.create_lb ? length(var.http_tcp_listener_rules) : 0
+
+  listener_arn = aws_lb_listener.frontend_http_tcp[lookup(var.http_tcp_listener_rules[count.index], "http_tcp_listener_index", count.index)].arn
+  priority     = lookup(var.http_tcp_listener_rules[count.index], "priority", null)
+
+  # redirect actions
+  dynamic "action" {
+    for_each = [
+      for action_rule in var.http_tcp_listener_rules[count.index].actions :
+      action_rule
+      if action_rule.type == "redirect"
+    ]
+
+    content {
+      type = action.value["type"]
+      redirect {
+        host        = lookup(action.value, "host", null)
+        path        = lookup(action.value, "path", null)
+        port        = lookup(action.value, "port", null)
+        protocol    = lookup(action.value, "protocol", null)
+        query       = lookup(action.value, "query", null)
+        status_code = action.value["status_code"]
+      }
+    }
+  }
+
+  # fixed-response actions
+  dynamic "action" {
+    for_each = [
+      for action_rule in var.http_tcp_listener_rules[count.index].actions :
+      action_rule
+      if action_rule.type == "fixed-response"
+    ]
+
+    content {
+      type = action.value["type"]
+      fixed_response {
+        message_body = lookup(action.value, "message_body", null)
+        status_code  = lookup(action.value, "status_code", null)
+        content_type = action.value["content_type"]
+      }
+    }
+  }
+
+  # forward actions
+  dynamic "action" {
+    for_each = [
+      for action_rule in var.http_tcp_listener_rules[count.index].actions :
+      action_rule
+      if action_rule.type == "forward"
+    ]
+
+    content {
+      type             = action.value["type"]
+      target_group_arn = aws_lb_target_group.main[lookup(action.value, "target_group_index", count.index)].id
+    }
+  }
+
+  # weighted forward actions
+  dynamic "action" {
+    for_each = [
+      for action_rule in var.http_tcp_listener_rules[count.index].actions :
+      action_rule
+      if action_rule.type == "weighted-forward"
+    ]
+
+    content {
+      type = "forward"
+      forward {
+        dynamic "target_group" {
+          for_each = action.value["target_groups"]
+
+          content {
+            arn    = aws_lb_target_group.main[target_group.value["target_group_index"]].id
+            weight = target_group.value["weight"]
+          }
+        }
+        dynamic "stickiness" {
+          for_each = [lookup(action.value, "stickiness", {})]
+
+          content {
+            enabled  = try(stickiness.value["enabled"], false)
+            duration = try(stickiness.value["duration"], 1)
+          }
+        }
+      }
+    }
+  }
+
+  # Path Pattern condition
+  dynamic "condition" {
+    for_each = [
+      for condition_rule in var.http_tcp_listener_rules[count.index].conditions :
+      condition_rule
+      if length(lookup(condition_rule, "path_patterns", [])) > 0
+    ]
+
+    content {
+      path_pattern {
+        values = condition.value["path_patterns"]
+      }
+    }
+  }
+
+  # Host header condition
+  dynamic "condition" {
+    for_each = [
+      for condition_rule in var.http_tcp_listener_rules[count.index].conditions :
+      condition_rule
+      if length(lookup(condition_rule, "host_headers", [])) > 0
+    ]
+
+    content {
+      host_header {
+        values = condition.value["host_headers"]
+      }
+    }
+  }
+
+  # Http header condition
+  dynamic "condition" {
+    for_each = [
+      for condition_rule in var.http_tcp_listener_rules[count.index].conditions :
+      condition_rule
+      if length(lookup(condition_rule, "http_headers", [])) > 0
+    ]
+
+    content {
+      dynamic "http_header" {
+        for_each = condition.value["http_headers"]
+
+        content {
+          http_header_name = http_header.value["http_header_name"]
+          values           = http_header.value["values"]
+        }
+      }
+    }
+  }
+
+  # Http request method condition
+  dynamic "condition" {
+    for_each = [
+      for condition_rule in var.http_tcp_listener_rules[count.index].conditions :
+      condition_rule
+      if length(lookup(condition_rule, "http_request_methods", [])) > 0
+    ]
+
+    content {
+      http_request_method {
+        values = condition.value["http_request_methods"]
+      }
+    }
+  }
+
+  # Query string condition
+  dynamic "condition" {
+    for_each = [
+      for condition_rule in var.http_tcp_listener_rules[count.index].conditions :
+      condition_rule
+      if length(lookup(condition_rule, "query_strings", [])) > 0
+    ]
+
+    content {
+      dynamic "query_string" {
+        for_each = condition.value["query_strings"]
+
+        content {
+          key   = lookup(query_string.value, "key", null)
+          value = query_string.value["value"]
+        }
+      }
+    }
+  }
+
+  # Source IP address condition
+  dynamic "condition" {
+    for_each = [
+      for condition_rule in var.http_tcp_listener_rules[count.index].conditions :
+      condition_rule
+      if length(lookup(condition_rule, "source_ips", [])) > 0
+    ]
+
+    content {
+      source_ip {
+        values = condition.value["source_ips"]
+      }
+    }
+  }
+
+  tags = merge(
+    var.tags,
+    var.http_tcp_listener_rules_tags,
+    lookup(var.http_tcp_listener_rules[count.index], "tags", {}),
+  )
+}
+
+resource "aws_lb_listener" "frontend_http_tcp" {
+  count = local.create_lb ? length(var.http_tcp_listeners) : 0
+
+  load_balancer_arn = aws_lb.lb[0].arn
+
+  port     = var.http_tcp_listeners[count.index]["port"]
+  protocol = var.http_tcp_listeners[count.index]["protocol"]
+
+  dynamic "default_action" {
+    for_each = length(keys(var.http_tcp_listeners[count.index])) == 0 ? [] : [var.http_tcp_listeners[count.index]]
+
+    # Defaults to forward action if action_type not specified
+    content {
+      type             = lookup(default_action.value, "action_type", "forward")
+      target_group_arn = contains([null, "", "forward"], lookup(default_action.value, "action_type", "")) ? aws_lb_target_group.main[lookup(default_action.value, "target_group_index", count.index)].id : null
+
+      dynamic "redirect" {
+        for_each = length(keys(lookup(default_action.value, "redirect", {}))) == 0 ? [] : [lookup(default_action.value, "redirect", {})]
+
+        content {
+          path        = lookup(redirect.value, "path", null)
+          host        = lookup(redirect.value, "host", null)
+          port        = lookup(redirect.value, "port", null)
+          protocol    = lookup(redirect.value, "protocol", null)
+          query       = lookup(redirect.value, "query", null)
+          status_code = redirect.value["status_code"]
+        }
+      }
+
+      dynamic "fixed_response" {
+        for_each = length(keys(lookup(default_action.value, "fixed_response", {}))) == 0 ? [] : [lookup(default_action.value, "fixed_response", {})]
+
+        content {
+          content_type = fixed_response.value["content_type"]
+          message_body = lookup(fixed_response.value, "message_body", null)
+          status_code  = lookup(fixed_response.value, "status_code", null)
+        }
+      }
+
+      dynamic "forward" {
+        for_each = length(keys(lookup(default_action.value, "forward", {}))) == 0 ? [] : [lookup(default_action.value, "forward", {})]
+
+        content {
+          dynamic "target_group" {
+            for_each = forward.value["target_groups"]
+
+            content {
+              arn    = aws_lb_target_group.main[target_group.value["target_group_index"]].id
+              weight = lookup(target_group.value, "weight", null)
+            }
+          }
+
+          dynamic "stickiness" {
+            for_each = length(keys(lookup(forward.value, "stickiness", {}))) == 0 ? [] : [lookup(forward.value, "stickiness", {})]
+
+            content {
+              enabled  = lookup(stickiness.value, "enabled", false)
+              duration = lookup(stickiness.value, "duration", 60)
+            }
+          }
+        }
+      }
+    }
+  }
+
+  tags = merge(
+    var.tags,
+    var.http_tcp_listeners_tags,
+    lookup(var.http_tcp_listeners[count.index], "tags", {}),
+  )
+}
+
+resource "aws_lb_listener" "frontend_https" {
+  count = local.create_lb ? length(var.https_listeners) : 0
+
+  load_balancer_arn = aws_lb.lb[0].arn
+
+  port            = var.https_listeners[count.index]["port"]
+  protocol        = lookup(var.https_listeners[count.index], "protocol", "HTTPS")
+  certificate_arn = var.https_listeners[count.index]["certificate_arn"]
+  ssl_policy      = lookup(var.https_listeners[count.index], "ssl_policy", var.listener_ssl_policy_default)
+  alpn_policy     = lookup(var.https_listeners[count.index], "alpn_policy", null)
+
+  dynamic "default_action" {
+    for_each = length(keys(var.https_listeners[count.index])) == 0 ? [] : [var.https_listeners[count.index]]
+
+    # Defaults to forward action if action_type not specified
+    content {
+      type             = lookup(default_action.value, "action_type", "forward")
+      target_group_arn = contains([null, "", "forward"], lookup(default_action.value, "action_type", "")) ? aws_lb_target_group.main[lookup(default_action.value, "target_group_index", count.index)].id : null
+
+      dynamic "redirect" {
+        for_each = length(keys(lookup(default_action.value, "redirect", {}))) == 0 ? [] : [lookup(default_action.value, "redirect", {})]
+
+        content {
+          path        = lookup(redirect.value, "path", null)
+          host        = lookup(redirect.value, "host", null)
+          port        = lookup(redirect.value, "port", null)
+          protocol    = lookup(redirect.value, "protocol", null)
+          query       = lookup(redirect.value, "query", null)
+          status_code = redirect.value["status_code"]
+        }
+      }
+
+      dynamic "fixed_response" {
+        for_each = length(keys(lookup(default_action.value, "fixed_response", {}))) == 0 ? [] : [lookup(default_action.value, "fixed_response", {})]
+
+        content {
+          content_type = fixed_response.value["content_type"]
+          message_body = lookup(fixed_response.value, "message_body", null)
+          status_code  = lookup(fixed_response.value, "status_code", null)
+        }
+      }
+
+      # Authentication actions only available with HTTPS listeners
+      dynamic "authenticate_cognito" {
+        for_each = length(keys(lookup(default_action.value, "authenticate_cognito", {}))) == 0 ? [] : [lookup(default_action.value, "authenticate_cognito", {})]
+
+        content {
+          # Max 10 extra params
+          authentication_request_extra_params = lookup(authenticate_cognito.value, "authentication_request_extra_params", null)
+          on_unauthenticated_request          = lookup(authenticate_cognito.value, "on_authenticated_request", null)
+          scope                               = lookup(authenticate_cognito.value, "scope", null)
+          session_cookie_name                 = lookup(authenticate_cognito.value, "session_cookie_name", null)
+          session_timeout                     = lookup(authenticate_cognito.value, "session_timeout", null)
+          user_pool_arn                       = authenticate_cognito.value["user_pool_arn"]
+          user_pool_client_id                 = authenticate_cognito.value["user_pool_client_id"]
+          user_pool_domain                    = authenticate_cognito.value["user_pool_domain"]
+        }
+      }
+
+      dynamic "authenticate_oidc" {
+        for_each = length(keys(lookup(default_action.value, "authenticate_oidc", {}))) == 0 ? [] : [lookup(default_action.value, "authenticate_oidc", {})]
+
+        content {
+          # Max 10 extra params
+          authentication_request_extra_params = lookup(authenticate_oidc.value, "authentication_request_extra_params", null)
+          authorization_endpoint              = authenticate_oidc.value["authorization_endpoint"]
+          client_id                           = authenticate_oidc.value["client_id"]
+          client_secret                       = authenticate_oidc.value["client_secret"]
+          issuer                              = authenticate_oidc.value["issuer"]
+          on_unauthenticated_request          = lookup(authenticate_oidc.value, "on_unauthenticated_request", null)
+          scope                               = lookup(authenticate_oidc.value, "scope", null)
+          session_cookie_name                 = lookup(authenticate_oidc.value, "session_cookie_name", null)
+          session_timeout                     = lookup(authenticate_oidc.value, "session_timeout", null)
+          token_endpoint                      = authenticate_oidc.value["token_endpoint"]
+          user_info_endpoint                  = authenticate_oidc.value["user_info_endpoint"]
+        }
+      }
+    }
+  }
+
+  dynamic "default_action" {
+    for_each = contains(["authenticate-oidc", "authenticate-cognito"], lookup(var.https_listeners[count.index], "action_type", {})) ? [var.https_listeners[count.index]] : []
+    content {
+      type             = "forward"
+      target_group_arn = aws_lb_target_group.main[lookup(default_action.value, "target_group_index", count.index)].id
+    }
+  }
+
+  tags = merge(
+    var.tags,
+    var.https_listeners_tags,
+    lookup(var.https_listeners[count.index], "tags", {}),
+  )
+}
+
+resource "aws_lb_listener_certificate" "https_listener" {
+  count = local.create_lb ? length(var.extra_ssl_certs) : 0
+
+  listener_arn    = aws_lb_listener.frontend_https[var.extra_ssl_certs[count.index]["https_listener_index"]].arn
+  certificate_arn = var.extra_ssl_certs[count.index]["certificate_arn"]
 }
