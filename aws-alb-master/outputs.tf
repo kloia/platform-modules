@@ -3,74 +3,107 @@
 #------------------------------------------------------------------------------
 output "aws_lb_lb_id" {
   description = "The ARN of the load balancer (matches arn)."
-  value       = aws_lb.lb[0].id
+  value       = aws_lb.lb.id
 }
 
 output "aws_lb_lb_arn" {
   description = "The ARN of the load balancer (matches id)."
-  value       = aws_lb.lb[0].arn
+  value       = aws_lb.lb.arn
 }
 
 output "aws_lb_lb_arn_suffix" {
   description = "The ARN suffix for use with CloudWatch Metrics."
-  value       = aws_lb.lb[0].arn_suffix
+  value       = aws_lb.lb.arn_suffix
 }
 
 output "aws_lb_lb_dns_name" {
   description = "The DNS name of the load balancer."
-  value       = aws_lb.lb[0].dns_name
+  value       = aws_lb.lb.dns_name
 }
 
 output "aws_lb_lb_zone_id" {
   description = "The canonical hosted zone ID of the load balancer (to be used in a Route 53 Alias record)."
-  value       = aws_lb.lb[0].zone_id
+  value       = aws_lb.lb.zone_id
 }
 
 #------------------------------------------------------------------------------
 # AWS LOAD BALANCER - Target Groups
 #------------------------------------------------------------------------------
-
-output "target_group_arns" {
-  description = "ARNs of the target groups. Useful for passing to your Auto Scaling group"
-  value       = aws_lb_target_group.main[*].arn
+output "lb_http_tgs_ids" {
+  description = "List of HTTP Target Groups IDs"
+  value       = [for tg in aws_lb_target_group.lb_http_tgs : tg.id]
 }
 
-output "target_group_arn_suffixes" {
-  description = "ARN suffixes of our target groups - can be used with CloudWatch"
-  value       = aws_lb_target_group.main[*].arn_suffix
+output "lb_http_tgs_arns" {
+  description = "List of HTTP Target Groups ARNs"
+  value       = [for tg in aws_lb_target_group.lb_http_tgs : tg.arn]
 }
 
-output "target_group_names" {
-  description = "Name of the target group. Useful for passing to your CodeDeploy Deployment Group"
-  value       = aws_lb_target_group.main[*].name
+output "lb_http_tgs_names" {
+  description = "List of HTTP Target Groups Names"
+  value       = [for tg in aws_lb_target_group.lb_http_tgs : tg.name]
 }
 
-output "target_group_attachments" {
-  description = "ARNs of the target group attachment IDs"
-  value       = { for k, v in aws_lb_target_group_attachment.this : k => v.id }
+output "lb_http_tgs_ports" {
+  description = "List of HTTP Target Groups ports"
+  value       = [for tg in aws_lb_target_group.lb_http_tgs : tostring(tg.port)]
+}
+
+output "lb_http_tgs_map_arn_port" {
+  value = zipmap(
+    [for tg in aws_lb_target_group.lb_http_tgs : tg.arn],
+    [for tg in aws_lb_target_group.lb_http_tgs : tostring(tg.port)]
+  )
+}
+
+output "lb_https_tgs_ids" {
+  description = "List of HTTPS Target Groups IDs"
+  value       = [for tg in aws_lb_target_group.lb_https_tgs : tg.id]
+}
+
+output "lb_https_tgs_arns" {
+  description = "List of HTTPS Target Groups ARNs"
+  value       = [for tg in aws_lb_target_group.lb_https_tgs : tg.arn]
+}
+
+output "lb_https_tgs_names" {
+  description = "List of HTTPS Target Groups Names"
+  value       = [for tg in aws_lb_target_group.lb_https_tgs : tg.name]
+}
+
+output "lb_https_tgs_ports" {
+  description = "List of HTTPS Target Groups ports"
+  value       = [for tg in aws_lb_target_group.lb_https_tgs : tostring(tg.port)]
+}
+
+output "lb_https_tgs_map_arn_port" {
+  value = zipmap(
+    [for tg in aws_lb_target_group.lb_https_tgs : tg.arn],
+    [for tg in aws_lb_target_group.lb_https_tgs : tostring(tg.port)]
+  )
 }
 
 #------------------------------------------------------------------------------
 # AWS LOAD BALANCER - Listeners
 #------------------------------------------------------------------------------
-output "http_tcp_listener_arns" {
-  description = "The ARN of the TCP and HTTP load balancer listeners created"
-  value       = aws_lb_listener.frontend_http_tcp[*].arn
+output "lb_http_listeners_ids" {
+  description = "List of HTTP Listeners IDs"
+  value       = [for listener in aws_lb_listener.lb_http_listeners : listener.id]
 }
 
-output "http_tcp_listener_ids" {
-  description = "The IDs of the TCP and HTTP load balancer listeners created"
-  value       = aws_lb_listener.frontend_http_tcp[*].id
+output "lb_http_listeners_arns" {
+  description = "List of HTTP Listeners ARNs"
+  value       = [for listener in aws_lb_listener.lb_http_listeners : listener.arn]
 }
 
-output "https_listener_arns" {
-  description = "The ARNs of the HTTPS load balancer listeners created"
-  value       = aws_lb_listener.frontend_https[*].arn
+output "lb_https_listeners_ids" {
+  description = "List of HTTPS Listeners IDs"
+  value       = [for listener in aws_lb_listener.lb_https_listeners : listener.id]
 }
 
-output "https_listener_ids" {
-  description = "The IDs of the load balancer listeners created"
-  value       = aws_lb_listener.frontend_https[*].id
+output "lb_https_listeners_arns" {
+  description = "List of HTTPS Listeners ARNs"
+  value       = [for listener in aws_lb_listener.lb_https_listeners : listener.arn]
 }
 
 #------------------------------------------------------------------------------
