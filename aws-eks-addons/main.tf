@@ -609,35 +609,59 @@ resource "kubectl_manifest" "karpenter_stateful_provisioner" {
 
 # there is no taint necessary for stateless applicatinos (system workloads will be scheduled at default eks node group(it will have system workload taint ))
 resource "kubectl_manifest" "karpenter_stateless_provisioner" {
-  count = var.deploy_karpenter ? 1 : 0 
-  yaml_body = <<-YAML
-    apiVersion: karpenter.sh/v1alpha5
-    kind: Provisioner
-    metadata:
-      name: stateless-provisioner
-    spec:
-      requirements:
-        - key: karpenter.sh/capacity-type
-          operator: In
-          values: ${var.stateless_capacity_types}
-        - key: node.kubernetes.io/instance-type
-          operator: In
-          values: ${var.stateless_instance_types}
-        - key: "topology.kubernetes.io/zone"
-          operator: In
-          values: ${var.stateless_instance_zones}
-        - key: "kubernetes.io/arch"
-          operator: In
-          values: ${var.stateless_arch_types}
-      limits:
-        resources:
-          cpu: ${var.stateless_total_cpu_limit}
-      providerRef:
-        name: default
-      consolidation:
-        enabled: true
-  YAML
+  count = var.deploy_karpenter ? 1 : 0
 
+  yaml_body = yamlencode({
+    apiVersion: "karpenter.sh/v1alpha5"
+    kind: "Provisioner"
+    metadata: {
+      name: "stateless-provisioner"
+    }
+    spec: {
+      consolidation: {
+        enabled = true
+      }
+      providerRef = {
+        name = "default"
+      }
+      limits = {
+        resources = {
+          cpu = var.stateless_total_cpu_limit
+        }
+      }
+      requirements: [
+        {
+          key = "karpenter.sh/capacity-type"
+          operator = "In"
+          values = var.stateless_capacity_types
+        },
+        {
+          key = "node.kubernetes.io/instance-type"
+          operator = "In"
+          values = var.stateless_instance_types
+        },
+        {
+          key = "topology.kubernetes.io/zone"
+          operator = "In"
+          values = var.stateless_instance_zones
+        },
+        {
+          key = "kubernetes.io/arch"
+          operator = "In"
+          values = var.stateless_arch_types
+        },
+        {
+          key = "kubernetes.io/os"
+          operator = "In"
+          values = [
+            "linux",
+          ]
+        },
+      ]
+    }
+  })
+
+  
   depends_on = [
     helm_release.karpenter[0]
   ]
