@@ -457,6 +457,8 @@ module "karpenter" {
 
   irsa_oidc_provider_arn          = var.oidc_provider_arn
   irsa_namespace_service_accounts = ["karpenter:karpenter"]
+  provider_region = var.cluster_region
+  provider_assume_role_arn = var.assume_role_arn
 
   # Since Karpenter is running on an EKS Managed Node group,
   # we can re-use the role that was created for the node group

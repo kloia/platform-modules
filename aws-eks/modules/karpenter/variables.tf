@@ -252,3 +252,20 @@ variable "rule_name_prefix" {
   type        = string
   default     = "Karpenter"
 }
+
+
+################################################################################
+# Provider configuration
+################################################################################
+
+variable "provider_region" {
+  description = "Region to provision resources"
+  type        = string
+  default     = "eu-west-1"
+}
+
+variable "provider_assume_role_arn" {
+  description = "Provider to assume role for account access"
+  type        = string
+  default     = ""
+}
