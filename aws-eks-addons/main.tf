@@ -450,8 +450,7 @@ data "aws_ecrpublic_authorization_token" "token" {
 
 module "karpenter" {
 
-  source  = "terraform-aws-modules/eks/aws//modules/karpenter"
-  version = "18.31.0"
+  source  = "git::https://github.com/kloia/platform-modules.git//aws-eks/modules/karpenter?ref=main"
 
   cluster_name = var.cluster_name
 
