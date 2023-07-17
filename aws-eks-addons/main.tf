@@ -450,13 +450,14 @@ data "aws_ecrpublic_authorization_token" "token" {
 
 module "karpenter" {
 
-  source  = "terraform-aws-modules/eks/aws//modules/karpenter"
-  version = "18.31.0"
+  source  = "git::https://github.com/kloia/platform-modules.git//aws-eks/modules/karpenter?ref=adjust-karpenter"
 
   cluster_name = var.cluster_name
 
   irsa_oidc_provider_arn          = var.oidc_provider_arn
   irsa_namespace_service_accounts = ["karpenter:karpenter"]
+  provider_region = var.cluster_region
+  provider_assume_role_arn = var.assume_role_arn
 
   # Since Karpenter is running on an EKS Managed Node group,
   # we can re-use the role that was created for the node group
@@ -534,38 +535,73 @@ resource "helm_release" "karpenter" {
 
 resource "kubectl_manifest" "karpenter_stateful_provisioner" {
   count = var.deploy_karpenter ? 1 : 0
-  yaml_body = <<-YAML
-    apiVersion: karpenter.sh/v1alpha5
-    kind: Provisioner
-    metadata:
-      name: stateful-application
-    spec:
-      requirements:
-        - key: karpenter.sh/capacity-type
-          operator: In
-          values: ${var.stateful_capacity_types}
-        - key: node.kubernetes.io/instance-type
-          operator: In
-          values: ${var.stateful_instance_types}
-        - key: "topology.kubernetes.io/zone"
-          operator: In
-          values: ${var.stateful_instance_zones}
-        - key: "kubernetes.io/arch"
-          operator: In
-          values: ${var.stateful_arch_types}
-      taints:
-      - effect: NoSchedule
-        key: workload
-        value: ${var.stateful_application_toleration_value}
-      limits:
-        resources:
-          cpu: ${var.stateful_total_cpu_limit}
-      providerRef:
-        name: default
-      consolidation:
-        enabled: false
-  YAML
 
+  yaml_body = yamlencode({
+    apiVersion: "karpenter.sh/v1alpha5"
+    kind: "Provisioner"
+    metadata: {
+      name: "stateful-provisioner"
+      namespace: "karpenter"
+    }
+    spec: {
+      consolidation: {
+        enabled = false
+      }
+      providerRef = {
+        name = "default"
+      }
+      limits = {
+        resources = {
+          cpu = var.stateful_total_cpu_limit
+        }
+      }
+      taints = [
+        {
+          effect = "NoSchedule"
+          key = "workload"
+          value = var.stateful_application_toleration_value
+        },
+      ]
+      requirements: [
+        {
+          key = "workload"
+          operator = "In"
+          values = [
+            var.stateful_application_toleration_value,
+          ]
+        },
+        {
+          key = "karpenter.sh/capacity-type"
+          operator = "In"
+          values = var.stateful_capacity_types
+        },
+        {
+          key = "node.kubernetes.io/instance-type"
+          operator = "In"
+          values = var.stateful_instance_types
+        },
+        {
+          key = "topology.kubernetes.io/zone"
+          operator = "In"
+          values = var.stateful_instance_zones
+        },
+        {
+          key = "kubernetes.io/arch"
+          operator = "In"
+          values = var.stateful_arch_types
+        },
+        {
+          key = "kubernetes.io/os"
+          operator = "In"
+          values = [
+            "linux",
+          ]
+        },
+      ]
+    }
+  })
+
+  
   depends_on = [
     helm_release.karpenter[0]
   ]
@@ -574,35 +610,59 @@ resource "kubectl_manifest" "karpenter_stateful_provisioner" {
 
 # there is no taint necessary for stateless applicatinos (system workloads will be scheduled at default eks node group(it will have system workload taint ))
 resource "kubectl_manifest" "karpenter_stateless_provisioner" {
-  count = var.deploy_karpenter ? 1 : 0 
-  yaml_body = <<-YAML
-    apiVersion: karpenter.sh/v1alpha5
-    kind: Provisioner
-    metadata:
-      name: stateless-provisioner
-    spec:
-      requirements:
-        - key: karpenter.sh/capacity-type
-          operator: In
-          values: ${var.stateless_capacity_types}
-        - key: node.kubernetes.io/instance-type
-          operator: In
-          values: ${var.stateless_instance_types}
-        - key: "topology.kubernetes.io/zone"
-          operator: In
-          values: ${var.stateless_instance_zones}
-        - key: "kubernetes.io/arch"
-          operator: In
-          values: ${var.stateless_arch_types}
-      limits:
-        resources:
-          cpu: ${var.stateless_total_cpu_limit}
-      providerRef:
-        name: default
-      consolidation:
-        enabled: true
-  YAML
+  count = var.deploy_karpenter ? 1 : 0
 
+  yaml_body = yamlencode({
+    apiVersion: "karpenter.sh/v1alpha5"
+    kind: "Provisioner"
+    metadata: {
+      name: "stateless-provisioner"
+    }
+    spec: {
+      consolidation: {
+        enabled = true
+      }
+      providerRef = {
+        name = "default"
+      }
+      limits = {
+        resources = {
+          cpu = var.stateless_total_cpu_limit
+        }
+      }
+      requirements: [
+        {
+          key = "karpenter.sh/capacity-type"
+          operator = "In"
+          values = var.stateless_capacity_types
+        },
+        {
+          key = "node.kubernetes.io/instance-type"
+          operator = "In"
+          values = var.stateless_instance_types
+        },
+        {
+          key = "topology.kubernetes.io/zone"
+          operator = "In"
+          values = var.stateless_instance_zones
+        },
+        {
+          key = "kubernetes.io/arch"
+          operator = "In"
+          values = var.stateless_arch_types
+        },
+        {
+          key = "kubernetes.io/os"
+          operator = "In"
+          values = [
+            "linux",
+          ]
+        },
+      ]
+    }
+  })
+
+  
   depends_on = [
     helm_release.karpenter[0]
   ]

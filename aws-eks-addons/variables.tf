@@ -182,52 +182,53 @@ variable "eks_managed_node_groups_iam_role_arn" {
   type = string
 }
 
-variable "stateful_capacity_types" {
+variable "stateful_capacity_types" { # +
   description = "instance types"
-  default = "[\"on-demand\"]"
-  type = string
+  default = ["on-demand"]
+  type = list(string)
 }
+
 
 variable "stateless_capacity_types" {
   description = "instance types"
-  default = "[\"spot\"]"
-  type = string
+  default = ["spot"]
+  type = list(string)
 }
 
-variable "stateful_instance_types" {
+variable "stateful_instance_types" { 
   description = "instance types"
-  default = "[\"c5n.xlarge\", \"c5n.2xlarge\", \"c5n.4xlarge\",\"c5n.9xlarge\"]"
-  type = string
+  default = ["r6a.xlarge", "r6a.2xlarge", "r6a.4xlarge","r6a.9xlarge"]
+  type = list(string)
 }
 
 variable "stateless_instance_types" {
   description = "instance types"
-  default = "[\"c5n.xlarge\", \"c5n.2xlarge\", \"c5n.4xlarge\",\"c5n.9xlarge\"]"
-  type = string
+  default = ["c5n.xlarge", "c5n.2xlarge", "c5n.4xlarge","c5n.9xlarge"]
+  type = list(string)
 }
 
-variable "stateful_instance_zones" {
+variable "stateful_instance_zones" { 
   description = "instance types"
-  default = "[\"eu-west-1a\"]"
-  type = string
+  default = ["eu-west-1a"]
+  type = list(string)
 }
 
 variable "stateless_instance_zones" {
   description = "instance types"
-  default = "[\"eu-west-1a\"]"
-  type = string
+  default = ["eu-west-1a"]
+  type = list(string)
 }
 
 variable "stateful_arch_types" {
   description = "instance types"
-  default = "[\"amd64\"]"
-  type = string
+  default = ["amd64"]
+  type = list(string)
 }
 
 variable "stateless_arch_types" {
   description = "instance types"
-  default = "[\"amd64\"]"
-  type = string
+  default = ["amd64"]
+  type = list(string)
 }
 
 variable "stateful_application_toleration_value" {
@@ -238,14 +239,14 @@ variable "stateful_application_toleration_value" {
 
 variable "stateful_total_cpu_limit" {
   description = "cpu limit"
-  default = "400"
-  type = string
+  default = 400
+  type = number
 }
 
 variable "stateless_total_cpu_limit" {
   description = "cpu limit"
-  default = "400"
-  type = string
+  default = 400
+  type = number
 }
 
 variable "karpenter_node_template_volume_size" {
