@@ -450,7 +450,7 @@ data "aws_ecrpublic_authorization_token" "token" {
 
 module "karpenter" {
 
-  source  = "git::https://github.com/kloia/platform-modules.git//aws-eks/modules/karpenter?ref=adjust-karpenter"
+  source  = "git::https://github.com/kloia/platform-modules.git//aws-eks/modules/karpenter?ref=v0.0.38"
 
   cluster_name = var.cluster_name
 
