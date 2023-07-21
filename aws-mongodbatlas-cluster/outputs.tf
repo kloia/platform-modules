@@ -102,7 +102,6 @@ output "vpc_peering_info_primary" {
       requester_cidr = v.atlas_cidr_block
       peer_id = length([ for p in mongodbatlas_network_peering.mongo_peer : p.connection_id if p.container_id == v.id && p.accepter_region_name == var.region]) > 0 ? element([ for p in mongodbatlas_network_peering.mongo_peer : p.connection_id if p.container_id == v.id && p.accepter_region_name == var.region],0) : ""
     }
-    if k == var.region
 ]
   description = "Mongoatlas VPC Peering Info to AWS Primary Region"
 }
@@ -114,9 +113,8 @@ output "vpc_peering_info_secondary" {
       requester_cidr = v.atlas_cidr_block
       peer_id = length([ for p in mongodbatlas_network_peering.mongo_peer : p.connection_id if p.container_id == v.id && p.accepter_region_name != var.region]) > 0 ? element([ for p in mongodbatlas_network_peering.mongo_peer : p.connection_id if p.container_id == v.id && p.accepter_region_name != var.region],0) : ""
     }
-    if k != var.region
     ]
-  description = "Mongoatlas VPC Peering Info to AWS Primary Region"
+  description = "Mongoatlas VPC Peering Info to AWS Secondary Region"
 }
 
 output "vpc_peering_ids_primary" {
