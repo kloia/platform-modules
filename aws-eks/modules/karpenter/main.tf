@@ -13,7 +13,7 @@ locals {
 ################################################################################
 
 locals {
-  create_irsa      = var.create && var.create_irsa
+  create_irsa      = var.enable_module && var.create && var.create_irsa
   irsa_name        = coalesce(var.irsa_name, "KarpenterIRSA-${var.cluster_name}")
   irsa_policy_name = coalesce(var.irsa_policy_name, local.irsa_name)
 
@@ -192,7 +192,7 @@ resource "aws_iam_role_policy_attachment" "irsa_additional" {
 ################################################################################
 
 locals {
-  enable_spot_termination = var.create && var.enable_spot_termination
+  enable_spot_termination = var.enable_module && var.create && var.enable_spot_termination
 
   queue_name = coalesce(var.queue_name, "Karpenter-${var.cluster_name}")
 }
@@ -302,7 +302,7 @@ resource "aws_cloudwatch_event_target" "this" {
 ################################################################################
 
 locals {
-  create_iam_role = var.create && var.create_iam_role
+  create_iam_role = var.enable_module && var.create && var.create_iam_role
 
   iam_role_name          = coalesce(var.iam_role_name, "Karpenter-${var.cluster_name}")
   iam_role_policy_prefix = "arn:${local.partition}:iam::aws:policy"
@@ -368,7 +368,7 @@ locals {
 }
 
 resource "aws_iam_instance_profile" "this" {
-  count = var.create && var.create_instance_profile ? 1 : 0
+  count = var.enable_module && var.create && var.create_instance_profile ? 1 : 0
 
   name        = var.iam_role_use_name_prefix ? null : local.iam_role_name
   name_prefix = var.iam_role_use_name_prefix ? "${local.iam_role_name}-" : null
