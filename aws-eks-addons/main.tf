@@ -397,7 +397,7 @@ resource "kubectl_manifest" "argocd_bootstrapper_application" {
         path: "helm"
         helm: {
           values: yamlencode({
-            certManger: {
+            certManager: {
               enable: false
             }
             metricsServer: {
