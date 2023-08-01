@@ -413,9 +413,7 @@ resource "kubectl_manifest" "argocd_bootstrapper_application" {
             rancher: {
               enable: var.deploy_rancher
               values: {
-                hostname: {
-                  value: var.rancher_hostname
-                }
+                hostname: var.rancher_hostname
               }
             }
             rancherMonitoringCrd: {
