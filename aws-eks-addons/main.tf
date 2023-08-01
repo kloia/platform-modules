@@ -455,9 +455,11 @@ data "aws_ecrpublic_authorization_token" "token" {
 
 module "karpenter" {
 
-  source  = "git::https://github.com/kloia/platform-modules.git//aws-eks/modules/karpenter?ref=v0.0.38"
+  source  = "git::https://github.com/kloia/platform-modules.git//aws-eks/modules/karpenter?ref=v0.0.47"
 
   cluster_name = var.cluster_name
+
+  create = var.deploy_karpenter
 
   irsa_oidc_provider_arn          = var.oidc_provider_arn
   irsa_namespace_service_accounts = ["karpenter:karpenter"]
