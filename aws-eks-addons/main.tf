@@ -380,6 +380,13 @@ resource "helm_release" "external-secrets" {
   }
 }
 
+
+locals {
+  # rancher monitoring MUST be deployed when rancher istio is enabled.
+  deploy_rancher_istio = var.deploy_rancher_istio
+  deploy_rancher_monitoring = var.deploy_rancher_monitoring || var.deploy_rancher_istio
+}
+
 resource "kubectl_manifest" "argocd_bootstrapper_application" {
   count      = var.deploy_argocd ? 1 : 0
   yaml_body = yamlencode({
@@ -412,13 +419,13 @@ resource "kubectl_manifest" "argocd_bootstrapper_application" {
               }
             }
             rancherMonitoringCrd: {
-              enable: var.deploy_rancher_istio
+              enable: local.deploy_rancher_monitoring
             }
             rancherMonitoring: {
-              enable: var.deploy_rancher_istio
+              enable: local.deploy_rancher_monitoring
             }
             rancherIstio: {
-              enable: var.deploy_rancher_istio
+              enable: local.deploy_rancher_istio
             }
           })
         }

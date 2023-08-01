@@ -130,6 +130,12 @@ variable "rancher_hostname" {
   type = string
 }
 
+variable "deploy_rancher_monitoring" {
+  description = "Deploy Rancher Monitoring and it's CRDs"
+  type        = bool
+  default     = false
+}
+
 variable "deploy_rancher_istio" {
   description = "Deploy Ranchers' flavor of Istio flag"
   type        = bool
