@@ -461,6 +461,8 @@ module "karpenter" {
 
   cluster_name = var.cluster_name
 
+  create = var.deploy_karpenter
+
   irsa_oidc_provider_arn          = var.oidc_provider_arn
   irsa_namespace_service_accounts = ["karpenter:karpenter"]
   provider_region = var.cluster_region

@@ -171,7 +171,7 @@ variable "enable_shield_advanced_protection_from_alb_to_istio" {
 
 variable "deploy_karpenter" {
   description = "Deploy controller flag"
-  default = false
+  default = true
   type = bool
 }
 
