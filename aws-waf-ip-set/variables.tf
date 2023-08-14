@@ -15,6 +15,10 @@ variable "ip_set_description" {
   
 }
 
+variable "whitelist_scope" {
+  description = ""
+  default = "REGIONAL"
+}
 
 variable "blacklist_ip_addresses" {
     description = "Blacklist IP addresses"
@@ -33,3 +37,7 @@ variable "blacklist_ip_set_description" {
   
 }
 
+variable "blacklist_scope" {
+  description = ""
+  default = "REGIONAL"
+}

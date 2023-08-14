@@ -3,11 +3,23 @@ resource "aws_wafv2_web_acl" "waf_acl" {
   count = var.create_waf ? 1 : 0
   name        = var.waf_web_acl_name
   description = var.description
-  scope       = "CLOUDFRONT"
+  scope       = "${var.waf_rule_scope}"
 
 
   default_action {
-    block {}
+
+
+    dynamic "block" {
+      for_each = var.allow_default_action ? [] : [1]
+      content {}
+    }
+
+    dynamic "allow" {
+      for_each = var.allow_default_action ? [1] : []
+      content {}
+    }
+
+  
   }
 
     dynamic "rule" {
