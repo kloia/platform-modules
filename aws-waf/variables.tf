@@ -19,6 +19,13 @@ variable "description" {
   
 }
 
+variable "waf_rule_scope" {
+  description = ""
+  default = "REGIONAL"
+}
+
+
+
 
 variable "metric_name" {
     description = "A friendly name of the CloudWatch metric."
@@ -79,6 +86,13 @@ variable "allow_default_action" {
   description = "Set to `true` for WAF to allow requests by default. Set to `false` for WAF to block requests by default."
   default     = true
 }
+
+variable "block_default_action" {
+  type        = bool
+  description = "Set to `true` for WAF to allow requests by default. Set to `false` for WAF to block requests by default."
+  default     = true
+}
+
 
 variable "scope" {
   type        = string
