@@ -1,6 +1,7 @@
 output "vpc_peering_id" {
     description = "ID of the vpc peering"
-    value = aws_vpc_peering_connection.peer.id
+    value = try(aws_vpc_peering_connection.peer[0].id,null)
+
 }
 
 output "requester_vpc_id" {
