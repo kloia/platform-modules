@@ -19,14 +19,15 @@ provider "kubernetes" {
   cluster_ca_certificate = base64decode(data.aws_ssm_parameter.upstream_cluster_ca_cert.value)
   exec {
     api_version = "client.authentication.k8s.io/v1beta1"
-    args        = [
+    args = [
       "eks", "get-token", "--role-arn", var.upstream_assume_role_arn, "--cluster-name",
       data.aws_ssm_parameter.upstream_cluster_name.value
     ]
-    command     = "aws"
+    command = "aws"
   }
 }
 
+# Alternative kubernetes provider that plays a bit nicer with arbitrary manifests
 provider "kubectl" {
   alias = "downstream"
 
@@ -34,11 +35,16 @@ provider "kubectl" {
   cluster_ca_certificate = base64decode(var.downstream_cluster_ca_cert)
   exec {
     api_version = "client.authentication.k8s.io/v1beta1"
-    args        = [
-      "eks", "get-token", "--role-arn", var.downstream_assume_role_arn, "--cluster-name", var.downstream_cluster_name
+    args = [
+      "eks", "get-token", "--role-arn", var.downstream_assume_role_arn, "--cluster-name",
+      var.downstream_cluster_name
     ]
-    command     = "aws"
+    command = "aws"
   }
+}
+
+locals {
+  rancher_cluster_name = var.rancher_cluster_name != "" ? var.rancher_cluster_name : var.downstream_cluster_name
 }
 
 # Fetch the internal cluster name from the resource created in `aws-eks-rancher-cluster-joiner`
@@ -49,7 +55,7 @@ data "kubernetes_resource" "cluster_provisioning" {
   kind        = "Cluster"
   metadata {
     namespace = "fleet-default"
-    name      = var.downstream_cluster_name
+    name      = local.rancher_cluster_name
   }
 }
 
@@ -59,7 +65,7 @@ locals {
 
 # Rancher created resource, which includes the manifest that needs to be applied to the downstream cluster
 data "kubernetes_resource" "cluster_registration_token" {
-  provider   = kubernetes.upstream
+  provider = kubernetes.upstream
   depends_on = [
     data.kubernetes_resource.cluster_provisioning,
   ]
@@ -82,30 +88,20 @@ data "http" "agent_registration_manifest" {
   url = data.kubernetes_resource.cluster_registration_token.object["status"]["manifestUrl"]
 }
 
-locals {
-  separated_manifests = split("---", data.http.agent_registration_manifest.response_body)
-  trimmed_manifests   = [
-    for x in local.separated_manifests : trimspace(x)
-  ]
+data "kubectl_file_documents" "agent_registration_manifest" {
+  content = data.http.agent_registration_manifest.response_body
 }
 
 # Apply the registration manifest to downstream, which finally makes it join upstream.
-#
-# Note(ehakan): This operation of "download yaml, apply it" is the only reason
-# we use `provider "kubectl"` for downstream.
-# 1. The terraform `yamldecode()` function can't handle a file with multiple documents in it,
-#    and the "kubernetes_manifest" resource type requires each manifest to be a separate resource (e.g. using for_each)
-#    so the official kubernetes provider is a no go. This is remedied by the previous locals definitions for trimming.
-# 2. Kubernetes provider tries to take extension ownership of resources, so applying external manifests
-#    can result in state issues.
 resource "kubectl_manifest" "agent_registration" {
-  for_each = toset(compact(local.trimmed_manifests))
-  provider   = kubectl.downstream
+  for_each = data.kubectl_file_documents.agent_registration_manifest.manifests
+  provider = kubectl.downstream
+
+  yaml_body = each.value
+
   depends_on = [data.http.agent_registration_manifest]
   lifecycle {
     # No need to apply again if downstream is already joined
     ignore_changes = [yaml_body]
   }
-
-  yaml_body = each.value
 }

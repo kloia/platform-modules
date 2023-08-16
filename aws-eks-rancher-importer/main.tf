@@ -24,9 +24,13 @@ provider "kubernetes" {
   }
 }
 
-# This only creates the provisioning. The cluster will imported
+locals {
+  rancher_cluster_name = var.rancher_cluster_name != "" ? var.rancher_cluster_name : var.downstream_cluster_name
+}
+
+# This only creates the provisioning. The cluster will be imported
 # after `aws-eks-rancher-joiner` applies the join manifests from the
-# resulting join.
+# resulting import.
 resource "kubernetes_manifest" "cluster_provisioning" {
   provider = kubernetes.upstream
 
@@ -36,7 +40,7 @@ resource "kubernetes_manifest" "cluster_provisioning" {
     metadata = {
       # TODO: namespace can be non-default
       namespace = "fleet-default"
-      name      = var.downstream_cluster_name
+      name      = local.rancher_cluster_name
     }
     # The empty spec has been lifted straight from
     # Rancher's UI when importing an existing cluster.
@@ -51,3 +55,4 @@ resource "kubernetes_manifest" "cluster_provisioning" {
     }
   }
 }
+
