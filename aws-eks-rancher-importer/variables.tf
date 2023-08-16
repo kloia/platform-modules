@@ -1,3 +1,9 @@
+variable "rancher_cluster_name" {
+  type        = string
+  description = "Name of the rancher cluster resource representing the downstream cluster. If not set, will default to `var.downstream_cluster_name`"
+  default     = ""
+}
+
 variable "upstream_cluster_name_ssm_key" {
   type        = string
   description = "SSM Key pointing to existing upstream cluster name"
