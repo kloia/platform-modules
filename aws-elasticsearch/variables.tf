@@ -385,3 +385,9 @@ variable "tags" {
     Neither the tag keys nor the tag values will be modified by this module.
     EOT
 }
+
+variable "subnet_id_names" {
+  description = "name of subnet ID's"
+  type = string
+  default = "*"
+}

@@ -1,3 +1,14 @@
+data "aws_subnets" "private_subnets_with_database_tag" {
+  filter {
+    name   = "vpc-id"
+    values = [var.vpc_id]
+  }
+  filter {
+    name   = "tag:Name"
+    values = ["${var.subnet_id_names}"] 
+  }
+}
+
 # https://github.com/terraform-providers/terraform-provider-aws/issues/5218
 resource "aws_iam_service_linked_role" "default" {
   count            = var.enabled && var.create_iam_service_linked_role ? 1 : 0
@@ -105,7 +116,7 @@ resource "aws_elasticsearch_domain" "default" {
 
     content {
       security_group_ids = var.security_groups
-      subnet_ids         = var.subnet_ids
+      subnet_ids         = try(data.aws_subnets.private_subnets_with_database_tag.ids, null)
     }
   }
 
