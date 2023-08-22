@@ -39,3 +39,9 @@ variable "ignore_value_changes" {
   description = "Whether to ignore future external changes in paramater values"
   default     = false
 }
+
+variable "cross_account_read" {
+  type        = bool
+  description = "Read parameter from cross account"
+  default     = false
+}

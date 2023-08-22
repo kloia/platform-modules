@@ -38,3 +38,15 @@ variable "tags" {
   type        = map(string)
   default     = {}
 }
+
+variable "policy_name" {
+  description = "(Required) Name of the resource policy"
+  type        = string
+  default     = ""
+}
+
+variable "identifiers" {
+  description = "A list of AWS Service identifiers that used to grant permission to write log to Cloudwatch log group."
+  type        = list 
+  default     = []
+}

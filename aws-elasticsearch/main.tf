@@ -9,6 +9,11 @@ data "aws_subnets" "private_subnets_with_database_tag" {
   }
 }
 
+resource "random_password" "master_user_password" {
+  count            = var.advanced_security_options_internal_user_database_enabled ? 1 : 0
+  length           = 10
+}
+
 # https://github.com/terraform-providers/terraform-provider-aws/issues/5218
 resource "aws_iam_service_linked_role" "default" {
   count            = var.enabled && var.create_iam_service_linked_role ? 1 : 0
@@ -64,7 +69,7 @@ resource "aws_elasticsearch_domain" "default" {
     master_user_options {
       master_user_arn      = var.advanced_security_options_master_user_arn
       master_user_name     = var.advanced_security_options_master_user_name
-      master_user_password = var.advanced_security_options_master_user_password
+      master_user_password = random_password.master_user_password[0].result
     }
   }
 

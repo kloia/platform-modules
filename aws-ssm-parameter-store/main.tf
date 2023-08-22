@@ -6,8 +6,14 @@ locals {
 }
 
 data "aws_ssm_parameter" "read" {
-  count = length(local.parameter_read)
+  count = var.cross_account_read == false ? length(local.parameter_read) : 0
   name  = element(local.parameter_read, count.index)
+}
+
+data "aws_ssm_parameter" "cross_account_read" {
+  count = var.cross_account_read == true ? length(local.parameter_read) : 0
+  name  = element(local.parameter_read, count.index)
+  provider = aws.cross_account
 }
 
 resource "aws_ssm_parameter" "default" {

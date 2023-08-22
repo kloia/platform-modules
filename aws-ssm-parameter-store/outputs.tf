@@ -4,13 +4,13 @@ locals {
 
   value_list = compact(
     concat(
-      [for p in aws_ssm_parameter.default : p.value], [for p in aws_ssm_parameter.ignore_value_changes : p.value], data.aws_ssm_parameter.read.*.value
+      [for p in aws_ssm_parameter.default : p.value], [for p in aws_ssm_parameter.ignore_value_changes : p.value], data.aws_ssm_parameter.read.*.value, data.aws_ssm_parameter.cross_account_read.*.value
     )
   )
 
   arn_list = compact(
     concat(
-      [for p in aws_ssm_parameter.default : p.arn], [for p in aws_ssm_parameter.ignore_value_changes : p.arn], data.aws_ssm_parameter.read.*.arn
+      [for p in aws_ssm_parameter.default : p.arn], [for p in aws_ssm_parameter.ignore_value_changes : p.arn], data.aws_ssm_parameter.read.*.arn, data.aws_ssm_parameter.cross_account_read.*.arn
     )
   )
 }

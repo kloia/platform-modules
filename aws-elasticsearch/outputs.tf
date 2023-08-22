@@ -38,3 +38,14 @@ output "elasticsearch_user_iam_role_arn" {
   value       = join(",", aws_iam_role.elasticsearch_user.*.arn)
   description = "The ARN of the IAM role to allow access to Elasticsearch cluster"
 }
+
+output "master_user_name" {
+  value       = var.advanced_security_options_master_user_name
+  description = "The master user name to allow access to Elasticsearch cluster"
+}
+
+output "master_user_password" {
+  value       = random_password.master_user_password[0].result
+  description = "The master user name to allow access to Elasticsearch cluster"
+  sensitive = true 
+}
