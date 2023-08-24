@@ -24,6 +24,7 @@ downstream connection information being readily available (through .tfvars, terr
 
 | name                              | description                                                                                                                              |
 |-----------------------------------|------------------------------------------------------------------------------------------------------------------------------------------|
+| rancher_agent_already_installed   | Set if downstream cluster already has the Rancher Agent installed. This injects a few env vars to the agent deployment that Rancher injects in first time agent installations, but never afterwards. |
 | rancher_cluster_name              | Name of the rancher cluster resource representing the downstream cluster name. If not set, will default to `var.downstream_cluster_name` |
 | downstream_cluster_name           | Name of the existing downstream cluster                                                                                                  |
 | downstream_cluster_endpoint       | Endpoint of the downstream cluster                                                                                                       |
@@ -54,9 +55,10 @@ downstream connection information being readily available (through .tfvars, terr
    This will fetch the Rancher generated join manifest (a Rancher Agent setup manifest)
    from the upstream cluster, and apply it to the **downstream**.
 
+   If downstream already has the `cattle-cluster-agent` installed, make sure to set `var.rancher_agent_already_installed`.
+
    If downstream has already been joined to the upstream and the terraform state is up-to-date,
    it will not try to re-join the cluster.
 
    When importing already joined clusters to terraform, there is a chance terraform can re-apply agent setup
-   manifest, which may result in restart of the Rancher agent. This behaviour has not been
-   verified yet.
+   manifest, which may result in restart of the Rancher agent. 

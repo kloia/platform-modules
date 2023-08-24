@@ -1,3 +1,9 @@
+variable "rancher_agent_already_installed" {
+  type        = bool
+  description = "Set if downstream cluster already has the Rancher Agent installed. This injects a few env vars to the agent deployment that Rancher injects in first time agent installations, but never afterwards."
+  default     = false
+}
+
 variable "rancher_cluster_name" {
   type        = string
   description = "Name of the rancher cluster resource representing the downstream cluster. If not set, will default to `var.downstream_cluster_name`"
