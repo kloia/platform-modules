@@ -27,6 +27,21 @@ provider "kubernetes" {
   }
 }
 
+provider "kubernetes" {
+  alias = "downstream"
+
+  host                   = var.downstream_cluster_endpoint
+  cluster_ca_certificate = base64decode(var.downstream_cluster_ca_cert)
+  exec {
+    api_version = "client.authentication.k8s.io/v1beta1"
+    args = [
+      "eks", "get-token", "--role-arn", var.downstream_assume_role_arn, "--cluster-name",
+      var.downstream_cluster_name
+    ]
+    command = "aws"
+  }
+}
+
 # Alternative kubernetes provider that plays a bit nicer with arbitrary manifests
 provider "kubectl" {
   alias = "downstream"
@@ -88,6 +103,7 @@ data "http" "agent_registration_manifest" {
   url = data.kubernetes_resource.cluster_registration_token.object["status"]["manifestUrl"]
 }
 
+# separate yaml documents
 data "kubectl_file_documents" "agent_registration_manifest" {
   content = data.http.agent_registration_manifest.response_body
 }
@@ -104,4 +120,25 @@ resource "kubectl_manifest" "agent_registration" {
     # No need to apply again if downstream is already joined
     ignore_changes = [yaml_body]
   }
+}
+
+resource "kubernetes_env" "cattle_features" {
+  count = var.rancher_agent_already_installed ? 1 : 0
+  provider = kubernetes.downstream
+
+  api_version = "apps/v1"
+  kind        = "Deployment"
+  metadata {
+    name      = "cattle-cluster-agent"
+    namespace = "cattle-system"
+  }
+
+  container = "cluster-register"
+
+  env {
+    name  = "CATTLE_FEATURES"
+    value = "embedded-cluster-api=false,fleet=false,monitoringv1=false,multi-cluster-management=false,multi-cluster-management-agent=true,provisioningv2=false,rke2=false"
+  }
+
+  depends_on = [kubectl_manifest.agent_registration]
 }
