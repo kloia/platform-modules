@@ -77,7 +77,7 @@ data "aws_iam_policy_document" "policy" {
 
         content {
           type        = principals.value.type
-          identifiers = [data.aws_caller_identity.current.arn]
+          identifiers = principals.value.identifiers
         }
       }
 

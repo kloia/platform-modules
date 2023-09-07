@@ -13,6 +13,8 @@ locals {
     Repository = "https://github.com/kloia/platform-modules/tree/main/aws-efs"
   }
   private_subnets = [""] # subnet ids for provisioning efs 
+  vpc_id = "" # vpc id
+  private_subnet_cidr_blocks = [""] # private subnets' cidr blocks for ingress rules
 }
 
 data "aws_availability_zones" "available" {}
@@ -59,12 +61,12 @@ module "efs" {
   # Mount targets / security group
   mount_targets              = { for k, v in zipmap(local.azs, local.private_subnets) : k => { subnet_id = v } }
   security_group_description = "Example EFS security group"
-  security_group_vpc_id      = module.vpc.vpc_id
+  security_group_vpc_id      = local.vpc_id
   security_group_rules = {
     vpc = {
       # relying on the defaults provdied for EFS/NFS (2049/TCP + ingress)
       description = "NFS ingress from VPC private subnets"
-      cidr_blocks = module.vpc.private_subnets_cidr_blocks
+      cidr_blocks = local.private_subnet_cidr_blocks
     }
   }
 
