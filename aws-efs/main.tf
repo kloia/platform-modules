@@ -162,7 +162,7 @@ data "aws_caller_identity" "current" {}
 
 
 resource "aws_security_group" "this" {
-  count = var.create && var.create_security_group && length(var.mount_targets) > 0 ? 1 : 0
+  count = var.create && var.create_security_group ? 1 : 0
 
   name        = var.security_group_use_name_prefix ? null : local.security_group_name
   name_prefix = var.security_group_use_name_prefix ? "${local.security_group_name}-" : null
