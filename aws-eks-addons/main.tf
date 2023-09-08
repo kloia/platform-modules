@@ -425,6 +425,18 @@ resource "kubectl_manifest" "argocd_bootstrapper_application" {
             rancherIstio: {
               enable: local.deploy_rancher_istio
             }
+            argoWorkflow: {
+              enable: var.deploy_argo_workflow
+              values: { 
+                server: {
+                  ingress: {
+                    enabled: true
+                    hosts: ["${var.argo_workflow_ingress_host}"]
+                  }
+                  extraArgs: var.argo_workflow_extra_args
+                }
+              }
+            }
           })
         }
       }

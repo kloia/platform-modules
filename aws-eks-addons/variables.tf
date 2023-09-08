@@ -166,6 +166,27 @@ variable "enable_shield_advanced_protection_from_alb_to_istio" {
   default     = false
 }
 
+variable "deploy_argo_workflow" {
+  description = "Deploy Argo Workflow flag"
+  type = bool
+  default = false
+}
+
+
+variable "argo_workflow_ingress_host" {
+  description = "Argo workflow hostname for ingress"
+  type        = string
+  default     = ""
+}
+
+
+variable "argo_workflow_extra_args" {
+  description = "Argo workflow extraArgs "
+  type        = list(any)
+  default     = []
+}
+
+
 
 # karpenter
 
