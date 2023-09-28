@@ -30,6 +30,8 @@ module "tgw" {
           destination_cidr_block = "40.0.0.0/20"
         }
       ]
+      vpc_route_table_ids = ["rtb-xyz", "rtb-abc"]
+      vpc_cidrs = ["10.0.0.0/16", "20.0.0.0/16"]
     }
   }
 
@@ -127,6 +129,8 @@ No modules.
 | <a name="input_transit_gateway_cidr_blocks"></a> [transit\_gateway\_cidr\_blocks](#input\_transit\_gateway\_cidr\_blocks) | One or more IPv4 or IPv6 CIDR blocks for the transit gateway. Must be a size /24 CIDR block or larger for IPv4, or a size /64 CIDR block or larger for IPv6 | `list(string)` | `[]` | no |
 | <a name="input_transit_gateway_route_table_id"></a> [transit\_gateway\_route\_table\_id](#input\_transit\_gateway\_route\_table\_id) | Identifier of EC2 Transit Gateway Route Table to use with the Target Gateway when reusing it between multiple TGWs | `string` | `null` | no |
 | <a name="input_vpc_attachments"></a> [vpc\_attachments](#input\_vpc\_attachments) | Maps of maps of VPC details to attach to TGW. Type 'any' to disable type validation by Terraform. | `any` | `{}` | no |
+| <a name="tgw_route_table_env"></a> [tgw\_route\_table\_env](#tgw\_route\_table\_env) | Identifier of EC2 Transit Gateway Route Table environment to use with routes. Required if you create vpc-attachment | `string` | `null` | no |
+| <a name="cross_account_assosiation_propagation"></a> [cross\_account\_assosiation\_propagation](#cross\_account\_assosiation\_propagation) | Cross account assosiation and propagation | `bool` | `false` | no |
 
 ## Outputs
 

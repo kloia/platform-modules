@@ -1,7 +1,7 @@
 locals {
   # List of maps with key and route values
   vpc_attachments_with_routes = chunklist(flatten([
-    for k, v in var.vpc_attachments : setproduct([{ key = k }], v.tgw_routes) if var.create_tgw && can(v.tgw_routes)
+    for k, v in var.vpc_attachments : setproduct([{ key = k }], v.tgw_routes) if can(v.tgw_routes)
   ]), 2)
 
   tgw_default_route_table_tags_merged = merge(
@@ -9,12 +9,28 @@ locals {
     { Name = var.name },
     var.tgw_default_route_table_tags,
   )
-
-  vpc_route_table_destination_cidr = flatten([
+  # List of cidr
+  vpc_route_table_destination_cidrs = flatten([
+    for k,v in var.vpc_attachments : [
+      for cidr in try(v.vpc_cidrs, []) : {
+          cidr = cidr
+      }
+    ]
+  ])
+  # List of route tables
+  vpc_route_table_id = flatten([
     for k, v in var.vpc_attachments : [
       for rtb_id in try(v.vpc_route_table_ids, []) : {
         rtb_id = rtb_id
-        cidr   = v.tgw_destination_cidr
+      }
+    ]
+  ])
+  #List of maps of subnet route information.
+  vpc_routes = flatten([
+    for rtb_id in local.vpc_route_table_id : [
+      for cidr in local.vpc_route_table_destination_cidrs : {
+        route_cidr = cidr 
+        route_rtb_id = rtb_id
       }
     ]
   ])
@@ -88,53 +104,90 @@ resource "aws_ec2_transit_gateway_vpc_attachment" "this" {
 ################################################################################
 
 resource "aws_ec2_transit_gateway_route_table" "this" {
-  count = var.create_tgw ? 1 : 0
+  count = var.create_tgw ? 2 : 0
 
-  transit_gateway_id = aws_ec2_transit_gateway.this[0].id
+  transit_gateway_id = var.create_tgw ? aws_ec2_transit_gateway.this[0].id : join (",", [for k, v in var.vpc_attachments : v.tgw_id[0]])
 
   tags = merge(
     var.tags,
-    { Name = var.name },
+    { Name = count.index == 0 ? format("%s/%s",var.name,"non-prod") : format("%s/%s",var.name,"prod") },
     var.tgw_route_table_tags,
   )
 }
 
 resource "aws_ec2_transit_gateway_route" "this" {
-  count = length(local.vpc_attachments_with_routes)
+  count = var.cross_account_assosiation_propagation == false ? length(local.vpc_attachments_with_routes) : 0 
 
   destination_cidr_block = local.vpc_attachments_with_routes[count.index][1].destination_cidr_block
   blackhole              = try(local.vpc_attachments_with_routes[count.index][1].blackhole, null)
 
-  transit_gateway_route_table_id = var.create_tgw ? aws_ec2_transit_gateway_route_table.this[0].id : var.transit_gateway_route_table_id
+  transit_gateway_route_table_id = var.create_tgw && var.tgw_route_table_env != "prod" ? aws_ec2_transit_gateway_route_table.this[0].id : "${var.create_tgw && var.tgw_route_table_env == "prod" ? aws_ec2_transit_gateway_route_table.this[1].id : var.transit_gateway_route_table_id}" 
+  transit_gateway_attachment_id  = tobool(try(local.vpc_attachments_with_routes[count.index][1].blackhole, false)) == false ? aws_ec2_transit_gateway_vpc_attachment.this[local.vpc_attachments_with_routes[count.index][0].key].id : null
+}
+
+# Cross account resource
+resource "aws_ec2_transit_gateway_route" "network_account" {
+  provider = aws.network_account
+  count = var.cross_account_assosiation_propagation == true ? length(local.vpc_attachments_with_routes) : 0 
+
+  
+  destination_cidr_block = local.vpc_attachments_with_routes[count.index][1].destination_cidr_block
+  blackhole              = try(local.vpc_attachments_with_routes[count.index][1].blackhole, null)
+
+  transit_gateway_route_table_id = var.create_tgw && var.tgw_route_table_env != "prod" ? aws_ec2_transit_gateway_route_table.this[0].id : "${var.create_tgw && var.tgw_route_table_env == "prod" ? aws_ec2_transit_gateway_route_table.this[1].id : var.transit_gateway_route_table_id}" 
   transit_gateway_attachment_id  = tobool(try(local.vpc_attachments_with_routes[count.index][1].blackhole, false)) == false ? aws_ec2_transit_gateway_vpc_attachment.this[local.vpc_attachments_with_routes[count.index][0].key].id : null
 }
 
 resource "aws_route" "this" {
-  for_each = { for x in local.vpc_route_table_destination_cidr : x.rtb_id => x.cidr }
+  for_each = { for routes  in local.vpc_routes : "${routes.route_rtb_id.rtb_id}.${routes.route_cidr.cidr}" => routes }
 
-  route_table_id         = each.key
-  destination_cidr_block = each.value
-  transit_gateway_id     = aws_ec2_transit_gateway.this[0].id
+  route_table_id         = each.value.route_rtb_id.rtb_id
+  destination_cidr_block = each.value.route_cidr.cidr
+  transit_gateway_id     = var.create_tgw ? aws_ec2_transit_gateway.this[0].id : join (",", [for k, v in var.vpc_attachments : v.tgw_id])
 }
 
 resource "aws_ec2_transit_gateway_route_table_association" "this" {
   for_each = {
-    for k, v in var.vpc_attachments : k => v if var.create_tgw && try(v.transit_gateway_default_route_table_association, true) != true
+    for k, v in var.vpc_attachments : k => v if try(v.transit_gateway_default_route_table_association, true) != true && v.cross_account_assosiation_propagation == false
   }
 
   # Create association if it was not set already by aws_ec2_transit_gateway_vpc_attachment resource
   transit_gateway_attachment_id  = aws_ec2_transit_gateway_vpc_attachment.this[each.key].id
-  transit_gateway_route_table_id = var.create_tgw ? aws_ec2_transit_gateway_route_table.this[0].id : try(each.value.transit_gateway_route_table_id, var.transit_gateway_route_table_id)
+  transit_gateway_route_table_id = var.create_tgw && var.tgw_route_table_env != "prod" ? aws_ec2_transit_gateway_route_table.this[0].id : "${var.create_tgw && var.tgw_route_table_env == "prod" ? aws_ec2_transit_gateway_route_table.this[1].id : var.transit_gateway_route_table_id}"
+}
+
+# Cross account resource
+resource "aws_ec2_transit_gateway_route_table_association" "network_account" {
+  provider = aws.network_account
+  for_each = {
+    for k, v in var.vpc_attachments : k => v if try(v.transit_gateway_default_route_table_association, true) != true && v.cross_account_assosiation_propagation == true
+  }
+
+  # Create association if it was not set already by aws_ec2_transit_gateway_vpc_attachment resource
+  transit_gateway_attachment_id  = aws_ec2_transit_gateway_vpc_attachment.this[each.key].id
+  transit_gateway_route_table_id = var.create_tgw && var.tgw_route_table_env != "prod" ? aws_ec2_transit_gateway_route_table.this[0].id : "${var.create_tgw && var.tgw_route_table_env == "prod" ? aws_ec2_transit_gateway_route_table.this[1].id : var.transit_gateway_route_table_id}"
 }
 
 resource "aws_ec2_transit_gateway_route_table_propagation" "this" {
   for_each = {
-    for k, v in var.vpc_attachments : k => v if var.create_tgw && try(v.transit_gateway_default_route_table_propagation, true) != true
+    for k, v in var.vpc_attachments : k => v if try(v.transit_gateway_default_route_table_propagation, true) != true && v.cross_account_assosiation_propagation == false
   }
 
   # Create association if it was not set already by aws_ec2_transit_gateway_vpc_attachment resource
   transit_gateway_attachment_id  = aws_ec2_transit_gateway_vpc_attachment.this[each.key].id
-  transit_gateway_route_table_id = var.create_tgw ? aws_ec2_transit_gateway_route_table.this[0].id : try(each.value.transit_gateway_route_table_id, var.transit_gateway_route_table_id)
+  transit_gateway_route_table_id = var.create_tgw && var.tgw_route_table_env != "prod" ? aws_ec2_transit_gateway_route_table.this[0].id : "${var.create_tgw && var.tgw_route_table_env == "prod" ? aws_ec2_transit_gateway_route_table.this[1].id : var.transit_gateway_route_table_id}"
+}
+
+## Cross account resource
+resource "aws_ec2_transit_gateway_route_table_propagation" "network_account" {
+  provider = aws.network_account
+  for_each = {
+    for k, v in var.vpc_attachments : k => v if try(v.transit_gateway_default_route_table_propagation, true) != true && v.cross_account_assosiation_propagation == true
+  }
+
+  # Create association if it was not set already by aws_ec2_transit_gateway_vpc_attachment resource
+  transit_gateway_attachment_id  = aws_ec2_transit_gateway_vpc_attachment.this[each.key].id
+  transit_gateway_route_table_id = var.create_tgw && var.tgw_route_table_env != "prod" ? aws_ec2_transit_gateway_route_table.this[0].id : "${var.create_tgw && var.tgw_route_table_env == "prod" ? aws_ec2_transit_gateway_route_table.this[1].id : var.transit_gateway_route_table_id}"
 }
 
 ################################################################################
