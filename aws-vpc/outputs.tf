@@ -113,8 +113,6 @@ output "public_subnets_ipv6_cidr_blocks" {
   value       = compact(aws_subnet.public[*].ipv6_cidr_block)
 }
 
-
-
 output "all_private_route_table_ids" {
   value = concat(
     try(aws_route_table.private[*].id,[]),
@@ -132,6 +130,10 @@ output "private_route_table_ids" {
   value       = aws_route_table.private[*].id
 }
 
+output "all_route_table_ids" {
+  description = "List of IDs of private and public route tables"
+  value       = concat(aws_route_table.private[*].id, aws_route_table.public[*].id)
+}
 
 output "public_internet_gateway_route_id" {
   description = "ID of the internet gateway route"
@@ -254,20 +256,6 @@ output "name" {
   description = "The name of the VPC specified as argument to this module"
   value       = var.name
 }
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 
 output "all_private_subnets" {
   value = try(aws_subnet.private[*])
