@@ -146,3 +146,30 @@ variable "log_group_name" {
   type        = string
   default     = ""
 }
+
+variable "tags" {
+  description = "Tags"
+  type        = map(string)
+  default     = {}
+}
+
+variable "additional_routes" {
+  default     = []
+  description = "A list of additional routes that should be attached to the Client VPN endpoint"
+
+  type = list(object({
+    destination_cidr_block = string
+    description            = string
+    target_vpc_subnet_id   = string
+  }))
+}
+
+variable "additional_routes_for_all" {
+  default     = []
+  description = "A list of additional routes that should be attached to the Client VPN endpoint"
+
+  type = list(object({
+    destination_cidr_block = string
+    description            = string
+  }))
+}
