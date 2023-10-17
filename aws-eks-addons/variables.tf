@@ -145,7 +145,7 @@ variable "deploy_rancher_istio" {
 variable "connect_hostnames_from_alb_ing_prefix" {
   description = "Prefix to give ingress names when connecting alb hostnames"
   type = string
-  default = "ing-{servicename}"
+  default = "ing-servicename"
 }
 
 variable "connect_hostnames_from_alb_to_nginx" {
