@@ -406,10 +406,13 @@ resource "kubectl_manifest" "argocd_bootstrapper_application" {
         helm: {
           values: yamlencode({
             certManager: {
-              enable: false
+              enable: var.deploy_cert_manager
             }
             metricsServer: {
-              enable: false
+              enable: var.deploy_metrics_server
+            }
+            trivy: {
+              enable: var.deploy_trivy
             }
             rancher: {
               enable: var.deploy_rancher

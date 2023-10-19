@@ -119,6 +119,24 @@ variable "deploy_external_secrets" {
   default     = false
 }
 
+variable "deploy_trivy" {
+  description = "Deploy Trivy flag"
+  type = bool
+  default = false
+}
+
+variable "deploy_metrics_server" {
+  description = "Deploy Rancher flag"
+  type = bool
+  default = false
+}
+
+variable "deploy_cert_manager" {
+  description = "Deploy Rancher flag"
+  type = bool
+  default = false
+}
+
 variable "deploy_rancher" {
   description = "Deploy Rancher flag"
   type = bool
