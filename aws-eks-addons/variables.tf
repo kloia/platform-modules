@@ -204,6 +204,11 @@ variable "argo_workflow_extra_args" {
   default     = []
 }
 
+variable "argo_workflow_target_revision" {
+  description = "value of the targetRevision field of argo workflow"
+  default = "0.36.1"
+}
+
 
 
 # karpenter
@@ -367,3 +372,4 @@ variable "gitops_url" {
   description = "url of the argocd"
   default = "https://gitops.platform.mycompany.com"
 }
+

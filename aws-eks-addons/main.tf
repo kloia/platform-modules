@@ -471,6 +471,7 @@ resource "kubectl_manifest" "argocd_bootstrapper_application" {
             }
             argoWorkflow: {
               enable: var.deploy_argo_workflow
+              targetRevision: var.argo_workflow_target_revision
               values: { 
                 server: {
                   ingress: {
