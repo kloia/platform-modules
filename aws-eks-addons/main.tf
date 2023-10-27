@@ -328,16 +328,6 @@ resource "helm_release" "argocd" {
   }
 
 
-  dynamic "set" {
-    for_each = var.enable_sso ? [1] : []
-    content {
-    name = "configs.rbac.policy.csv"
-    value = var.policy_csv
-    }
-  }
-
-
-
 
   depends_on = [
     kubernetes_ingress_v1.alb_ingress_connect_nginx

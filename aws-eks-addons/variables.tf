@@ -335,17 +335,6 @@ variable "enable_sso" {
 }
 
 
-variable "policy_csv" {
-  default = <<-EOT
-      policy.csv: |
-        g, PlatformTestAccountArgoCD, role:admin
-        g, name.surname@kloia.com, role:admin
-        g, guest, role:readonly
-EOT
-  description = "policy csv content for argocd rbac"
-}
-
-
 variable "saml_dex_config" {
   description = "Dex configuration for AWS SSO"
   default = <<-EOT
