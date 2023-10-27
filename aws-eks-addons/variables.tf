@@ -323,3 +323,47 @@ variable "karpenter_node_template_throughput" {
   default = "125"
   type = string
 }
+
+variable "enable_sso" {
+  default = true
+  description = "Creation control logic of AWS SSO integration at ArgoCD"
+}
+
+
+variable "policy_csv" {
+  default = <<-EOT
+      policy.csv: |
+        g, PlatformTestAccountArgoCD, role:admin
+        g, name.surname@kloia.com, role:admin
+        g, guest, role:readonly
+EOT
+  description = "policy csv content for argocd rbac"
+}
+
+
+variable "saml_dex_config" {
+  description = "Dex configuration for AWS SSO"
+  default = <<-EOT
+      dex.config: |
+        logger:
+          level: debug
+          format: json
+        connectors:
+        - type: saml
+          id: aws
+          name: "AWS IAM Identity Center"
+          config:
+            ssoURL: <your-single-sign-on-url>
+            caData: <your-ca-data>
+            redirectURI: https://<your-base-url>/api/dex/callback
+            entityIssuer: https://<your-base-url>/api/dex/callback
+            usernameAttr: email
+            emailAttr: email
+            groupsAttr: groups
+EOT
+}
+
+variable "gitops_url" {
+  description = "url of the argocd"
+  default = "https://gitops.platform.mycompany.com"
+}

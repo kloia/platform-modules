@@ -299,6 +299,46 @@ resource "helm_release" "argocd" {
     name  = "repoServer.volumes[0].emptyDir"
     value = ""
   }
+
+  // SSO Values
+  // configmap url
+  dynamic "set" {
+    for_each = var.enable_sso ? [1] : []
+    content {
+    name = "configs.cm.url"
+    value = "${var.gitops_url}"
+    }
+  }
+
+   dynamic "set" {
+    for_each = var.enable_sso ? [1] : []
+    content {
+    name = "configs.cm.dex" 
+    value = var.saml_dex_config
+    }
+  }
+
+  // readonly to everybody
+  dynamic "set" {
+    for_each = var.enable_sso ? [1] : []
+    content {
+    name = "configs.rbac.policy.default"
+    value = "role:readonly"
+    }
+  }
+
+
+  dynamic "set" {
+    for_each = var.enable_sso ? [1] : []
+    content {
+    name = "configs.rbac.policy.csv"
+    value = var.policy_csv
+    }
+  }
+
+
+
+
   depends_on = [
     kubernetes_ingress_v1.alb_ingress_connect_nginx
   ]
