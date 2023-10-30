@@ -9,6 +9,34 @@ Creates an service account and deploys aws-load-balancer-controller helm chart.
 
 ## Usage
 
+new: If you enable SSO, you need to provide "values.yaml.tpl" file. Example: values.yaml.tpl
+```
+configs:
+  cm:
+    dex.config: |
+      logger:
+        level: debug
+        format: json
+      connectors:
+      - type: saml
+        id: aws
+        name: "AWS IAM Identity Center"
+        config:
+          ssoURL: ${ssoURL}
+          caData: ${caData}
+          redirectURI: ${redirectURI}
+          entityIssuer: ${entityIssuer}
+          groupsAttr: groups
+          usernameAttr: email
+          emailAttr: email
+
+  rbac:
+    policy.csv: |
+      g, guest, role:readonly
+    # policy.default: role:readonly
+    scopes: '[groups,email]'
+```
+
 ```hcl
 
 inputs = {
