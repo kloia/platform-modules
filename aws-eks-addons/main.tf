@@ -191,6 +191,18 @@ resource "kubernetes_ingress_v1" "alb_ingress_connect_istio" {
   ]
 }
 
+
+data "aws_ssm_parameter" "sso_ca_data_network_account" {
+  provider = aws.network_infra
+  name = "${var.sso_ca_data_network_account}"
+}
+
+data "aws_ssm_parameter" "sso_url_network_account" {
+  provider = aws.network_infra
+  name = "${var.sso_url_network_account}"
+}
+
+
 resource "helm_release" "argocd" {
   count            = var.deploy_argocd ? 1 : 0
   name             = "argocd"
@@ -300,6 +312,15 @@ resource "helm_release" "argocd" {
     value = ""
   }
 
+  values = var.enable_sso ?  [templatefile("${path.module}/values.yaml.tpl",{
+    caData = "${data.aws_ssm_parameter.sso_ca_data_network_account.value}",
+    ssoURL = "${data.aws_ssm_parameter.sso_url_network_account.value}",
+    redirectURI = "${var.sso_callback_url}"
+    entityIssuer = "${var.sso_callback_url}"
+
+  })
+  ] : []
+
   // SSO Values
   // configmap url
   dynamic "set" {
@@ -309,35 +330,6 @@ resource "helm_release" "argocd" {
     value = "${var.gitops_url}"
     }
   }
-
-   dynamic "set" {
-    for_each = var.enable_sso ? [1] : []
-    content {
-    name = "configs.cm.dex" 
-    value = var.saml_dex_config
-    }
-  }
-
-  // readonly to everybody
-  dynamic "set" {
-    for_each = var.enable_sso ? [1] : []
-    content {
-    name = "configs.rbac.policy.default"
-    value = "role:readonly"
-    }
-  }
-
-
-  dynamic "set" {
-    for_each = var.enable_sso ? [1] : []
-    content {
-    name = "configs.rbac.policy.csv"
-    value = var.policy_csv
-    }
-  }
-
-
-
 
   depends_on = [
     kubernetes_ingress_v1.alb_ingress_connect_nginx
@@ -471,7 +463,7 @@ resource "kubectl_manifest" "argocd_bootstrapper_application" {
             }
             argoWorkflow: {
               enable: var.deploy_argo_workflow
-              targetRevision: var.argo_workflow_target_revision
+              targetRevision: "0.36.1"
               values: { 
                 server: {
                   ingress: {
