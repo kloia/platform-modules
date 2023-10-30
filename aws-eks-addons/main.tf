@@ -194,11 +194,13 @@ resource "kubernetes_ingress_v1" "alb_ingress_connect_istio" {
 
 data "aws_ssm_parameter" "sso_ca_data_network_account" {
   provider = aws.network_infra
+  count = var.enable_sso ? 1 : 0
   name = "${var.sso_ca_data_network_account}"
 }
 
 data "aws_ssm_parameter" "sso_url_network_account" {
   provider = aws.network_infra
+  count = var.enable_sso ? 1 : 0
   name = "${var.sso_url_network_account}"
 }
 
