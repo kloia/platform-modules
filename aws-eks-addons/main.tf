@@ -315,8 +315,8 @@ resource "helm_release" "argocd" {
   }
 
   values = var.enable_sso ?  [templatefile("${path.module}/values.yaml.tpl",{
-    caData = "${data.aws_ssm_parameter.sso_ca_data_network_account.value}",
-    ssoURL = "${data.aws_ssm_parameter.sso_url_network_account.value}",
+    caData = "${data.aws_ssm_parameter.sso_ca_data_network_account[0].value}",
+    ssoURL = "${data.aws_ssm_parameter.sso_url_network_account[0].value}",
     redirectURI = "${var.sso_callback_url}"
     entityIssuer = "${var.sso_callback_url}"
 
