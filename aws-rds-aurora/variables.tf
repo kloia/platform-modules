@@ -483,6 +483,24 @@ variable "iam_role_max_session_duration" {
   default     = null
 }
 
+#############################
+# Amazon RDS for SQL Server #
+#############################
+variable "rds_custom" {
+  type = bool
+  description = "this is value to enable RDS custom"
+}
+
+variable "custom_iam_instance_profile" {
+  type = string
+  description = "Instance profile is required for Custom for SQL Server"
+}
+
+variable "multi_az" {
+  type        = bool
+  default     = false
+  description = "Multi Availibity Zone"
+}
 ################################################################################
 # Autoscaling
 ################################################################################
