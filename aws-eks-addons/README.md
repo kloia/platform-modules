@@ -9,7 +9,7 @@ Creates an service account and deploys aws-load-balancer-controller helm chart.
 
 ## Usage
 
-new: If you enable SSO, you need to provide "values.yaml.tpl" file. Example: values.yaml.tpl
+new: If you enable SSO, you need to provide "values.yaml.tpl" file. Example: values.yaml.tpl. It's false by default
 ```
 configs:
   cm:
