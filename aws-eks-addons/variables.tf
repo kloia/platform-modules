@@ -146,6 +146,7 @@ variable "deploy_rancher" {
 variable "rancher_hostname" {
   description = "Rancher Hostname"
   type = string
+  default = ""
 }
 
 variable "deploy_rancher_monitoring" {
@@ -344,4 +345,14 @@ variable "sso_callback_url" {
 variable "gitops_url" {
   description = "url of the argocd"
   default = "https://gitops.platform.mycompany.com"
+}
+
+variable "aws_lb_controller_version" {
+  description = "AWS load balancer controller version"
+  default = "1.6.1"
+}
+
+variable "karpenter_version" {
+  description = "Karpenter version"
+  default = "v0.31.1"
 }

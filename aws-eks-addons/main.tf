@@ -36,7 +36,7 @@ resource "helm_release" "aws_lb_controller" {
   repository = "https://aws.github.io/eks-charts"
   chart      = "aws-load-balancer-controller"
   namespace  = "kube-system"
-  version    = "1.6.1"
+  version    = var.aws_lb_controller_version
   depends_on = [
     kubernetes_service_account.service-account
   ]
@@ -537,7 +537,7 @@ resource "helm_release" "karpenter" {
   repository_username = data.aws_ecrpublic_authorization_token.token.user_name
   repository_password = data.aws_ecrpublic_authorization_token.token.password
   chart               = "karpenter"
-  version             = "v0.28.1"
+  version             = var.karpenter_version
 
   set {
     name  = "settings.aws.clusterName"
