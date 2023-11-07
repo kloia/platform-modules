@@ -125,12 +125,6 @@ variable "tgw_route_table_tags" {
   default     = {}
 }
 
-variable "tgw_route_table_env" {
-  description = "Identifier of EC2 Transit Gateway Route Table environment to use with routes"
-  type        = string
-  default     = null
-}
-
 variable "cross_account_assosiation_propagation" {
   description = "Cross account assosiation and propagation"
   type        = bool
