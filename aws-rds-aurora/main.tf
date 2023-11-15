@@ -2,8 +2,6 @@ data "aws_partition" "current" {}
 
 data "aws_region" "current" {}
 
-data "aws_caller_identity" "current" {}
-
 locals {
   create_cluster = var.create_cluster 
 
@@ -15,7 +13,7 @@ locals {
   cluster_parameter_group_name = try(coalesce(var.db_cluster_parameter_group_name, var.name), null)
   db_parameter_group_name      = try(coalesce(var.db_parameter_group_name, var.name), null)
 
-  master_password  = local.create_cluster && var.create_random_password && var.rds_custom ? random_password.master_password[0].result : var.master_password
+  master_password  = var.create_random_password && var.rds_custom ? random_password.master_password[0].result : var.master_password
   backtrack_window = (var.engine == "aurora-mysql" || var.engine == "aurora") && var.engine_mode != "serverless" ? var.backtrack_window : 0
 
   is_serverless = var.engine_mode == "serverless"
@@ -26,10 +24,16 @@ locals {
 ################################################################################
 
 resource "random_password" "master_password" {
-  count = local.create_cluster && var.create_random_password ? 1 : 0
+  count = var.create_random_password ? 1 : 0
 
   length  = var.random_password_length
   special = false
+}
+
+resource "aws_ssm_parameter" "master_password" {
+  name  = "${var.name}-password"
+  type  = "SecureString"
+  value = random_password.master_password[0].result
 }
 
 resource "random_id" "snapshot_identifier" {
@@ -58,7 +62,7 @@ data "aws_subnets" "private_subnets_with_database_tag" {
 }
 
 resource "aws_db_subnet_group" "this" {
-  count = local.create_cluster && var.create_db_subnet_group ? 1 : 0
+  count = var.create_db_subnet_group ? 1 : 0
 
   name        = local.internal_db_subnet_group_name
   description = "For Aurora cluster ${var.name}"
@@ -72,7 +76,7 @@ resource "aws_db_subnet_group" "this" {
 ################################################################################
 
 resource "aws_rds_cluster" "this" {
-  count = local.create_cluster && var.rds_custom ? 1 : 0
+  count = local.create_cluster ? 1 : 0
 
   allocated_storage                   = var.allocated_storage
   allow_major_version_upgrade         = var.allow_major_version_upgrade
@@ -264,7 +268,7 @@ data "aws_iam_policy_document" "monitoring_rds_assume_role" {
 }
 
 resource "aws_iam_role" "rds_enhanced_monitoring" {
-  count = local.create_cluster && var.create_monitoring_role && var.monitoring_interval && var.rds_custom > 0 ? 1 : 0
+  count = var.create_monitoring_role && var.monitoring_interval > 0 ? 1 : 0
 
   name        = var.iam_role_use_name_prefix ? null : var.iam_role_name
   name_prefix = var.iam_role_use_name_prefix ? "${var.iam_role_name}-" : null
@@ -281,7 +285,7 @@ resource "aws_iam_role" "rds_enhanced_monitoring" {
 }
 
 resource "aws_iam_role_policy_attachment" "rds_enhanced_monitoring" {
-  count = local.create_cluster && var.create_monitoring_role && var.monitoring_interval && var.rds_custom > 0 ? 1 : 0
+  count = var.create_monitoring_role && var.monitoring_interval > 0 ? 1 : 0
 
   role       = aws_iam_role.rds_enhanced_monitoring[0].name
   policy_arn = "arn:${data.aws_partition.current.partition}:iam::aws:policy/service-role/AmazonRDSEnhancedMonitoringRole"
@@ -330,7 +334,7 @@ resource "aws_appautoscaling_policy" "this" {
 ################################################################################
 
 resource "aws_security_group" "this" {
-  count = local.create_cluster && var.create_security_group && var.rds_custom ? 1 : 0
+  count = var.create_security_group ? 1 : 0
 
   name        = var.security_group_use_name_prefix ? null : var.name
   name_prefix = var.security_group_use_name_prefix ? "${var.name}-" : null
@@ -346,7 +350,7 @@ resource "aws_security_group" "this" {
 
 # TODO - change to map of ingress rules under one resource at next breaking change
 resource "aws_security_group_rule" "default_ingress" {
-  count = local.create_cluster && var.create_security_group && var.rds_custom ? length(var.allowed_security_groups) : 0
+  count = var.create_security_group ? length(var.allowed_security_groups) : 0
 
   description = "From allowed SGs"
 
@@ -360,7 +364,7 @@ resource "aws_security_group_rule" "default_ingress" {
 
 # TODO - change to map of ingress rules under one resource at next breaking change
 resource "aws_security_group_rule" "cidr_ingress" {
-  count = local.create_cluster && var.create_security_group && length(var.allowed_cidr_blocks) && var.rds_custom > 0 ? 1 : 0
+  count = var.create_security_group && length(var.allowed_cidr_blocks) > 0 ? 1 : 0
 
   description = "From allowed CIDRs"
 
@@ -373,7 +377,7 @@ resource "aws_security_group_rule" "cidr_ingress" {
 }
 
 resource "aws_security_group_rule" "egress" {
-  for_each = local.create_cluster && var.create_security_group ? var.security_group_egress_rules : {}
+  for_each = var.create_security_group ? var.security_group_egress_rules : {}
 
   # required
   type              = "egress"
@@ -486,44 +490,211 @@ resource "aws_kms_key" "kms" {
 #############################
 # Amazon RDS for SQL Server #
 #############################
-resource "aws_db_instance" "rds_sql_server" {
 
-  count = var.rds_custom ? 1 : 0
+resource "aws_iam_policy" "policy" {
+  name        = "AWSRDSCustomSQLServerIamRolePolicy"
+  path        = "/"
+  description = "AWS RDS Custom SQL Server Policy"
 
-  engine         = var.engine
-  engine_version = var.engine_version
-  port           = 1433
+  # Terraform's "jsonencode" function converts a
+  # Terraform expression result to valid JSON syntax.
+  policy = jsonencode({
+        "Version": "2012-10-17",
+        "Statement": [
+            {
+                "Sid": "ssmAgent1",
+                "Effect": "Allow",
+                "Action": [
+                    "ssm:GetDeployablePatchSnapshotForInstance",
+                    "ssm:ListAssociations",
+                    "ssm:PutInventory",
+                    "ssm:PutConfigurePackageResult",
+                    "ssm:UpdateInstanceInformation",
+                    "ssm:GetManifest"
+                ],
+                "Resource": "*"
+            },
+            {
+                "Sid": "ssmAgent2",
+                "Effect": "Allow",
+                "Action": [
+                    "ssm:ListInstanceAssociations",
+                    "ssm:PutComplianceItems",
+                    "ssm:UpdateAssociationStatus",
+                    "ssm:DescribeAssociation",
+                    "ssm:UpdateInstanceAssociationStatus"
+                ],
+                "Resource": "arn:aws:ec2:${data.aws_region.current.name}:${data.aws_caller_identity.current.account_id}:instance/*"
+            },
+            {
+                "Sid": "ssmAgent3",
+                "Effect": "Allow",
+                "Action": [
+                    "ssm:UpdateAssociationStatus",
+                    "ssm:DescribeAssociation",
+                    "ssm:GetDocument",
+                    "ssm:DescribeDocument"
+                ],
+                "Resource": "arn:aws:ssm:*:*:document/*"
+            },
+            {
+                "Sid": "ssmAgent4",
+                "Effect": "Allow",
+                "Action": [
+                    "ssmmessages:CreateControlChannel",
+                    "ssmmessages:CreateDataChannel",
+                    "ssmmessages:OpenControlChannel",
+                    "ssmmessages:OpenDataChannel"
+                ],
+                "Resource": "*"
+            },
+            {
+                "Sid": "ssmAgent5",
+                "Effect": "Allow",
+                "Action": [
+                    "ec2messages:AcknowledgeMessage",
+                    "ec2messages:DeleteMessage",
+                    "ec2messages:FailMessage",
+                    "ec2messages:GetEndpoint",
+                    "ec2messages:GetMessages",
+                    "ec2messages:SendReply"
+                ],
+                "Resource": "*"
+            },
+            {
+                "Sid": "ssmAgent6",
+                "Effect": "Allow",
+                "Action": [
+                    "ssm:GetParameters",
+                    "ssm:GetParameter"
+                ],
+                "Resource": "arn:aws:ssm:*:*:parameter/*"
+            },
+            {
+                "Sid": "ssmAgent7",
+                "Effect": "Allow",
+                "Action": [
+                    "ssm:UpdateInstanceAssociationStatus",
+                    "ssm:DescribeAssociation"
+                ],
+                "Resource": "arn:aws:ssm:*:*:association/*"
+            },
+            {
+                "Sid": "eccSnapshot1",
+                "Effect": "Allow",
+                "Action": "ec2:CreateSnapshot",
+                "Resource": [
+                    "arn:aws:ec2:${data.aws_region.current.name}:${data.aws_caller_identity.current.account_id}:volume/*"
+                ],
+            },
+            {
+                "Sid": "eccSnapshot2",
+                "Effect": "Allow",
+                "Action": "ec2:CreateSnapshot",
+                "Resource": [
+                    "arn:aws:ec2:${data.aws_region.current.name}::snapshot/*"
+                ]
+            },
+            {
+                "Sid": "eccCreateTag",
+                "Effect": "Allow",
+                "Action": "ec2:CreateTags",
+                "Resource": "*",
+            },
+            {
+                "Sid": "s3BucketAccess",
+                "Effect": "Allow",
+                "Action": [
+                    "s3:putObject",
+                    "s3:getObject",
+                    "s3:getObjectVersion",
+                    "s3:AbortMultipartUpload"
+                ],
+                "Resource": [
+                    "arn:aws:s3:::do-not-delete-rds-custom-*/*"
+                ]
+            },
+            {
+                "Sid": "customerKMSEncryption",
+                "Effect": "Allow",
+                "Action": [
+                    "kms:Decrypt",
+                    "kms:GenerateDataKey*"
+                ],
+                "Resource": [
+                    "${var.kms_key_id}"
+                ]
+            },
+            {
+                "Sid": "readSecretsFromCP",
+                "Effect": "Allow",
+                "Action": [
+                    "secretsmanager:GetSecretValue",
+                    "secretsmanager:DescribeSecret"
+                ],
+                "Resource": [
+                    "arn:aws:secretsmanager:${data.aws_region.current.name}:${data.aws_caller_identity.current.account_id}:secret:do-not-delete-rds-custom-*"
+                ]
+            },
+            {
+                "Sid": "publishCWMetrics",
+                "Effect": "Allow",
+                "Action": "cloudwatch:PutMetricData",
+                "Resource": "*"
+            },
+            {
+                "Sid": "putEventsToEventBus",
+                "Effect": "Allow",
+                "Action": "events:PutEvents",
+                "Resource": "arn:aws:events:${data.aws_region.current.name}:${data.aws_caller_identity.current.account_id}:event-bus/default"
+            },
+            {
+                "Sid": "cwlOperations1",
+                "Effect": "Allow",
+                "Action": [
+                    "logs:PutRetentionPolicy",
+                    "logs:PutLogEvents",
+                    "logs:DescribeLogStreams",
+                    "logs:CreateLogStream",
+                    "logs:CreateLogGroup"
+                ],
+                "Resource": "arn:aws:logs:${data.aws_region.current.name}:${data.aws_caller_identity.current.account_id}:log-group:rds-custom-instance-*"
+            },
+            {
+            "Action": [
+                "SQS:SendMessage",
+                "SQS:ReceiveMessage",
+                "SQS:DeleteMessage",
+                "SQS:GetQueueUrl"
+            ],
+            "Resource": [
+                "arn:aws:sqs:${data.aws_region.current.name}:${data.aws_caller_identity.current.account_id}:do-not-delete-rds-custom-*"
+            ],
+            "Effect": "Allow",
+            "Sid": "SendMessageToSQSQueue"
+        }
+        ]
+    })
+}
 
-  allow_major_version_upgrade = var.allow_major_version_upgrade
-  auto_minor_version_upgrade  = var.auto_minor_version_upgrade # Custom for SQL Server does not support minor version upgrades
-  apply_immediately           = var.apply_immediately
 
-  custom_iam_instance_profile = var.custom_iam_instance_profile # Instance profile is required for Custom for SQL Server
+resource "aws_iam_role" "rds_custom_role" {
+  name               = "AWSRDSCustomSQLServerInstanceRole"
+  path               = "/"
+  assume_role_policy = data.aws_iam_policy_document.assume_role.json
+}
 
-  backup_window            = var.backup_windows_retention_maintenance[0]
-  backup_retention_period  = var.backup_windows_retention_maintenance[1]
-  maintenance_window       = var.backup_windows_retention_maintenance[2]
-  skip_final_snapshot      = var.skip_final_snapshot
-  deletion_protection      = var.deletion_protection
+resource "aws_iam_policy_attachment" "custom_attach" {
+  name       = "rds-custom-attachment"
+  roles      = [aws_iam_role.rds_custom_role.name]
+  policy_arn = aws_iam_policy.policy.arn
 
-  db_subnet_group_name = local.db_subnet_group_name
-  instance_class = var.db_cluster_instance_class
-  kms_key_id     = var.kms_key_id
-
-  allocated_storage     = var.allocated_storage
-  storage_type          = var.storage_type
-  storage_encrypted     = var.storage_encrypted
-
-  username = var.master_username
-  password = local.master_password
-
-  multi_az               = var.multi_az # Custom RDS does support multi AZ
-  vpc_security_group_ids = var.vpc_security_group_ids
 }
 
 resource "aws_iam_instance_profile" "rds_custom_profile" {
   name = "AWSRDSCustomSQLServerInstanceProfile"
-  role = aws_iam_role.role.name
+  role = aws_iam_role.rds_custom_role.name
+
 }
 
 data "aws_iam_policy_document" "assume_role" {
@@ -539,186 +710,43 @@ data "aws_iam_policy_document" "assume_role" {
   }
 }
 
-resource "aws_iam_policy" "policy" {
-  name        = "AWSRDSCustomSQLServerIamRolePolicy"
-  path        = "/"
-  description = "AWS RDS Custom SQL Server Policy"
+resource "aws_db_instance" "rds_sql_server" {
 
-  # Terraform's "jsonencode" function converts a
-  # Terraform expression result to valid JSON syntax.
-  policy = jsonencode({
-    Version = "2012-10-17"
-    Statement = [
-      {
-        Action = [
-          "ssm:ListInstanceAssociations",
-          "ssm:PutComplianceItems",
-          "ssm:UpdateAssociationStatus",
-          "ssm:DescribeAssociation",
-          "ssm:UpdateInstanceAssociationStatus"
-        ]
-        Effect   = "Allow"
-        Resource = "arn:aws:ec2:${data.aws_region.current.name}:${data.aws_caller_identity.current.account_id}:instance/*",
-        Condition = {
-          "StringEquals" = {
-            "aws:ResourceTag/AWSRDSCustom" = "${aws_db_instance.rds_sql_server.db_name}"
-          }
-        }
-      },
-      {
-        Action = [
-          "ssm:UpdateAssociationStatus",
-          "ssm:DescribeAssociation",
-          "ssm:GetDocument",
-          "ssm:DescribeDocument"
-        ]
-        Effect   = "Allow"
-        Resource = "arn:aws:ssm:*:*:document/*"
-      },
-      {
-        Action = [
-          "ssm:GetDeployablePatchSnapshotForInstance",
-          "ssm:ListAssociations",
-          "ssm:PutInventory",
-          "ssm:PutConfigurePackageResult",
-          "ssm:UpdateInstanceInformation",
-          "ssm:GetManifest",
-          "ssmmessages:CreateControlChannel",
-          "ssmmessages:CreateDataChannel",
-          "ssmmessages:OpenControlChannel",
-          "ssmmessages:OpenDataChannel",
-          "ec2messages:AcknowledgeMessage",
-          "ec2messages:DeleteMessage",
-          "ec2messages:FailMessage",
-          "ec2messages:GetEndpoint",
-          "ec2messages:GetMessages",
-          "ec2messages:SendReply"
-        ]
-        Effect   = "Allow"
-        Resource = "*"
-      },
-      {
-        Action = [
-          "ssm:GetParameters",
-          "ssm:GetParameter"
-        ]
-        Effect   = "Allow"
-        Resource = "arn:aws:ssm:*:*:parameter/*"
-      },
-      {
-        Action = [
-          "ssm:UpdateInstanceAssociationStatus",
-          "ssm:DescribeAssociation"
-        ]
-        Effect   = "Allow"
-        Resource = "arn:aws:ssm:*:*:association/*"
-      },
-      {
-        Action = "ec2:CreateSnapshot"
-        Effect   = "Allow"
-        Resource = [
-          "arn:aws:ec2:${data.aws_region.current.name}:${data.aws_caller_identity.current.account_id}:volume/*",
-          "arn:aws:ec2:${data.aws_region.current.name}::snapshot/*",
+  count = var.rds_custom ? 1 : 0
 
-        ]
-        Condition = {
-          "StringEquals" = {
-            "aws:ResourceTag/AWSRDSCustom" = "${aws_db_instance.rds_sql_server.db_name}"
-          }
-        }
-      },
-      {
-        Action = [
-          "ec2:CreateTags"        
-        ]
-        Effect   = "Allow"
-        Resource = "*"
-        Condition = {
-          "StringEquals" = {
-            "aws:ResourceTag/AWSRDSCustom" = "${aws_db_instance.rds_sql_server.db_name}",
-            "ec2:CreateAction" = "CreateSnapshot"
-          }
-        }
-      },
-      {
-        Action = [
-          "s3:putObject",
-          "s3:getObject",
-          "s3:getObjectVersion",
-          "s3:AbortMultipartUpload"
-        ]
-        Effect   = "Allow"
-        Resource = "arn:aws:s3:::do-not-delete-rds-custom-*/*"
-      },
-      {
-        Action = [
-          "kms:Decrypt",
-          "kms:GenerateDataKey*"
-        ]
-        Effect   = "Allow"
-        Resource = "arn:aws:kms:${data.aws_region.current.name}:${data.aws_caller_identity.current.account_id}:key/${var.kms_key_id}"
-      },
-      {
-        Action = [
-          "secretsmanager:GetSecretValue",
-          "secretsmanager:DescribeSecret"
-        ]
-        Effect   = "Allow"
-        Resource = "arn:aws:secretmanager:${REGION}:${data.aws_caller_identity.current.account_id}:secret:do-not-delete-rds-custom-*"
-        Condition = {
-          "StringEquals" = {
-            "aws:ResourceTag/AWSRDSCustom" = "${aws_db_instance.rds_sql_server.db_name}"
-          }
-        }
-      },
-      {
-        Action = "cloudwatch:PutMetricData"
-        Effect   = "Allow"
-        Resource = "*"
-        Condition = {
-          "StringEquals" = {
-            "cloudwatch:namespace" = "rdscustom/rds-custom-sqlserver-agent"
-          }
-        }
-      },
-      {
-        Action = "putEventsToEventBus"
-        Effect   = "Allow"
-        Resource = "arn:aws:events:${data.aws_region.current.name}:${data.aws_caller_identity.current.account_id}:event-bus/default"
-      },
-      {
-        Action = [
-          "logs:PutRetentionPolicy",
-          "logs:PutLogEvents",
-          "logs:DescribeLogStreams",
-          "logs:CreateLogStream",
-          "logs:CreateLogGroup"
-        ]
-        Effect   = "Allow"
-        Resource = "arn:aws:logs:${data.aws_region.current.name}:${data.aws_caller_identity.current.account_id}:log-group:rds-custom-instance-*"
-        Condition = {
-          "StringEquals" = {
-            "aws:ResourceTag/AWSRDSCustom" = "${aws_db_instance.rds_sql_server.db_name}"
-          }
-        }
-      },
-      {
-        Action = [
-          "SQS:SendMessage",
-          "SQS:ReceiveMessage",
-          "SQS:DeleteMessage",
-          "SQS:GetQueueUrl"
-        ]
-        Effect   = "Allow"
-        Resource = "arn:aws:sqs:${data.aws_region.current.name}:${data.aws_caller_identity.current.account_id}:do-not-delete-rds-custom-*"
-      }
-    ]
-  })
-}
+  engine         = var.engine
+  engine_version = var.engine_version
+  port           = 1433
 
+  identifier = var.instances_use_identifier_prefix ? null : var.name
 
-resource "aws_iam_role" "rds_custom_role" {
-  name               = "AWSRDSCustomSQLServerInstanceRole"
-  path               = "/"
-  assume_role_policy = data.aws_iam_policy_document.assume_role.json
+  allow_major_version_upgrade = var.allow_major_version_upgrade
+  auto_minor_version_upgrade  = var.auto_minor_version_upgrade # Custom for SQL Server does not support minor version upgrades
+  apply_immediately           = var.apply_immediately
+
+  custom_iam_instance_profile = aws_iam_instance_profile.rds_custom_profile.name # Instance profile is required for Custom for SQL Server
+
+  backup_window            = var.preferred_backup_window
+  backup_retention_period  = var.backup_retention_period
+  maintenance_window       = var.preferred_maintenance_window
+  skip_final_snapshot      = var.skip_final_snapshot
+  deletion_protection      = var.deletion_protection
+
+  db_subnet_group_name = local.db_subnet_group_name
+  instance_class = var.instance_class
+  kms_key_id     = var.kms_key_id
+  parameter_group_name = var.custom_db_paramater_group_name
+
+  allocated_storage     = var.allocated_storage
+  storage_type          = var.storage_type
+  storage_encrypted     = var.storage_encrypted
+
+  username = var.master_username
+  password = local.master_password
+
+  multi_az               = var.multi_az # Custom RDS does support multi AZ
+  vpc_security_group_ids = var.allowed_security_groups
+
+  depends_on = [ aws_iam_policy_attachment.custom_attach ]
+
 }

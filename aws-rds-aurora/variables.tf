@@ -489,11 +489,13 @@ variable "iam_role_max_session_duration" {
 variable "rds_custom" {
   type = bool
   description = "this is value to enable RDS custom"
+  default = false
 }
 
-variable "custom_iam_instance_profile" {
-  type = string
-  description = "Instance profile is required for Custom for SQL Server"
+variable "custom_db_paramater_group_name" {
+   type = string
+   description = "the paramater group name"
+   default = ""
 }
 
 variable "multi_az" {
