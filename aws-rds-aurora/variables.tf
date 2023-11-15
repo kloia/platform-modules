@@ -483,6 +483,26 @@ variable "iam_role_max_session_duration" {
   default     = null
 }
 
+#############################
+# Amazon RDS for SQL Server #
+#############################
+variable "rds_custom" {
+  type = bool
+  description = "this is value to enable RDS custom"
+  default = false
+}
+
+variable "custom_db_paramater_group_name" {
+   type = string
+   description = "the paramater group name"
+   default = ""
+}
+
+variable "multi_az" {
+  type        = bool
+  default     = false
+  description = "Multi Availibity Zone"
+}
 ################################################################################
 # Autoscaling
 ################################################################################
