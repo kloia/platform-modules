@@ -25,7 +25,6 @@ data "aws_route53_zone" "selected" {
 data "aws_s3_bucket" "existing_bucket" {
   count = var.s3_bucket_name != "" && var.create_s3_bucket == false ? 1 : 0
   bucket = var.s3_bucket_name
-  provider = aws.ireland
 }
 
 resource "aws_route53_record" "this" {
@@ -42,7 +41,6 @@ resource "aws_route53_record" "this" {
 }
 
 resource "aws_s3_bucket" "this" {
-    provider = aws.ireland
     count = var.create_origin_access_identity && var.create_s3_bucket ? 1 : 0
     bucket = var.s3_bucket_name
     # object_ownership = var.object_ownership
@@ -50,7 +48,6 @@ resource "aws_s3_bucket" "this" {
 
 resource "aws_s3_bucket_cors_configuration" "this" {
   count = ((length(var.cors_rule)>0?true:false)&&var.create_origin_access_identity)?1:0
-  provider              = aws.ireland
   bucket                = aws_s3_bucket.this[0].id
   #expected_bucket_owner = var.expected_bucket_owner
 
@@ -69,7 +66,6 @@ resource "aws_s3_bucket_cors_configuration" "this" {
 }
 
 resource "aws_s3_bucket_policy" "s3_policy" {
-  provider = aws.ireland
   for_each = local.create_origin_access_identity && var.create_s3_bucket ? var.origin_access_identities : {}
   bucket = aws_s3_bucket.this[0].id
   policy = jsonencode(
@@ -94,7 +90,6 @@ resource "aws_s3_bucket_policy" "s3_policy" {
 
 resource "aws_s3_bucket_ownership_controls" "this" {
   count = var.control_object_ownership ? 1 : 0
-  provider = aws.ireland
   bucket = aws_s3_bucket.this[0].id # local.create_origin_access_identity ? aws_s3_bucket_policy.s3_policy[0].id : aws_s3_bucket.this[0].id
 
   rule {
@@ -110,7 +105,6 @@ resource "aws_s3_bucket_ownership_controls" "this" {
 
 resource "aws_s3_bucket_website_configuration" "this" {
   count = length(keys(var.website)) > 0 ? 1 : 0
-  provider = aws.ireland
   bucket   = aws_s3_bucket.this[0].id
 
   dynamic "index_document" {
