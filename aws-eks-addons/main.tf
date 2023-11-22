@@ -110,6 +110,7 @@ resource "kubernetes_ingress_v1" "alb_ingress_connect_nginx" {
       "alb.ingress.kubernetes.io/group.name" = "external"
       "alb.ingress.kubernetes.io/ssl-redirect" = "443"
       "alb.ingress.kubernetes.io/listen-ports" = "[{\"HTTP\": 80}, {\"HTTPS\": 443}]"
+      "alb.ingress.kubernetes.io/healthcheck-path" = "/healthz"
     }
   }
 
