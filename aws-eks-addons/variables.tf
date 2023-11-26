@@ -261,6 +261,12 @@ variable "stateless_instance_types" {
   type = list(string)
 }
 
+variable "stateless_windows_instance_types" {
+  description = "instance types"
+  default = ["c5n.xlarge", "c5n.2xlarge", "c5n.4xlarge","c5n.9xlarge"]
+  type = list(string)
+}
+
 variable "stateful_instance_zones" { 
   description = "instance types"
   default = ["eu-west-1a"]
