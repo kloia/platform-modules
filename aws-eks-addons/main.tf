@@ -773,87 +773,84 @@ YAML
 
 resource "kubectl_manifest" "karpenter_stateless_windows_provisioner" {
   count = var.karpenter_windows_support ? 1 : 0
-  yaml_body = <<-YAML
-    apiVersion: karpenter.k8s.aws/v1alpha5
-    kind: Provisioner
-    metadata:
-      name: stateless-windows-provisioner
-    spec:
-      ttlSecondsAfterEmpty = 30
-      consolidateion:
-        enabled: true
-      providerRef:
-        name: "windows2019"
-      limits:
-        resources:
-          cpu: ${var.stateless_total_cpu_limit}
-      requirements:
-      - key: karpenter.sh/capacity-type
-        operator: In
-        values: ${var.stateless_windows_capacity_types}
-      - key: node.kubernetes.io/instance-type
-        operator: In
-        values: ${var.stateless_windows_instance_types}
-      - key: topology.kubernetes.io/zone
-        operator: In
-        values: ${var.stateless_instance_zones}
-      - key: kubernetes.io/arch
-        operator: In
-        values: ${var.stateless_windows_arch_types}
-      - key: kubernetes.io/os
-        operator: In
-        values: windows
-  YAML
-  # yaml_body = yamlencode({
-  #   apiVersion: "karpenter.sh/v1alpha5"
-  #   kind: "Provisioner"
-  #   metadata: {
-  #     name: "stateless-windows-provisioner"
-  #   }
-  #   spec: {
-  #     consolidation: {
-  #       enabled = true
-  #     }
+  # yaml_body = <<-YAML
+  #   apiVersion: karpenter.k8s.aws/v1alpha5
+  #   kind: Provisioner
+  #   metadata:
+  #     name: stateless-windows-provisioner
+  #   spec:
   #     ttlSecondsAfterEmpty = 30
-  #     providerRef = {
-  #       name = "windows2019"
-  #     }
-  #     limits = {
-  #       resources = {
-  #         cpu = var.stateless_total_cpu_limit
-  #       }
-  #     }
-  #     requirements: [
-  #       {
-  #         key = "karpenter.sh/capacity-type"
-  #         operator = "In"
-  #         values = var.stateless_windows_capacity_types
-  #       },
-  #       {
-  #         key = "node.kubernetes.io/instance-type"
-  #         operator = "In"
-  #         values = var.stateless_windows_instance_types
-  #       },
-  #       {
-  #         key = "topology.kubernetes.io/zone"
-  #         operator = "In"
-  #         values = var.stateless_instance_zones
-  #       },
-  #       {
-  #         key = "kubernetes.io/arch"
-  #         operator = "In"
-  #         values = var.stateless_windows_arch_types
-  #       },
-  #       {
-  #         key = "kubernetes.io/os"
-  #         operator = "In"
-  #         values = [
-  #           "windows",
-  #         ]
-  #       },
-  #     ]
-  #   }
-  # })
+  #     consolidateion:
+  #       enabled: true
+  #     providerRef:
+  #       name: "windows2019"
+  #     limits:
+  #       resources:
+  #         cpu: ${var.stateless_total_cpu_limit}
+  #     requirements:
+  #     - key: karpenter.sh/capacity-type
+  #       operator: In
+  #       values: ${var.stateless_windows_capacity_types}
+  #     - key: node.kubernetes.io/instance-type
+  #       operator: In
+  #       values: ${var.stateless_windows_instance_types}
+  #     - key: topology.kubernetes.io/zone
+  #       operator: In
+  #       values: ${var.stateless_instance_zones}
+  #     - key: kubernetes.io/arch
+  #       operator: In
+  #       values: ${var.stateless_windows_arch_types}
+  #     - key: kubernetes.io/os
+  #       operator: In
+  #       values: windows
+  # YAML
+  yaml_body = yamlencode({
+    apiVersion: "karpenter.sh/v1alpha5"
+    kind: "Provisioner"
+    metadata: {
+      name: "stateless-windows-provisioner"
+    }
+    spec: {
+      ttlSecondsAfterEmpty = 30
+      providerRef = {
+        name = "windows2019"
+      }
+      limits = {
+        resources = {
+          cpu = var.stateless_total_cpu_limit
+        }
+      }
+      requirements: [
+        {
+          key = "karpenter.sh/capacity-type"
+          operator = "In"
+          values = var.stateless_windows_capacity_types
+        },
+        {
+          key = "node.kubernetes.io/instance-type"
+          operator = "In"
+          values = var.stateless_windows_instance_types
+        },
+        {
+          key = "topology.kubernetes.io/zone"
+          operator = "In"
+          values = var.stateless_instance_zones
+        },
+        {
+          key = "kubernetes.io/arch"
+          operator = "In"
+          values = var.stateless_windows_arch_types
+        },
+        {
+          key = "kubernetes.io/os"
+          operator = "In"
+          values = [
+            "windows",
+          ]
+        },
+      ]
+    }
+  })
   depends_on = [
     helm_release.karpenter[0]
   ]
