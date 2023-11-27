@@ -391,3 +391,30 @@ variable "subnet_id_names" {
   type = string
   default = "*"
 }
+
+variable "saml_authentication" {
+  description = "SAML Authetication enable/disable for Opensearch Dashboard"
+  type = bool
+  default = false
+}
+
+variable "master_backend_role" {
+  description = "(Optional) This backend role from the SAML IdP receives full permissions to the cluster, equivalent to a new master user."
+  type = string
+}
+
+variable "saml_entity_id" {
+  description = "(Required) The unique Entity ID of the application in SAML Identity Provider."
+  type = string
+}
+
+variable "saml_metadata_xmlfile_path" {
+  description = "(Required) The path of Metadata of the SAML application in xml format."
+  type = string
+}
+
+variable "saml_roles_key" {
+  description = "(Optional) Element of the SAML assertion to use for backend roles. Default is roles."
+  type = string
+  default = "roles"
+}

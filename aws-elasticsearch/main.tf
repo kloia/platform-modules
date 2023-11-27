@@ -12,6 +12,10 @@ data "aws_subnets" "private_subnets_with_database_tag" {
 resource "random_password" "master_user_password" {
   count            = var.advanced_security_options_internal_user_database_enabled ? 1 : 0
   length           = 10
+  min_lower        = 1
+  min_numeric      = 1
+  min_special      = 1
+  min_upper        = 1
 }
 
 # https://github.com/terraform-providers/terraform-provider-aws/issues/5218
@@ -166,6 +170,20 @@ resource "aws_elasticsearch_domain" "default" {
   tags = var.tags
 
   depends_on = [aws_iam_service_linked_role.default]
+}
+
+resource "aws_elasticsearch_domain_saml_options" "default" {
+  count = var.enabled && var.saml_authentication? 1 : 0
+  domain_name = aws_elasticsearch_domain.default.0.domain_name
+  saml_options {
+    enabled = true
+    master_backend_role = var.master_backend_role
+    roles_key = var.saml_roles_key
+    idp {
+      entity_id        = var.saml_entity_id
+      metadata_content = file(var.saml_metadata_xmlfile_path)
+    }
+  }
 }
 
 data "aws_iam_policy_document" "default" {
