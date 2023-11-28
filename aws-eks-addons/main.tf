@@ -777,7 +777,7 @@ resource "kubectl_manifest" "karpenter_stateless_windows2019_provisioner" {
     apiVersion: "karpenter.sh/v1alpha5"
     kind: "Provisioner"
     metadata: {
-      name: "stateless-windows-provisioner"
+      name: "stateless-windows2019-provisioner"
     }
     spec: {
       ttlSecondsAfterEmpty = 30
@@ -831,7 +831,7 @@ resource "kubectl_manifest" "karpenter_stateless_windows2022_provisioner" {
     apiVersion: "karpenter.sh/v1alpha5"
     kind: "Provisioner"
     metadata: {
-      name: "stateless-windows2019-provisioner"
+      name: "stateless-windows2022-provisioner"
     }
     spec: {
       ttlSecondsAfterEmpty = 30
