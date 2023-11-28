@@ -771,39 +771,8 @@ YAML
   depends_on = [helm_release.karpenter]
 }
 
-resource "kubectl_manifest" "karpenter_stateless_windows_provisioner" {
+resource "kubectl_manifest" "karpenter_stateless_windows2019_provisioner" {
   count = var.karpenter_windows_support ? 1 : 0
-  # yaml_body = <<-YAML
-  #   apiVersion: karpenter.k8s.aws/v1alpha5
-  #   kind: Provisioner
-  #   metadata:
-  #     name: stateless-windows-provisioner
-  #   spec:
-  #     ttlSecondsAfterEmpty = 30
-  #     consolidateion:
-  #       enabled: true
-  #     providerRef:
-  #       name: "windows2019"
-  #     limits:
-  #       resources:
-  #         cpu: ${var.stateless_total_cpu_limit}
-  #     requirements:
-  #     - key: karpenter.sh/capacity-type
-  #       operator: In
-  #       values: ${var.stateless_windows_capacity_types}
-  #     - key: node.kubernetes.io/instance-type
-  #       operator: In
-  #       values: ${var.stateless_windows_instance_types}
-  #     - key: topology.kubernetes.io/zone
-  #       operator: In
-  #       values: ${var.stateless_instance_zones}
-  #     - key: kubernetes.io/arch
-  #       operator: In
-  #       values: ${var.stateless_windows_arch_types}
-  #     - key: kubernetes.io/os
-  #       operator: In
-  #       values: windows
-  # YAML
   yaml_body = yamlencode({
     apiVersion: "karpenter.sh/v1alpha5"
     kind: "Provisioner"
@@ -855,7 +824,62 @@ resource "kubectl_manifest" "karpenter_stateless_windows_provisioner" {
     helm_release.karpenter[0]
   ]
 }
-resource "kubectl_manifest" "karpenter_windows_node_template" {
+
+resource "kubectl_manifest" "karpenter_stateless_windows2022_provisioner" {
+  count = var.karpenter_windows_support ? 1 : 0
+  yaml_body = yamlencode({
+    apiVersion: "karpenter.sh/v1alpha5"
+    kind: "Provisioner"
+    metadata: {
+      name: "stateless-windows2019-provisioner"
+    }
+    spec: {
+      ttlSecondsAfterEmpty = 30
+      providerRef = {
+        name = "windows2022"
+      }
+      limits = {
+        resources = {
+          cpu = var.stateless_total_cpu_limit
+        }
+      }
+      requirements: [
+        {
+          key = "karpenter.sh/capacity-type"
+          operator = "In"
+          values = var.stateless_windows_capacity_types
+        },
+        {
+          key = "node.kubernetes.io/instance-type"
+          operator = "In"
+          values = var.stateless_windows_instance_types
+        },
+        {
+          key = "topology.kubernetes.io/zone"
+          operator = "In"
+          values = var.stateless_instance_zones
+        },
+        {
+          key = "kubernetes.io/arch"
+          operator = "In"
+          values = var.stateless_windows_arch_types
+        },
+        {
+          key = "kubernetes.io/os"
+          operator = "In"
+          values = [
+            "windows",
+          ]
+        },
+      ]
+    }
+  })
+  depends_on = [
+    helm_release.karpenter[0]
+  ]
+}
+
+resource "kubectl_manifest" "karpenter_windows2019_node_template" {
   count = var.karpenter_windows_support ? 1 : 0
   yaml_body = <<-YAML
     apiVersion: karpenter.k8s.aws/v1alpha1
@@ -878,6 +902,41 @@ resource "kubectl_manifest" "karpenter_windows_node_template" {
       tags:
         karpenter.sh/discovery: ${var.cluster_name}
       amiFamily: Windows2019
+      metadataOptions:
+        httpEndpoint: enabled
+        httpProtocolIPv6: disabled
+        httpPutResponseHopLimit: 2
+        httpTokens: required
+  YAML
+
+  depends_on = [
+    helm_release.karpenter[0]
+  ]
+}
+
+resource "kubectl_manifest" "karpenter_windows2022_node_template" {
+  count = var.karpenter_windows_support ? 1 : 0
+  yaml_body = <<-YAML
+    apiVersion: karpenter.k8s.aws/v1alpha1
+    kind: AWSNodeTemplate
+    metadata:
+      name: windows2022
+    spec:
+      blockDeviceMappings:
+        - deviceName: /dev/xvda
+          ebs:
+            volumeSize: ${var.karpenter_node_template_volume_size}
+            volumeType: ${var.karpenter_node_template_volume_type}
+            iops: ${var.karpenter_node_template_volume_iops}
+            deleteOnTermination: ${var.karpenter_node_template_delete_on_termination}
+            throughput: ${var.karpenter_node_template_throughput}
+      subnetSelector:
+        karpenter.sh/discovery: "true"
+      securityGroupSelector:
+        karpenter.sh/discovery: ${var.cluster_name}
+      tags:
+        karpenter.sh/discovery: ${var.cluster_name}
+      amiFamily: Windows2022
       metadataOptions:
         httpEndpoint: enabled
         httpProtocolIPv6: disabled
