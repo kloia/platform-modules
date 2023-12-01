@@ -17,7 +17,7 @@ variable "tags" {
 variable "create_random_password" {
   description = "Determines whether to create random password for RDS primary cluster"
   type        = bool
-  default     = true
+  default     = false
 }
 
 variable "random_password_length" {
@@ -492,6 +492,11 @@ variable "rds_custom" {
   default = false
 }
 
+variable "rds_sql" {
+  type = bool
+  description = "this is value to enable RDS SQL"
+  default = false
+}
 variable "custom_db_paramater_group_name" {
    type = string
    description = "the paramater group name"
@@ -503,6 +508,7 @@ variable "multi_az" {
   default     = false
   description = "Multi Availibity Zone"
 }
+
 ################################################################################
 # Autoscaling
 ################################################################################
