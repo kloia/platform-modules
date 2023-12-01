@@ -231,8 +231,13 @@ variable "stateful_capacity_types" { # +
   type = list(string)
 }
 
-
 variable "stateless_capacity_types" {
+  description = "instance types"
+  default = ["spot"]
+  type = list(string)
+}
+
+variable "stateless_windows_capacity_types" {
   description = "instance types"
   default = ["spot"]
   type = list(string)
@@ -244,7 +249,19 @@ variable "stateful_instance_types" {
   type = list(string)
 }
 
+variable "stateful_windows_instance_types" { 
+  description = "instance types"
+  default = ["r6a.xlarge", "r6a.2xlarge", "r6a.4xlarge","r6a.9xlarge"]
+  type = list(string)
+}
+
 variable "stateless_instance_types" {
+  description = "instance types"
+  default = ["c5n.xlarge", "c5n.2xlarge", "c5n.4xlarge","c5n.9xlarge"]
+  type = list(string)
+}
+
+variable "stateless_windows_instance_types" {
   description = "instance types"
   default = ["c5n.xlarge", "c5n.2xlarge", "c5n.4xlarge","c5n.9xlarge"]
   type = list(string)
@@ -269,6 +286,12 @@ variable "stateful_arch_types" {
 }
 
 variable "stateless_arch_types" {
+  description = "instance types"
+  default = ["amd64"]
+  type = list(string)
+}
+
+variable "stateless_windows_arch_types" {
   description = "instance types"
   default = ["amd64"]
   type = list(string)
@@ -355,4 +378,9 @@ variable "aws_lb_controller_version" {
 variable "karpenter_version" {
   description = "Karpenter version"
   default = "v0.31.1"
+}
+
+variable "karpenter_windows_support" {
+  default = false
+  description = "Karpenter Windows Container Support"
 }
