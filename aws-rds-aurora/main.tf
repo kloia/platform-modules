@@ -30,12 +30,6 @@ resource "random_password" "master_password" {
   special = false
 }
 
-resource "aws_ssm_parameter" "master_password" {
-  name  = "${var.name}-password"
-  type  = "SecureString"
-  value = random_password.master_password[0].result
-}
-
 resource "random_id" "snapshot_identifier" {
   count = local.create_cluster ? 1 : 0
 
@@ -492,6 +486,7 @@ resource "aws_kms_key" "kms" {
 #############################
 
 resource "aws_iam_policy" "policy" {
+  count = var.rds_custom ? 1 : 0
   name        = "AWSRDSCustomSQLServerIamRolePolicy"
   path        = "/"
   description = "AWS RDS Custom SQL Server Policy"
@@ -679,21 +674,24 @@ resource "aws_iam_policy" "policy" {
 
 
 resource "aws_iam_role" "rds_custom_role" {
+  count = var.rds_custom ? 1 : 0
   name               = "AWSRDSCustomSQLServerInstanceRole"
   path               = "/"
   assume_role_policy = data.aws_iam_policy_document.assume_role.json
 }
 
 resource "aws_iam_policy_attachment" "custom_attach" {
+  count = var.rds_custom ? 1 : 0
   name       = "rds-custom-attachment"
-  roles      = [aws_iam_role.rds_custom_role.name]
-  policy_arn = aws_iam_policy.policy.arn
+  roles      = [element(aws_iam_role.rds_custom_role[*].name, 0)]
+  policy_arn = element(aws_iam_policy.policy[*].arn, 0)
 
 }
 
 resource "aws_iam_instance_profile" "rds_custom_profile" {
+  count = var.rds_custom ? 1 : 0
   name = "AWSRDSCustomSQLServerInstanceProfile"
-  role = aws_iam_role.rds_custom_role.name
+  role = element(aws_iam_role.rds_custom_role[*].name, 0)
 
 }
 
@@ -712,7 +710,7 @@ data "aws_iam_policy_document" "assume_role" {
 
 resource "aws_db_instance" "rds_sql_server" {
 
-  count = var.rds_custom ? 1 : 0
+  count = var.rds_sql ? 1 : 0
 
   engine         = var.engine
   engine_version = var.engine_version
@@ -721,10 +719,9 @@ resource "aws_db_instance" "rds_sql_server" {
   identifier = var.instances_use_identifier_prefix ? null : var.name
 
   allow_major_version_upgrade = var.allow_major_version_upgrade
-  auto_minor_version_upgrade  = var.auto_minor_version_upgrade # Custom for SQL Server does not support minor version upgrades
   apply_immediately           = var.apply_immediately
 
-  custom_iam_instance_profile = aws_iam_instance_profile.rds_custom_profile.name # Instance profile is required for Custom for SQL Server
+  custom_iam_instance_profile = var.rds_custom ? element(aws_iam_instance_profile.rds_custom_profile[*].name, 0) : null # Instance profile is required for Custom for SQL Server
 
   backup_window            = var.preferred_backup_window
   backup_retention_period  = var.backup_retention_period
@@ -740,13 +737,55 @@ resource "aws_db_instance" "rds_sql_server" {
   allocated_storage     = var.allocated_storage
   storage_type          = var.storage_type
   storage_encrypted     = var.storage_encrypted
+  license_model = "license-included"
 
   username = var.master_username
-  password = local.master_password
+  manage_master_user_password = true
 
   multi_az               = var.multi_az # Custom RDS does support multi AZ
   vpc_security_group_ids = var.allowed_security_groups
 
+  timeouts {
+    create = "80m"
+  }
+  tags = var.tags
+
   depends_on = [ aws_iam_policy_attachment.custom_attach ]
 
+}
+
+resource "aws_db_instance" "rds_sql_server_read_replica" {
+
+  count = var.rds_sql ? 1 : 0
+
+  engine         = var.engine
+  engine_version = var.engine_version
+  port           = 1433
+
+  identifier = var.instances_use_identifier_prefix ? null : "${var.name}-read-replica"
+
+  allow_major_version_upgrade = var.allow_major_version_upgrade
+  apply_immediately           = var.apply_immediately
+
+
+  maintenance_window       = var.preferred_maintenance_window
+  deletion_protection      = var.deletion_protection
+
+  instance_class = var.instance_class
+  kms_key_id     = var.kms_key_id
+  parameter_group_name = var.custom_db_paramater_group_name
+
+  storage_type          = var.storage_type
+  storage_encrypted     = var.storage_encrypted
+
+  vpc_security_group_ids = var.allowed_security_groups
+
+  replicate_source_db = element(aws_db_instance.rds_sql_server[*].identifier, 0)
+
+  timeouts {
+    create = "80m"
+  }
+
+  tags = var.tags
+  depends_on = [ aws_iam_policy_attachment.custom_attach ]
 }
