@@ -108,6 +108,8 @@ resource "aws_ecr_repository_policy" "this" {
   repository = each.value
 
   policy = length(var.allowed_write_principals) > 0 ? data.aws_iam_policy_document.ecr_read_and_write_perms.json : data.aws_iam_policy_document.ecs_ecr_read_perms.json
+
+  depends_on = [ aws_ecr_repository.this ]
 }
 
 resource "aws_ecr_replication_configuration" "example" {
