@@ -141,10 +141,10 @@ variable "tracing_mode" {
   default     = null
 }
 
-variable "vpc_subnet_ids" {
-  description = "List of subnet ids when Lambda Function should run in the VPC. Usually private or intra subnets."
-  type        = list(string)
-  default     = null
+variable "subnet_id_names" {
+  description = "name of subnet ID's"
+  type = string
+  default = "*"
 }
 
 variable "vpc_security_group_ids" {
