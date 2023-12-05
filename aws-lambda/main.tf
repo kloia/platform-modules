@@ -1,5 +1,12 @@
 data "aws_partition" "current" {}
 
+data "aws_subnets" "private_subnets_with_lambda_tag" {
+  filter {
+    name   = "tag:Name"
+    values = ["${var.subnet_id_names}"] 
+  }
+}
+
 locals {
   create = var.create
 
@@ -84,10 +91,10 @@ resource "aws_lambda_function" "this" {
   }
 
   dynamic "vpc_config" {
-    for_each = var.vpc_subnet_ids != null && var.vpc_security_group_ids != null ? [true] : []
+    for_each = try(data.aws_subnets.private_subnets_with_lambda_tag.ids, null) != null && var.vpc_security_group_ids != null ? [true] : []
     content {
       security_group_ids = var.vpc_security_group_ids
-      subnet_ids         = var.vpc_subnet_ids
+      subnet_ids         = try(data.aws_subnets.private_subnets_with_lambda_tag.ids, null)
     }
   }
 
