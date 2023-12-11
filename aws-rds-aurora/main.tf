@@ -756,7 +756,7 @@ resource "aws_db_instance" "rds_sql_server" {
 
 resource "aws_db_instance" "rds_sql_server_read_replica" {
 
-  count = var.rds_sql ? 1 : 0
+  count = var.read_replica ? 1 : 0
 
   engine         = var.engine
   engine_version = var.engine_version
