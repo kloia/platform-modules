@@ -509,6 +509,12 @@ variable "multi_az" {
   description = "Multi Availibity Zone"
 }
 
+variable "read_replica" {
+  type        = bool
+  default     = false
+  description = "Read replica for RDS"
+}
+
 ################################################################################
 # Autoscaling
 ################################################################################
