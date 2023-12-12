@@ -28,6 +28,7 @@ aws-cloudtrail
 aws-cloudtrail-s3-bucket
 aws-cloudwatch
 aws-cloudwatch-event-rule-master
+aws-cognito-user-pool
 aws-dynamodb-dax
 aws-dynamodb-table
 aws-ecr
