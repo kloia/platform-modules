@@ -22,11 +22,11 @@ data "aws_iam_policy_document" "assume_role" {
     }
 
     dynamic "condition" {
-      for_each = length(local.role_sts_externalid) != 0 ? [true] : []
+      for_each = length(local.role_sts_orgid) != 0 ? [true] : []
       content {
         test     = "StringEquals"
         variable = "aws:PrincipalOrgID"
-        values   = local.role_sts_externalid
+        values   = local.role_sts_orgid
       }
     }
 
