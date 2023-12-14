@@ -2,6 +2,10 @@ data "aws_partition" "current" {}
 
 data "aws_subnets" "private_subnets_with_lambda_tag" {
   filter {
+    name   = "vpc-id"
+    values = [var.vpc_id]
+  }
+  filter {
     name   = "tag:Name"
     values = ["${var.subnet_id_names}"] 
   }

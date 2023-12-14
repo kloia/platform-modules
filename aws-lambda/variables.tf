@@ -147,6 +147,12 @@ variable "subnet_id_names" {
   default = "*"
 }
 
+variable "vpc_id" {
+  description = "vpc id"
+  type = string
+  default = ""
+}
+
 variable "vpc_security_group_ids" {
   description = "List of security group ids when Lambda Function should run in the VPC."
   type        = list(string)
