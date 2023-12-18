@@ -59,4 +59,17 @@ terraform {
   }
 }
 
-  
+provider "aws" {
+  region = "us-east-1"
+  alias = "virginia_provider"
+  default_tags {
+    tags = {
+      Environment = "prod"
+      Terraform = "true"
+      Domain = "network-infra"
+    }
+  }
+  assume_role {
+    role_arn = "${var.assume_role_arn}"
+  }
+}
