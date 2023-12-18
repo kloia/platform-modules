@@ -64,9 +64,7 @@ provider "aws" {
   alias = "virginia_provider"
   default_tags {
     tags = {
-      Environment = "prod"
-      Terraform = "true"
-      Domain = "network-infra"
+      Environment = "us east 1 virginia"
     }
   }
   assume_role {
