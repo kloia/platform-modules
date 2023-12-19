@@ -59,4 +59,15 @@ terraform {
   }
 }
 
-  
+provider "aws" {
+  region = "us-east-1"
+  alias = "virginia_provider"
+  default_tags {
+    tags = {
+      Environment = "us east 1 virginia"
+    }
+  }
+  assume_role {
+    role_arn = "${var.assume_role_arn}"
+  }
+}
