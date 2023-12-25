@@ -477,6 +477,24 @@ resource "kubectl_manifest" "argocd_bootstrapper_application" {
                 }
               }
             }
+            rancherLogging : {
+              enable: var.deploy_rancher_logging
+              values: {
+                fluentd: {
+                  resources: {
+                    limits: {
+                      memory: var.rancher_logging_fluentd_memory_limit
+                      cpu: var.rancher_logging_fluentd_cpu_limit
+                    }
+                    requests: {
+                      memory: var.rancher_logging_fluentd_memory_request
+                      cpu: var.rancher_logging_fluentd_cpu_request
+                    }
+                  }
+
+                }
+              }
+            }
           })
         }
       }
@@ -593,7 +611,7 @@ resource "helm_release" "karpenter" {
 }
 
 resource "kubectl_manifest" "karpenter_stateful_provisioner" {
-  count = var.deploy_karpenter ? 1 : 0
+  count = var.deploy_karpenter && var.deploy_karpenter_crds ? 1 : 0
 
   yaml_body = yamlencode({
     apiVersion: "karpenter.sh/v1alpha5"
@@ -669,7 +687,7 @@ resource "kubectl_manifest" "karpenter_stateful_provisioner" {
 
 # there is no taint necessary for stateless applicatinos (system workloads will be scheduled at default eks node group(it will have system workload taint ))
 resource "kubectl_manifest" "karpenter_stateless_provisioner" {
-  count = var.deploy_karpenter ? 1 : 0
+  count = var.deploy_karpenter && var.deploy_karpenter_crds ? 1 : 0
 
   yaml_body = yamlencode({
     apiVersion: "karpenter.sh/v1alpha5"
@@ -728,7 +746,7 @@ resource "kubectl_manifest" "karpenter_stateless_provisioner" {
 }
 
 resource "kubectl_manifest" "karpenter_node_template" {
-  count = var.deploy_karpenter ? 1 : 0
+  count = var.deploy_karpenter && var.deploy_karpenter_crds ? 1 : 0
   yaml_body = <<-YAML
     apiVersion: karpenter.k8s.aws/v1alpha1
     kind: AWSNodeTemplate

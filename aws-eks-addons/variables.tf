@@ -384,3 +384,36 @@ variable "karpenter_windows_support" {
   default = false
   description = "Karpenter Windows Container Support"
 }
+
+variable "deploy_rancher_logging" {
+  default = false
+  description = "value of the rancher logging"
+}
+
+variable "rancher_logging_fluentd_memory_limit" {
+  default = "3000Mi"
+  description = "value of the rancher logging fluentd memory limit"
+}
+
+variable "rancher_logging_fluentd_cpu_limit" {
+  default = "3000m"
+  description = "value of the rancher logging fluentd cpu limit"
+}
+
+
+variable "rancher_logging_fluentd_memory_request" {
+  default = "2000Mi"
+  description = "value of the rancher logging fluentd memory request"
+  
+}
+
+variable "rancher_logging_fluentd_cpu_request" {
+  default = "2000m"
+  description = "value of the rancher logging fluentd cpu request"
+}
+
+
+variable "deploy_karpenter_crds" {
+  default = true
+  description = "deploy provisioners and node template"
+}
