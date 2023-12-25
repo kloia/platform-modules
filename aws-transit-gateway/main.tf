@@ -79,48 +79,26 @@ data "aws_region" "peer" {
   provider = aws.network_account_peer
 }
 
-resource "aws_ec2_transit_gateway" "peer" {
-  count = var.peer_tgw ? 1 : 0
-
-  provider = aws.network_account_peer
-
-  description                     = coalesce(var.description, var.name)
-  amazon_side_asn                 = var.amazon_side_asn
-  default_route_table_association = var.enable_default_route_table_association ? "enable" : "disable"
-  default_route_table_propagation = var.enable_default_route_table_propagation ? "enable" : "disable"
-  auto_accept_shared_attachments  = var.enable_auto_accept_shared_attachments ? "enable" : "disable"
-  multicast_support               = var.enable_multicast_support ? "enable" : "disable"
-  vpn_ecmp_support                = var.enable_vpn_ecmp_support ? "enable" : "disable"
-  dns_support                     = var.enable_dns_support ? "enable" : "disable"
-  transit_gateway_cidr_blocks     = var.transit_gateway_cidr_blocks
-
-  timeouts {
-    create = try(var.timeouts.create, null)
-    update = try(var.timeouts.update, null)
-    delete = try(var.timeouts.delete, null)
-  }
-
-  tags = merge(
-    var.tags,
-    { Name = "${var.name}-peer" },
-    var.tgw_tags,
-  )
-}
-
 resource "aws_ec2_transit_gateway_peering_attachment" "peer_attachment" {
+  count = var.peer_tgw ? 1 : 0
+  provider = aws.network_account
 
-  provider = aws.network_account_peer
-
-  peer_account_id         = aws_ec2_transit_gateway.peer[0].owner_id
+  peer_account_id         = aws_ec2_transit_gateway.this[0].owner_id
   peer_region             = data.aws_region.peer.name
-  peer_transit_gateway_id = aws_ec2_transit_gateway.peer[0].id
-  transit_gateway_id      = var.tgw_id
+  peer_transit_gateway_id = var.tgw_id
+  transit_gateway_id      = aws_ec2_transit_gateway.this[0].id
 
   tags = merge(
     var.tags,
     { Name = var.name },
     var.tgw_tags,
   )
+}
+
+resource "aws_ec2_transit_gateway_peering_attachment_accepter" "peering_accepter" {
+  count = var.tgw_accepter ? 1 : 0
+  transit_gateway_attachment_id = var.peer_tgw ? aws_ec2_transit_gateway_peering_attachment.peer_attachment[0].id : var.tgw_peering_attachment_id
+  provider = aws.network_account
 }
 
 ################################################################################

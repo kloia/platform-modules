@@ -27,8 +27,20 @@ variable "peer_tgw" {
   default     = false
 }
 
+variable "tgw_accepter" {
+  description = "Controls TGW Peer Accepter if TGW Peer should be created (it affects almost all resources)"
+  type        = bool
+  default     = false
+}
+
 variable "tgw_id" {
   description = "The ID of the local TGW for peerings"
+  type        = string
+  default     = ""
+}
+
+variable "tgw_peering_attachment_id" {
+  description = "The ID of the TGW attachment for peerings"
   type        = string
   default     = ""
 }
