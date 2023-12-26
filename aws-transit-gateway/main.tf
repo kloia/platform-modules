@@ -183,17 +183,17 @@ resource "aws_ec2_transit_gateway_route_table_association" "this" {
   transit_gateway_route_table_id = var.create_tgw ? aws_ec2_transit_gateway_route_table.this[0].id : try(each.value.transit_gateway_route_table_id, var.transit_gateway_route_table_id)
 }
 
-# Cross account resource
-# resource "aws_ec2_transit_gateway_route_table_association" "network_account" {
-#   provider = aws.network_account
-#   for_each = {
-#     for k, v in var.vpc_attachments : k => v if try(v.transit_gateway_default_route_table_association, true) != true && v.cross_account_assosiation_propagation == true
-#   }
+# Cross account resource
+resource "aws_ec2_transit_gateway_route_table_association" "network_account" {
+  provider = aws.network_account
+  for_each = {
+    for k, v in var.vpc_attachments : k => v if try(v.transit_gateway_default_route_table_association, true) != true && v.cross_account_assosiation_propagation == true
+  }
 
-#   # Create association if it was not set already by aws_ec2_transit_gateway_vpc_attachment resource
-#   transit_gateway_attachment_id  = aws_ec2_transit_gateway_vpc_attachment.this[each.key].id
-#   transit_gateway_route_table_id = var.create_tgw ? aws_ec2_transit_gateway_route_table.this[0].id : try(each.value.transit_gateway_route_table_id, var.transit_gateway_route_table_id)
-# }
+  # Create association if it was not set already by aws_ec2_transit_gateway_vpc_attachment resource
+  transit_gateway_attachment_id  = aws_ec2_transit_gateway_vpc_attachment.this[each.key].id
+  transit_gateway_route_table_id = var.create_tgw ? aws_ec2_transit_gateway_route_table.this[0].id : try(each.value.transit_gateway_route_table_id, var.transit_gateway_route_table_id)
+}
 
 resource "aws_ec2_transit_gateway_route_table_propagation" "this" {
   for_each = {
@@ -205,17 +205,17 @@ resource "aws_ec2_transit_gateway_route_table_propagation" "this" {
   transit_gateway_route_table_id = var.create_tgw ? aws_ec2_transit_gateway_route_table.this[0].id : try(each.value.transit_gateway_route_table_id, var.transit_gateway_route_table_id)
 }
 
-## Cross account resource
-# resource "aws_ec2_transit_gateway_route_table_propagation" "network_account" {
-#   provider = aws.network_account
-#   for_each = {
-#     for k, v in var.vpc_attachments : k => v if try(v.transit_gateway_default_route_table_propagation, true) != true && v.cross_account_assosiation_propagation == true
-#   }
+# Cross account resource
+resource "aws_ec2_transit_gateway_route_table_propagation" "network_account" {
+  provider = aws.network_account
+  for_each = {
+    for k, v in var.vpc_attachments : k => v if try(v.transit_gateway_default_route_table_propagation, true) != true && v.cross_account_assosiation_propagation == true
+  }
 
-#   # Create association if it was not set already by aws_ec2_transit_gateway_vpc_attachment resource
-#   transit_gateway_attachment_id  = aws_ec2_transit_gateway_vpc_attachment.this[each.key].id
-#   transit_gateway_route_table_id = var.create_tgw ? aws_ec2_transit_gateway_route_table.this[0].id : try(each.value.transit_gateway_route_table_id, var.transit_gateway_route_table_id)
-# }
+  # Create association if it was not set already by aws_ec2_transit_gateway_vpc_attachment resource
+  transit_gateway_attachment_id  = aws_ec2_transit_gateway_vpc_attachment.this[each.key].id
+  transit_gateway_route_table_id = var.create_tgw ? aws_ec2_transit_gateway_route_table.this[0].id : try(each.value.transit_gateway_route_table_id, var.transit_gateway_route_table_id)
+}
 
 ################################################################################
 # Resource Access Manager
