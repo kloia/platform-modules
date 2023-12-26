@@ -17,13 +17,13 @@ variable "alarm_name_suffix" {
 variable "alarm_actions" {
   description = "Actions to execute when this alarm transitions."
   type        = list(string)
-  default     = cloudwatch.alarm_actions 
+  default     = []
 }
 
 variable "health_check_regions" {
   description = "AWS Regions for health check"
   type        = list(string)
-  default     = ["us-east-1","eu-west-1", "eu-west-2"]
+  default     = ["us-east-1","eu-west-1", "ap-southeast-1"]
 }
 
 variable "health_check_path" {
@@ -50,3 +50,30 @@ variable "disable" {
   default     = false
 }
 
+variable "port" {
+  description = "Port for TCP (between 0 to 65535)"
+  type        = number
+  default     = 443
+}
+
+variable "enable_cloudwatch_alarm" {
+  description = "Enable cloudwatch alarm"
+  type        = bool
+  default     = true
+}
+
+variable "health_check_type" {
+  description = <<-EOT
+  The health check type to use.
+  The value specified can either be `HTTP`, `HTTPS`,
+  and/or `TCP`.
+
+  Defaults to `HTTP` and `HTTPS`.
+  EOT
+  type        = set(string)
+  default     = ["HTTP", "HTTPS"]
+  validation {
+    condition     = length(setintersection(["HTTP", "HTTPS", "TCP"], var.health_check_type)) > 0
+    error_message = "Health check type must be one be one of: HTTP, HTTPS, TCP."
+  }
+}
