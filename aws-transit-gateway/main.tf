@@ -74,6 +74,33 @@ resource "aws_ec2_tag" "this" {
   value       = each.value
 }
 
+# transit GW Peer
+data "aws_region" "peer" {
+  provider = aws.network_account_peer
+}
+
+resource "aws_ec2_transit_gateway_peering_attachment" "peer_attachment" {
+  count = var.peer_tgw ? 1 : 0
+  provider = aws.network_account
+
+  peer_account_id         = aws_ec2_transit_gateway.this[0].owner_id
+  peer_region             = data.aws_region.peer.name
+  peer_transit_gateway_id = var.tgw_id
+  transit_gateway_id      = aws_ec2_transit_gateway.this[0].id
+
+  tags = merge(
+    var.tags,
+    { Name = var.name },
+    var.tgw_tags,
+  )
+}
+
+resource "aws_ec2_transit_gateway_peering_attachment_accepter" "peering_accepter" {
+  count = var.tgw_accepter ? 1 : 0
+  transit_gateway_attachment_id = var.peer_tgw ? aws_ec2_transit_gateway_peering_attachment.peer_attachment[0].id : var.tgw_peering_attachment_id
+  provider = aws.network_account
+}
+
 ################################################################################
 # VPC Attachment
 ################################################################################

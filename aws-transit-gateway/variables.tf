@@ -21,6 +21,30 @@ variable "create_tgw" {
   default     = true
 }
 
+variable "peer_tgw" {
+  description = "Controls if TGW Peer should be created (it affects almost all resources)"
+  type        = bool
+  default     = false
+}
+
+variable "tgw_accepter" {
+  description = "Controls TGW Peer Accepter if TGW Peer should be created (it affects almost all resources)"
+  type        = bool
+  default     = false
+}
+
+variable "tgw_id" {
+  description = "The ID of the local TGW for peerings"
+  type        = string
+  default     = ""
+}
+
+variable "tgw_peering_attachment_id" {
+  description = "The ID of the TGW attachment for peerings"
+  type        = string
+  default     = ""
+}
+
 variable "description" {
   description = "Description of the EC2 Transit Gateway"
   type        = string
