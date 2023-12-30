@@ -38,8 +38,8 @@ Note that this example may create resources which cost money. Run `terraform des
 | <a name="module_complete_sns"></a> [complete\_sns](#module\_complete\_sns) | ../../ | n/a |
 | <a name="module_default_sns"></a> [default\_sns](#module\_default\_sns) | ../../ | n/a |
 | <a name="module_disabled_sns"></a> [disabled\_sns](#module\_disabled\_sns) | ../../ | n/a |
-| <a name="module_kms"></a> [kms](#module\_kms) | terraform-aws-modules/kms/aws | ~> 1.0 |
-| <a name="module_sqs"></a> [sqs](#module\_sqs) | terraform-aws-modules/sqs/aws | ~> 4.0 |
+| <a name="module_kms"></a> [kms](#module\_kms) | https://github.com/kloia/platform-modules/tree/main/aws-kms | ~> 1.0 |
+| <a name="module_sqs"></a> [sqs](#module\_sqs) | https://github.com/kloia/platform-modules/tree/main/terraform-aws-sqs | ~> 4.0 |
 
 ## Resources
 
