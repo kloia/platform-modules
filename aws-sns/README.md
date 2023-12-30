@@ -7,7 +7,7 @@ Terraform module which creates SNS resources on AWS
 
 ```hcl
 module "sns_topic" {
-  source  = "terraform-aws-modules/sns/aws"
+  source  = "git::https://github.com/kloia/platform-modules//aws-sns?ref=main"
 
   name  = "simple"
 
@@ -22,7 +22,7 @@ module "sns_topic" {
 
 ```hcl
 module "sns_topic" {
-  source  = "terraform-aws-modules/sns/aws"
+  source  = "git::https://github.com/kloia/platform-modules//aws-sns?ref=main"
 
   name  = "pub-sub"
 
@@ -72,7 +72,7 @@ module "sns_topic" {
 
 ```hcl
 module "sns_topic" {
-  source  = "terraform-aws-modules/sns/aws"
+  source  = "git::https://github.com/kloia/platform-modules//aws-sns?ref=main"
 
   name  = "my-topic"
 
