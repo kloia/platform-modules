@@ -417,3 +417,9 @@ variable "deploy_karpenter_crds" {
   default = true
   description = "deploy provisioners and node template"
 }
+
+variable "waf_acl_arn" {
+  description = "wafv2 acl arn"
+  default = ""
+  type = string
+}
