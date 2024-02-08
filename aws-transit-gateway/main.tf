@@ -100,6 +100,35 @@ resource "aws_ec2_transit_gateway_vpc_attachment" "this" {
 }
 
 ################################################################################
+# Peering Attachment
+################################################################################
+
+resource "aws_ec2_transit_gateway_peering_attachment" "this" {
+  for_each = var.peer_attachments
+  peer_account_id         = each.value.peer_account_id
+  peer_region             = each.value.peer_region
+  peer_transit_gateway_id = each.value.peer_transit_gateway_id
+  transit_gateway_id      = var.create_tgw ? aws_ec2_transit_gateway.this[0].id : each.value.tgw_id
+
+  tags = merge(
+    var.tags,
+    { Name = var.name },
+    var.tgw_peer_attachment_tags,
+  )
+}
+
+resource "aws_ec2_transit_gateway_peering_attachment_accepter" "example" {
+  count  = length(var.peer_attachment_ids)
+  transit_gateway_attachment_id = var.peer_attachment_ids[count.index]
+
+  tags = merge(
+    var.tags,
+    { Name = var.name },
+    var.tgw_peer_attachment_tags,
+  )
+}
+
+################################################################################
 # Route Table / Routes
 ################################################################################
 
@@ -153,6 +182,18 @@ resource "aws_ec2_transit_gateway_route_table_association" "this" {
 
   # Create association if it was not set already by aws_ec2_transit_gateway_vpc_attachment resource
   transit_gateway_attachment_id  = aws_ec2_transit_gateway_vpc_attachment.this[each.key].id
+  transit_gateway_route_table_id = var.create_tgw && var.tgw_route_table_env != "prod" ? aws_ec2_transit_gateway_route_table.this[0].id : "${var.create_tgw && var.tgw_route_table_env == "prod" ? aws_ec2_transit_gateway_route_table.this[1].id : var.transit_gateway_route_table_id}"
+}
+
+
+# Peering route table association
+resource "aws_ec2_transit_gateway_route_table_association" "peer" {
+  for_each = {
+    for k, v in var.peer_attachments : k => v if try(v.transit_gateway_default_route_table_association, true) != true
+  }
+
+  # Create association if it was not set already by aws_ec2_transit_gateway_vpc_attachment resource
+  transit_gateway_attachment_id  = aws_ec2_transit_gateway_peering_attachment.this[each.key].id
   transit_gateway_route_table_id = var.create_tgw && var.tgw_route_table_env != "prod" ? aws_ec2_transit_gateway_route_table.this[0].id : "${var.create_tgw && var.tgw_route_table_env == "prod" ? aws_ec2_transit_gateway_route_table.this[1].id : var.transit_gateway_route_table_id}"
 }
 

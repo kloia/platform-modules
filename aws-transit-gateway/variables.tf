@@ -110,6 +110,27 @@ variable "tgw_vpc_attachment_tags" {
 }
 
 ################################################################################
+# Peering Attachment
+################################################################################
+variable "peer_attachments" {
+  description = "Maps of maps of VPC details to attach to TGW. Type 'any' to disable type validation by Terraform."
+  type        = any
+  default     = {}
+}
+
+variable "peer_attachment_ids" {
+  description = "(Required) The ID of the EC2 Transit Gateway Peering Attachment to manage."
+  type = list(string)
+  default = []
+}
+
+variable "tgw_peer_attachment_tags" {
+  description = "Additional tags for VPC attachments"
+  type        = map(string)
+  default     = {}
+}
+
+################################################################################
 # Route Table / Routes
 ################################################################################
 
