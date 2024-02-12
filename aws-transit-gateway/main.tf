@@ -74,31 +74,46 @@ resource "aws_ec2_tag" "this" {
   value       = each.value
 }
 
+################################################################################
+# Peer Attachment
+################################################################################
+
 # transit GW Peer
-data "aws_region" "peer" {
-  provider = aws.network_account_peer
+data "aws_ec2_transit_gateway_peering_attachment" "this" {
+	count = var.peer_attachment != {} ? 1 : 0
+  provider = aws.peer_accepter
+	depends_on = [aws_ec2_transit_gateway_peering_attachment.this]
+
+	filter {
+		name   = "transit-gateway-id"
+		values = [try(var.peer_attachment.peer_transit_gateway_id, "id")]
+	}
+  # If you use multiple tgw peering you must fix this values.
+	filter {
+		name   = "state"
+		values = ["pendingAcceptance", "available"]
+	}
 }
 
-resource "aws_ec2_transit_gateway_peering_attachment" "peer_attachment" {
-  count = var.peer_tgw ? 1 : 0
-  provider = aws.network_account
+resource "aws_ec2_transit_gateway_peering_attachment" "this" {
+  count = var.peer_attachment != {} ? 1 : 0
 
-  peer_account_id         = aws_ec2_transit_gateway.this[0].owner_id
-  peer_region             = data.aws_region.peer.name
-  peer_transit_gateway_id = var.tgw_id
-  transit_gateway_id      = aws_ec2_transit_gateway.this[0].id
+  peer_account_id         = var.peer_attachment.peer_account_id
+  peer_region             = var.peer_attachment.peer_region
+  peer_transit_gateway_id = var.peer_attachment.peer_transit_gateway_id
+  transit_gateway_id      = var.peer_attachment.tgw_id
 
   tags = merge(
     var.tags,
     { Name = var.name },
-    var.tgw_tags,
+    var.tgw_peer_attachment_tags,
   )
 }
 
-resource "aws_ec2_transit_gateway_peering_attachment_accepter" "peering_accepter" {
-  count = var.tgw_accepter ? 1 : 0
-  transit_gateway_attachment_id = var.peer_tgw ? aws_ec2_transit_gateway_peering_attachment.peer_attachment[0].id : var.tgw_peering_attachment_id
-  provider = aws.network_account
+resource "aws_ec2_transit_gateway_peering_attachment_accepter" "this" {
+  count = var.peer_attachment != {} ? 1 : 0
+  provider = aws.peer_accepter
+  transit_gateway_attachment_id = data.aws_ec2_transit_gateway_peering_attachment.this[0].id
 }
 
 ################################################################################
@@ -137,27 +152,13 @@ resource "aws_ec2_transit_gateway_route_table" "this" {
 
   tags = merge(
     var.tags,
-    { Name = var.name },
     var.tgw_route_table_tags,
   )
 }
 
 resource "aws_ec2_transit_gateway_route" "this" {
-  count = var.cross_account_assosiation_propagation == false ? length(local.vpc_attachments_with_routes) : 0 
+  count = length(local.vpc_attachments_with_routes) 
 
-  destination_cidr_block = local.vpc_attachments_with_routes[count.index][1].destination_cidr_block
-  blackhole              = try(local.vpc_attachments_with_routes[count.index][1].blackhole, null)
-
-  transit_gateway_route_table_id = var.create_tgw ? aws_ec2_transit_gateway_route_table.this[0].id : var.transit_gateway_route_table_id
-  transit_gateway_attachment_id  = tobool(try(local.vpc_attachments_with_routes[count.index][1].blackhole, false)) == false ? aws_ec2_transit_gateway_vpc_attachment.this[local.vpc_attachments_with_routes[count.index][0].key].id : null
-}
-
-# Cross account resource
-resource "aws_ec2_transit_gateway_route" "network_account" {
-  provider = aws.network_account
-  count = var.cross_account_assosiation_propagation == true ? length(local.vpc_attachments_with_routes) : 0 
-
-  
   destination_cidr_block = local.vpc_attachments_with_routes[count.index][1].destination_cidr_block
   blackhole              = try(local.vpc_attachments_with_routes[count.index][1].blackhole, null)
 
@@ -175,19 +176,7 @@ resource "aws_route" "this" {
 
 resource "aws_ec2_transit_gateway_route_table_association" "this" {
   for_each = {
-    for k, v in var.vpc_attachments : k => v if try(v.transit_gateway_default_route_table_association, true) != true && v.cross_account_assosiation_propagation == false
-  }
-
-  # Create association if it was not set already by aws_ec2_transit_gateway_vpc_attachment resource
-  transit_gateway_attachment_id  = aws_ec2_transit_gateway_vpc_attachment.this[each.key].id
-  transit_gateway_route_table_id = var.create_tgw ? aws_ec2_transit_gateway_route_table.this[0].id : try(each.value.transit_gateway_route_table_id, var.transit_gateway_route_table_id)
-}
-
-# Cross account resource
-resource "aws_ec2_transit_gateway_route_table_association" "network_account" {
-  provider = aws.network_account
-  for_each = {
-    for k, v in var.vpc_attachments : k => v if try(v.transit_gateway_default_route_table_association, true) != true && v.cross_account_assosiation_propagation == true
+    for k, v in var.vpc_attachments : k => v if var.create_tgw && try(v.transit_gateway_default_route_table_association, true) != true
   }
 
   # Create association if it was not set already by aws_ec2_transit_gateway_vpc_attachment resource
@@ -197,7 +186,7 @@ resource "aws_ec2_transit_gateway_route_table_association" "network_account" {
 
 resource "aws_ec2_transit_gateway_route_table_propagation" "this" {
   for_each = {
-    for k, v in var.vpc_attachments : k => v if try(v.transit_gateway_default_route_table_propagation, true) != true && v.cross_account_assosiation_propagation == false
+    for k, v in var.vpc_attachments : k => v if var.create_tgw && try(v.transit_gateway_default_route_table_propagation, true) != true
   }
 
   # Create association if it was not set already by aws_ec2_transit_gateway_vpc_attachment resource
@@ -205,16 +194,22 @@ resource "aws_ec2_transit_gateway_route_table_propagation" "this" {
   transit_gateway_route_table_id = var.create_tgw ? aws_ec2_transit_gateway_route_table.this[0].id : try(each.value.transit_gateway_route_table_id, var.transit_gateway_route_table_id)
 }
 
-# Cross account resource
-resource "aws_ec2_transit_gateway_route_table_propagation" "network_account" {
-  provider = aws.network_account
-  for_each = {
-    for k, v in var.vpc_attachments : k => v if try(v.transit_gateway_default_route_table_propagation, true) != true && v.cross_account_assosiation_propagation == true
-  }
+## Peer requester & Peer accepter static routes
+resource "aws_ec2_transit_gateway_route" "requester" {
+  count = var.peer_attachment == {} ? 0 : length(var.peer_attachment.peer_requester_routes)
 
-  # Create association if it was not set already by aws_ec2_transit_gateway_vpc_attachment resource
-  transit_gateway_attachment_id  = aws_ec2_transit_gateway_vpc_attachment.this[each.key].id
-  transit_gateway_route_table_id = var.create_tgw ? aws_ec2_transit_gateway_route_table.this[0].id : try(each.value.transit_gateway_route_table_id, var.transit_gateway_route_table_id)
+  destination_cidr_block         = var.peer_attachment.peer_requester_routes[count.index]
+  transit_gateway_attachment_id  = data.aws_ec2_transit_gateway_peering_attachment.this[0].id
+  transit_gateway_route_table_id = var.create_tgw ? aws_ec2_transit_gateway.this[0].association_default_route_table_id: var.transit_gateway_route_table_id_requester
+}
+
+resource "aws_ec2_transit_gateway_route" "accepter" {
+  count = var.peer_attachment == {} ? 0 : length(var.peer_attachment.peer_accepter_routes)
+
+  provider = aws.peer_accepter
+  destination_cidr_block         = var.peer_attachment.peer_accepter_routes[count.index]
+  transit_gateway_attachment_id  = data.aws_ec2_transit_gateway_peering_attachment.this[0].id
+  transit_gateway_route_table_id = var.create_tgw ? aws_ec2_transit_gateway.this[0].association_default_route_table_id: var.transit_gateway_route_table_id_accepter
 }
 
 ################################################################################
