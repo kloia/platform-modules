@@ -133,6 +133,29 @@ variable "tgw_vpc_attachment_tags" {
   default     = {}
 }
 
+
+################################################################################
+# Peer Attachment
+################################################################################
+
+variable "peer_attachment" {
+  description = "Maps of maps of Peer details to attach to TGW. Type 'any' to disable type validation by Terraform."
+  type        = any
+  default     = {}
+}
+
+variable "peer_attachment_id" {
+  description = "(Required) The ID of the EC2 Transit Gateway Peering Attachment to manage."
+  type = string
+  default = ""
+}
+
+variable "tgw_peer_attachment_tags" {
+  description = "Additional tags for Peer attachments"
+  type        = map(string)
+  default     = {}
+}
+
 ################################################################################
 # Route Table / Routes
 ################################################################################
@@ -149,10 +172,16 @@ variable "tgw_route_table_tags" {
   default     = {}
 }
 
-variable "cross_account_assosiation_propagation" {
-  description = "Cross account assosiation and propagation"
-  type        = bool
-  default     = false
+variable "transit_gateway_route_table_id_requester" {
+  description = "Identifier of EC2 Transit Gateway Route Table to use with the Target Gateway when reusing it between multiple TGWs"
+  type        = string
+  default     = null
+}
+
+variable "transit_gateway_route_table_id_accepter" {
+  description = "Identifier of EC2 Transit Gateway Route Table to use with the Target Gateway when reusing it between multiple TGWs"
+  type        = string
+  default     = null
 }
 
 ################################################################################
