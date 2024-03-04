@@ -116,3 +116,8 @@ variable "requester_vpc_id_key" {
   type = string
   default = ""
 }
+variable "fetch_from_ssm" {
+  description = "Cross account variables fetching from SSM enablement"
+  type = bool
+  default = true
+}

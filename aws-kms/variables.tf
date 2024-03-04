@@ -32,6 +32,12 @@ variable "customer_master_key_spec" {
   default     = null
 }
 
+variable "custom_key_store_id" {
+  description = "ID of the KMS Custom Key Store where the key will be stored instead of KMS (eg CloudHSM)."
+  type        = string
+  default     = null
+}
+
 variable "deletion_window_in_days" {
   description = "The waiting period, specified in number of days. After the waiting period ends, AWS KMS deletes the KMS key. If you specify a value, it must be between `7` and `30`, inclusive. If you do not specify a value, it defaults to `30`"
   type        = number
@@ -116,6 +122,12 @@ variable "key_service_users" {
   default     = []
 }
 
+variable "key_service_roles_for_autoscaling" {
+  description = "A list of IAM ARNs for [AWSServiceRoleForAutoScaling roles](https://docs.aws.amazon.com/autoscaling/ec2/userguide/key-policy-requirements-EBS-encryption.html#policy-example-cmk-access)"
+  type        = list(string)
+  default     = []
+}
+
 variable "key_symmetric_encryption_users" {
   description = "A list of IAM ARNs for [key symmetric encryption users](https://docs.aws.amazon.com/kms/latest/developerguide/key-policy-default.html#key-policy-users-crypto)"
   type        = list(string)
@@ -146,6 +158,12 @@ variable "key_services" {
   default     = []
 }
 
+variable "key_statements" {
+  description = "A map of IAM policy [statements](https://registry.terraform.io/providers/hashicorp/aws/latest/docs/data-sources/iam_policy_document#statement) for custom permission usage"
+  type        = any
+  default     = {}
+}
+
 variable "source_policy_documents" {
   description = "List of IAM policy documents that are merged together into the exported document. Statements must have unique `sid`s"
   type        = list(string)
@@ -156,6 +174,50 @@ variable "override_policy_documents" {
   description = "List of IAM policy documents that are merged together into the exported document. In merging, statements with non-blank `sid`s will override statements with the same `sid`"
   type        = list(string)
   default     = []
+}
+
+variable "enable_route53_dnssec" {
+  description = "Determines whether the KMS policy used for Route53 DNSSEC signing is enabled"
+  type        = bool
+  default     = false
+}
+
+variable "route53_dnssec_sources" {
+  description = "A list of maps containing `account_ids` and Route53 `hosted_zone_arn` that will be allowed to sign DNSSEC records"
+  type        = list(any)
+  default     = []
+}
+
+################################################################################
+# Replica Key
+################################################################################
+
+variable "create_replica" {
+  description = "Determines whether a replica standard CMK will be created (AWS provided material)"
+  type        = bool
+  default     = false
+}
+
+variable "primary_key_arn" {
+  description = "The primary key arn of a multi-region replica key"
+  type        = string
+  default     = null
+}
+
+################################################################################
+# Replica External Key
+################################################################################
+
+variable "create_replica_external" {
+  description = "Determines whether a replica external CMK will be created (externally provided material)"
+  type        = bool
+  default     = false
+}
+
+variable "primary_external_key_arn" {
+  description = "The primary external key arn of a multi-region replica external key"
+  type        = string
+  default     = null
 }
 
 ################################################################################
@@ -189,7 +251,6 @@ variable "grants" {
   type        = any
   default     = {}
 }
-
 
 variable "create_public_key" {
   description = "Determines whether output public key of kms"

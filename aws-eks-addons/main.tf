@@ -102,16 +102,6 @@ resource "kubernetes_ingress_v1" "alb_ingress_connect_nginx" {
     name = var.connect_hostnames_from_alb_ing_prefix != "" ? "${var.connect_hostnames_from_alb_ing_prefix}-nginx" : "ing-nginx"
     namespace = "ingress-nginx"
 
-    annotations = {
-      "alb.ingress.kubernetes.io/load-balancer-name" = var.loadbalancer_name
-      "alb.ingress.kubernetes.io/certificate-arn" = var.acm_certificate_arn
-      "alb.ingress.kubernetes.io/scheme" = "internet-facing"
-      "alb.ingress.kubernetes.io/target-type" = "instance"
-      "alb.ingress.kubernetes.io/group.name" = "external"
-      "alb.ingress.kubernetes.io/ssl-redirect" = "443"
-      "alb.ingress.kubernetes.io/listen-ports" = "[{\"HTTP\": 80}, {\"HTTPS\": 443}]"
-      "alb.ingress.kubernetes.io/healthcheck-path" = "/healthz"
-    }
   }
 
   spec {
@@ -140,6 +130,28 @@ resource "kubernetes_ingress_v1" "alb_ingress_connect_nginx" {
   depends_on = [
     helm_release.aws_lb_controller, helm_release.ingress_nginx
   ]
+}
+
+resource "kubernetes_annotations" "alb_ingress_connect_nginx_annotation" {
+  count = local.can_connect_alb_to_nginx ? 1 : 0
+  api_version = "networking.k8s.io/v1"
+  kind        = "Ingress"
+  force = true
+  metadata {
+    name = var.connect_hostnames_from_alb_ing_prefix != "" ? "${var.connect_hostnames_from_alb_ing_prefix}-nginx" : "ing-nginx"
+    namespace = "ingress-nginx"
+  }
+  annotations = {
+    "alb.ingress.kubernetes.io/load-balancer-name" = var.loadbalancer_name
+    "alb.ingress.kubernetes.io/certificate-arn" = var.acm_certificate_arn
+    "alb.ingress.kubernetes.io/wafv2-acl-arn" = var.waf_acl_arn
+    "alb.ingress.kubernetes.io/scheme" = "internet-facing"
+    "alb.ingress.kubernetes.io/target-type" = "instance"
+    "alb.ingress.kubernetes.io/group.name" = "external"
+    "alb.ingress.kubernetes.io/ssl-redirect" = "443"
+    "alb.ingress.kubernetes.io/listen-ports" = "[{\"HTTP\": 80}, {\"HTTPS\": 443}]"
+    "alb.ingress.kubernetes.io/healthcheck-path" = "/healthz"
+  }
 }
 
 resource "kubernetes_ingress_v1" "alb_ingress_connect_istio" {
