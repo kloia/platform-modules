@@ -8,7 +8,7 @@ resource "aws_vpc_peering_connection" "peer" {
     auto_accept = false
 
     tags = {
-        Name = "aws peering - requester"
+        Name = var.name
     }
 }
 
@@ -60,7 +60,7 @@ resource "aws_vpc_peering_connection" "cross_peer" {
     auto_accept = false
 
     tags = {
-        Name = "aws peering - requester"
+        Name = var.name
     }
 
 }
