@@ -1,3 +1,9 @@
+variable "name" {
+  description = "The Name of VPC Peering"
+  type        = string
+  default     = ""
+}
+
 variable "vpc_peer_id" {
   description = "VPC peering connection ID"
   type = string

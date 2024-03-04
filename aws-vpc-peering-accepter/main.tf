@@ -6,6 +6,7 @@ resource "aws_vpc_peering_connection_accepter" "peer" {
   auto_accept               = true
 
   tags = merge(var.tags,{
+    Name = var.name
     Side = "Accepter"
   })
 
@@ -21,6 +22,7 @@ resource "aws_vpc_peering_connection_accepter" "batch_peer" {
   auto_accept               = true
 
   tags = merge(var.tags,{
+    Name = var.name
     Side = "Accepter"
   })
 

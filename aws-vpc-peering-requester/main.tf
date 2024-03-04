@@ -73,6 +73,7 @@ resource "aws_vpc_peering_connection_accepter" "cross_accepter" {
   auto_accept               = true
 
   tags = {
+    Name = var.name
     Side = "Accepter"
   }
 }
