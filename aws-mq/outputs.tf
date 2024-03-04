@@ -44,3 +44,8 @@ output "endpoints" {
   value       = aws_mq_broker.default[0].instances.0.endpoints
   description = "Endpoints of the MQ instances"
 }
+
+output "endpoints_all" {
+  value       = aws_mq_broker.default[0].instances[*].endpoints
+  description = "Endpoints of the all MQ instances"
+}
