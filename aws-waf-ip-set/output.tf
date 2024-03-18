@@ -8,7 +8,7 @@ output "whitelist_ip_set_arn" {
   description = "arn of whitelist ip set"
 }
 
-output "whitelist_ip_set_arn" {
+output "dynamic_waf_ip_set_arn" {
 
   value       = aws_wafv2_ip_set.ip_addresses.arn
   description = "arns of dynamically created ip address groups"
