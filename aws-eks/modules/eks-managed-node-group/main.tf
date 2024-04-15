@@ -83,7 +83,7 @@ resource "aws_launch_template" "this" {
           iops                  = lookup(ebs.value, "iops", null)
           throughput            = lookup(ebs.value, "throughput", null)
           snapshot_id           = lookup(ebs.value, "snapshot_id", null)
-          volume_size           = lookup(ebs.value, "volume_size", null)
+          volume_size           = var.disk_size #lookup(ebs.value, "volume_size", null)
           volume_type           = lookup(ebs.value, "volume_type", null)
         }
       }
