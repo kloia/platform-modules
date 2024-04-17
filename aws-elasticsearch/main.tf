@@ -12,10 +12,10 @@ data "aws_subnets" "private_subnets_with_database_tag" {
 resource "random_password" "master_user_password" {
   count            = var.advanced_security_options_internal_user_database_enabled ? 1 : 0
   length           = 10
-  min_lower        = 1
-  min_numeric      = 1
-  min_special      = 1
-  min_upper        = 1
+  min_lower        = 0
+  min_numeric      = 0
+  min_special      = 0
+  min_upper        = 0
 }
 
 # https://github.com/terraform-providers/terraform-provider-aws/issues/5218
