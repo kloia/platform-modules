@@ -1,7 +1,9 @@
 locals {
-  can_connect_alb_to_nginx = var.deploy_aws_loadbalancer && (length(var.connect_hostnames_from_alb_to_nginx) > 0)
-  can_connect_alb_to_istio = var.deploy_aws_loadbalancer && var.deploy_rancher_istio && (length(var.connect_hostnames_from_alb_to_istio) > 0)
+  can_connect_alb_to_nginx    = var.deploy_aws_loadbalancer && (length(var.connect_hostnames_from_alb_to_nginx) > 0)
+  can_connect_alb_to_istio    = var.deploy_aws_loadbalancer && var.deploy_rancher_istio && (length(var.connect_hostnames_from_alb_to_istio) > 0)
   can_connect_nginx_to_argocd = var.deploy_aws_loadbalancer && var.deploy_argocd
+  caData                      = var.enable_sso ? data.aws_ssm_paramater.sso_ca_data_network_account[0].value : ""
+  ssoURL                      = var.enable_sso ? data.aws_ssm_parameter.sso_url_network_account[0].value : ""
 }
 
 resource "kubernetes_service_account" "service-common-service-account" {
@@ -86,7 +88,7 @@ resource "helm_release" "ingress_nginx" {
   }
 
   set {
-    name = "controller.config.use-forwarded-headers"
+    name  = "controller.config.use-forwarded-headers"
     value = "true"
   }
 
@@ -99,7 +101,7 @@ resource "kubernetes_ingress_v1" "alb_ingress_connect_nginx" {
   }
   wait_for_load_balancer = true
   metadata {
-    name = var.connect_hostnames_from_alb_ing_prefix != "" ? "${var.connect_hostnames_from_alb_ing_prefix}-nginx" : "ing-nginx"
+    name      = var.connect_hostnames_from_alb_ing_prefix != "" ? "${var.connect_hostnames_from_alb_ing_prefix}-nginx" : "ing-nginx"
     namespace = "ingress-nginx"
 
   }
@@ -133,24 +135,24 @@ resource "kubernetes_ingress_v1" "alb_ingress_connect_nginx" {
 }
 
 resource "kubernetes_annotations" "alb_ingress_connect_nginx_annotation" {
-  count = local.can_connect_alb_to_nginx ? 1 : 0
+  count       = local.can_connect_alb_to_nginx ? 1 : 0
   api_version = "networking.k8s.io/v1"
   kind        = "Ingress"
-  force = true
+  force       = true
   metadata {
-    name = var.connect_hostnames_from_alb_ing_prefix != "" ? "${var.connect_hostnames_from_alb_ing_prefix}-nginx" : "ing-nginx"
+    name      = var.connect_hostnames_from_alb_ing_prefix != "" ? "${var.connect_hostnames_from_alb_ing_prefix}-nginx" : "ing-nginx"
     namespace = "ingress-nginx"
   }
   annotations = {
     "alb.ingress.kubernetes.io/load-balancer-name" = var.loadbalancer_name
-    "alb.ingress.kubernetes.io/certificate-arn" = var.acm_certificate_arn
-    "alb.ingress.kubernetes.io/wafv2-acl-arn" = var.waf_acl_arn
-    "alb.ingress.kubernetes.io/scheme" = "internet-facing"
-    "alb.ingress.kubernetes.io/target-type" = "instance"
-    "alb.ingress.kubernetes.io/group.name" = "external"
-    "alb.ingress.kubernetes.io/ssl-redirect" = "443"
-    "alb.ingress.kubernetes.io/listen-ports" = "[{\"HTTP\": 80}, {\"HTTPS\": 443}]"
-    "alb.ingress.kubernetes.io/healthcheck-path" = "/healthz"
+    "alb.ingress.kubernetes.io/certificate-arn"    = var.acm_certificate_arn
+    "alb.ingress.kubernetes.io/wafv2-acl-arn"      = var.waf_acl_arn
+    "alb.ingress.kubernetes.io/scheme"             = "internet-facing"
+    "alb.ingress.kubernetes.io/target-type"        = "instance"
+    "alb.ingress.kubernetes.io/group.name"         = "external"
+    "alb.ingress.kubernetes.io/ssl-redirect"       = "443"
+    "alb.ingress.kubernetes.io/listen-ports"       = "[{\"HTTP\": 80}, {\"HTTPS\": 443}]"
+    "alb.ingress.kubernetes.io/healthcheck-path"   = "/healthz"
   }
 }
 
@@ -161,17 +163,17 @@ resource "kubernetes_ingress_v1" "alb_ingress_connect_istio" {
   }
   wait_for_load_balancer = true
   metadata {
-    name = var.connect_hostnames_from_alb_ing_prefix != "" ? "${var.connect_hostnames_from_alb_ing_prefix}-istio" : "ing-istio"
+    name      = var.connect_hostnames_from_alb_ing_prefix != "" ? "${var.connect_hostnames_from_alb_ing_prefix}-istio" : "ing-istio"
     namespace = "istio-system"
 
     annotations = {
-      "alb.ingress.kubernetes.io/load-balancer-name" = var.loadbalancer_name
-      "alb.ingress.kubernetes.io/certificate-arn" = var.acm_certificate_arn
-      "alb.ingress.kubernetes.io/scheme" = "internet-facing"
-      "alb.ingress.kubernetes.io/target-type" = "instance"
-      "alb.ingress.kubernetes.io/group.name" = "external"
-      "alb.ingress.kubernetes.io/ssl-redirect" = "443"
-      "alb.ingress.kubernetes.io/listen-ports" = "[{\"HTTP\": 80}, {\"HTTPS\": 443}]"
+      "alb.ingress.kubernetes.io/load-balancer-name"         = var.loadbalancer_name
+      "alb.ingress.kubernetes.io/certificate-arn"            = var.acm_certificate_arn
+      "alb.ingress.kubernetes.io/scheme"                     = "internet-facing"
+      "alb.ingress.kubernetes.io/target-type"                = "instance"
+      "alb.ingress.kubernetes.io/group.name"                 = "external"
+      "alb.ingress.kubernetes.io/ssl-redirect"               = "443"
+      "alb.ingress.kubernetes.io/listen-ports"               = "[{\"HTTP\": 80}, {\"HTTPS\": 443}]"
       "alb.ingress.kubernetes.io/shield-advanced-protection" = tostring(var.enable_shield_advanced_protection_from_alb_to_istio)
     }
   }
@@ -207,14 +209,14 @@ resource "kubernetes_ingress_v1" "alb_ingress_connect_istio" {
 
 data "aws_ssm_parameter" "sso_ca_data_network_account" {
   provider = aws.network_infra
-  count = var.enable_sso ? 1 : 0
-  name = "${var.sso_ca_data_network_account}"
+  count    = var.enable_sso ? 1 : 0
+  name     = var.sso_ca_data_network_account
 }
 
 data "aws_ssm_parameter" "sso_url_network_account" {
   provider = aws.network_infra
-  count = var.enable_sso ? 1 : 0
-  name = "${var.sso_url_network_account}"
+  count    = var.enable_sso ? 1 : 0
+  name     = var.sso_url_network_account
 }
 
 
@@ -327,13 +329,13 @@ resource "helm_release" "argocd" {
     value = ""
   }
 
-  values = var.enable_sso ?  [templatefile("${path.module}/values.yaml.tpl",{
-    caData = "${data.aws_ssm_parameter.sso_ca_data_network_account[0].value}",
-    ssoURL = "${data.aws_ssm_parameter.sso_url_network_account[0].value}",
-    redirectURI = "${var.sso_callback_url}"
-    entityIssuer = "${var.sso_callback_url}"
-
-  })
+  values = var.enable_sso || var.enable_template_file ? [templatefile("${path.module}/values.yaml.tpl", {
+    caData             = local.caData,
+    ssoURL             = local.ssoURL,
+    redirectURI        = "${var.sso_callback_url}",
+    entityIssuer       = "${var.sso_callback_url}",
+    currentEnvironment = "${var.current_environment}"
+    })
   ] : []
 
   // SSO Values
@@ -341,8 +343,8 @@ resource "helm_release" "argocd" {
   dynamic "set" {
     for_each = var.enable_sso ? [1] : []
     content {
-    name = "configs.cm.url"
-    value = "${var.gitops_url}"
+      name  = "configs.cm.url"
+      value = var.gitops_url
     }
   }
 
@@ -431,76 +433,76 @@ resource "helm_release" "external-secrets" {
 
 locals {
   # rancher monitoring MUST be deployed when rancher istio is enabled.
-  deploy_rancher_istio = var.deploy_rancher_istio
+  deploy_rancher_istio      = var.deploy_rancher_istio
   deploy_rancher_monitoring = var.deploy_rancher_monitoring || var.deploy_rancher_istio
 }
 
 resource "kubectl_manifest" "argocd_bootstrapper_application" {
-  count      = var.deploy_argocd ? 1 : 0
+  count = var.deploy_argocd ? 1 : 0
   yaml_body = yamlencode({
-    apiVersion: "argoproj.io/v1alpha1"
-    kind: "Application"
-    metadata: {
-      name: "argo-bootstrapper"
-      namespace: "argocd"
+    apiVersion : "argoproj.io/v1alpha1"
+    kind : "Application"
+    metadata : {
+      name : "argo-bootstrapper"
+      namespace : "argocd"
     }
-    spec: {
-      project: "default"
-      source: {
-        repoURL: "https://github.com/kloia/ArgoCD-EKS-Bootstrapper.git"
-        targetRevision: "HEAD"
-        path: "helm"
-        helm: {
-          values: yamlencode({
-            certManager: {
-              enable: var.deploy_cert_manager
+    spec : {
+      project : "default"
+      source : {
+        repoURL : "https://github.com/kloia/ArgoCD-EKS-Bootstrapper.git"
+        targetRevision : "HEAD"
+        path : "helm"
+        helm : {
+          values : yamlencode({
+            certManager : {
+              enable : var.deploy_cert_manager
             }
-            metricsServer: {
-              enable: var.deploy_metrics_server
+            metricsServer : {
+              enable : var.deploy_metrics_server
             }
-            trivy: {
-              enable: var.deploy_trivy
+            trivy : {
+              enable : var.deploy_trivy
             }
-            rancher: {
-              enable: var.deploy_rancher
-              values: {
-                hostname: var.rancher_hostname
+            rancher : {
+              enable : var.deploy_rancher
+              values : {
+                hostname : var.rancher_hostname
               }
             }
-            rancherMonitoringCrd: {
-              enable: local.deploy_rancher_monitoring
+            rancherMonitoringCrd : {
+              enable : local.deploy_rancher_monitoring
             }
-            rancherMonitoring: {
-              enable: local.deploy_rancher_monitoring
+            rancherMonitoring : {
+              enable : local.deploy_rancher_monitoring
             }
-            rancherIstio: {
-              enable: local.deploy_rancher_istio
+            rancherIstio : {
+              enable : local.deploy_rancher_istio
             }
-            argoWorkflow: {
-              enable: var.deploy_argo_workflow
-              targetRevision: "0.36.1"
-              values: { 
-                server: {
-                  ingress: {
-                    enabled: true
-                    hosts: ["${var.argo_workflow_ingress_host}"]
+            argoWorkflow : {
+              enable : var.deploy_argo_workflow
+              targetRevision : "0.36.1"
+              values : {
+                server : {
+                  ingress : {
+                    enabled : true
+                    hosts : ["${var.argo_workflow_ingress_host}"]
                   }
-                  extraArgs: var.argo_workflow_extra_args
+                  extraArgs : var.argo_workflow_extra_args
                 }
               }
             }
             rancherLogging : {
-              enable: var.deploy_rancher_logging
-              values: {
-                fluentd: {
-                  resources: {
-                    limits: {
-                      memory: var.rancher_logging_fluentd_memory_limit
-                      cpu: var.rancher_logging_fluentd_cpu_limit
+              enable : var.deploy_rancher_logging
+              values : {
+                fluentd : {
+                  resources : {
+                    limits : {
+                      memory : var.rancher_logging_fluentd_memory_limit
+                      cpu : var.rancher_logging_fluentd_cpu_limit
                     }
-                    requests: {
-                      memory: var.rancher_logging_fluentd_memory_request
-                      cpu: var.rancher_logging_fluentd_cpu_request
+                    requests : {
+                      memory : var.rancher_logging_fluentd_memory_request
+                      cpu : var.rancher_logging_fluentd_cpu_request
                     }
                   }
 
@@ -510,12 +512,12 @@ resource "kubectl_manifest" "argocd_bootstrapper_application" {
           })
         }
       }
-      destination: {
-        server: "https://kubernetes.default.svc"
-        namespace: "argocd"
+      destination : {
+        server : "https://kubernetes.default.svc"
+        namespace : "argocd"
       }
-      syncPolicy: {
-        automated: {}
+      syncPolicy : {
+        automated : {}
       }
     }
   })
@@ -531,7 +533,7 @@ resource "kubectl_manifest" "argocd_bootstrapper_application" {
 
 provider "aws" {
   region = "us-east-1"
-  alias = "virginia"
+  alias  = "virginia"
 }
 
 data "aws_ecrpublic_authorization_token" "token" {
@@ -540,7 +542,7 @@ data "aws_ecrpublic_authorization_token" "token" {
 
 module "karpenter" {
 
-  source  = "git::https://github.com/kloia/platform-modules.git//aws-eks/modules/karpenter?ref=v0.0.47"
+  source = "git::https://github.com/kloia/platform-modules.git//aws-eks/modules/karpenter?ref=v0.0.47"
 
   cluster_name = var.cluster_name
 
@@ -548,8 +550,8 @@ module "karpenter" {
 
   irsa_oidc_provider_arn          = var.oidc_provider_arn
   irsa_namespace_service_accounts = ["karpenter:karpenter"]
-  provider_region = var.cluster_region
-  provider_assume_role_arn = var.assume_role_arn
+  provider_region                 = var.cluster_region
+  provider_assume_role_arn        = var.assume_role_arn
 
   # Since Karpenter is running on an EKS Managed Node group,
   # we can re-use the role that was created for the node group
@@ -599,27 +601,27 @@ resource "helm_release" "karpenter" {
   }
 
   set {
-    name = "tolerations[0].effect"
+    name  = "tolerations[0].effect"
     value = "NoSchedule"
   }
 
   set {
-    name = "tolerations[0].key"
+    name  = "tolerations[0].key"
     value = "workload"
   }
 
   set {
-    name = "tolerations[0].operator"
+    name  = "tolerations[0].operator"
     value = "Equal"
   }
 
   set {
-    name = "tolerations[0].value"
+    name  = "tolerations[0].value"
     value = "system"
   }
 
   set {
-    name = "hostNetwork"
+    name  = "hostNetwork"
     value = true
   }
 
@@ -629,14 +631,14 @@ resource "kubectl_manifest" "karpenter_stateful_provisioner" {
   count = var.deploy_karpenter && var.deploy_karpenter_crds ? 1 : 0
 
   yaml_body = yamlencode({
-    apiVersion: "karpenter.sh/v1alpha5"
-    kind: "Provisioner"
-    metadata: {
-      name: "stateful-provisioner"
-      namespace: "karpenter"
+    apiVersion : "karpenter.sh/v1alpha5"
+    kind : "Provisioner"
+    metadata : {
+      name : "stateful-provisioner"
+      namespace : "karpenter"
     }
-    spec: {
-      consolidation: {
+    spec : {
+      consolidation : {
         enabled = false
       }
       providerRef = {
@@ -650,40 +652,40 @@ resource "kubectl_manifest" "karpenter_stateful_provisioner" {
       taints = [
         {
           effect = "NoSchedule"
-          key = "workload"
-          value = var.stateful_application_toleration_value
+          key    = "workload"
+          value  = var.stateful_application_toleration_value
         },
       ]
-      requirements: [
+      requirements : [
         {
-          key = "workload"
+          key      = "workload"
           operator = "In"
           values = [
             var.stateful_application_toleration_value,
           ]
         },
         {
-          key = "karpenter.sh/capacity-type"
+          key      = "karpenter.sh/capacity-type"
           operator = "In"
-          values = var.stateful_capacity_types
+          values   = var.stateful_capacity_types
         },
         {
-          key = "node.kubernetes.io/instance-type"
+          key      = "node.kubernetes.io/instance-type"
           operator = "In"
-          values = var.stateful_instance_types
+          values   = var.stateful_instance_types
         },
         {
-          key = "topology.kubernetes.io/zone"
+          key      = "topology.kubernetes.io/zone"
           operator = "In"
-          values = var.stateful_instance_zones
+          values   = var.stateful_instance_zones
         },
         {
-          key = "kubernetes.io/arch"
+          key      = "kubernetes.io/arch"
           operator = "In"
-          values = var.stateful_arch_types
+          values   = var.stateful_arch_types
         },
         {
-          key = "kubernetes.io/os"
+          key      = "kubernetes.io/os"
           operator = "In"
           values = [
             "linux",
@@ -693,7 +695,7 @@ resource "kubectl_manifest" "karpenter_stateful_provisioner" {
     }
   })
 
-  
+
   depends_on = [
     helm_release.karpenter[0]
   ]
@@ -705,13 +707,13 @@ resource "kubectl_manifest" "karpenter_stateless_provisioner" {
   count = var.deploy_karpenter && var.deploy_karpenter_crds ? 1 : 0
 
   yaml_body = yamlencode({
-    apiVersion: "karpenter.sh/v1alpha5"
-    kind: "Provisioner"
-    metadata: {
-      name: "stateless-provisioner"
+    apiVersion : "karpenter.sh/v1alpha5"
+    kind : "Provisioner"
+    metadata : {
+      name : "stateless-provisioner"
     }
-    spec: {
-      consolidation: {
+    spec : {
+      consolidation : {
         enabled = true
       }
       providerRef = {
@@ -722,29 +724,29 @@ resource "kubectl_manifest" "karpenter_stateless_provisioner" {
           cpu = var.stateless_total_cpu_limit
         }
       }
-      requirements: [
+      requirements : [
         {
-          key = "karpenter.sh/capacity-type"
+          key      = "karpenter.sh/capacity-type"
           operator = "In"
-          values = var.stateless_capacity_types
+          values   = var.stateless_capacity_types
         },
         {
-          key = "node.kubernetes.io/instance-type"
+          key      = "node.kubernetes.io/instance-type"
           operator = "In"
-          values = var.stateless_instance_types
+          values   = var.stateless_instance_types
         },
         {
-          key = "topology.kubernetes.io/zone"
+          key      = "topology.kubernetes.io/zone"
           operator = "In"
-          values = var.stateless_instance_zones
+          values   = var.stateless_instance_zones
         },
         {
-          key = "kubernetes.io/arch"
+          key      = "kubernetes.io/arch"
           operator = "In"
-          values = var.stateless_arch_types
+          values   = var.stateless_arch_types
         },
         {
-          key = "kubernetes.io/os"
+          key      = "kubernetes.io/os"
           operator = "In"
           values = [
             "linux",
@@ -754,14 +756,14 @@ resource "kubectl_manifest" "karpenter_stateless_provisioner" {
     }
   })
 
-  
+
   depends_on = [
     helm_release.karpenter[0]
   ]
 }
 
 resource "kubectl_manifest" "karpenter_node_template" {
-  count = var.deploy_karpenter && var.deploy_karpenter_crds ? 1 : 0
+  count     = var.deploy_karpenter && var.deploy_karpenter_crds ? 1 : 0
   yaml_body = <<-YAML
     apiVersion: karpenter.k8s.aws/v1alpha1
     kind: AWSNodeTemplate
@@ -807,12 +809,12 @@ YAML
 resource "kubectl_manifest" "karpenter_stateless_windows2019_provisioner" {
   count = var.karpenter_windows_support ? 1 : 0
   yaml_body = yamlencode({
-    apiVersion: "karpenter.sh/v1alpha5"
-    kind: "Provisioner"
-    metadata: {
-      name: "stateless-windows2019-provisioner"
+    apiVersion : "karpenter.sh/v1alpha5"
+    kind : "Provisioner"
+    metadata : {
+      name : "stateless-windows2019-provisioner"
     }
-    spec: {
+    spec : {
       ttlSecondsAfterEmpty = 30
       providerRef = {
         name = "windows2019"
@@ -822,29 +824,29 @@ resource "kubectl_manifest" "karpenter_stateless_windows2019_provisioner" {
           cpu = var.stateless_total_cpu_limit
         }
       }
-      requirements: [
+      requirements : [
         {
-          key = "karpenter.sh/capacity-type"
+          key      = "karpenter.sh/capacity-type"
           operator = "In"
-          values = var.stateless_windows_capacity_types
+          values   = var.stateless_windows_capacity_types
         },
         {
-          key = "node.kubernetes.io/instance-type"
+          key      = "node.kubernetes.io/instance-type"
           operator = "In"
-          values = var.stateless_windows_instance_types
+          values   = var.stateless_windows_instance_types
         },
         {
-          key = "topology.kubernetes.io/zone"
+          key      = "topology.kubernetes.io/zone"
           operator = "In"
-          values = var.stateless_instance_zones
+          values   = var.stateless_instance_zones
         },
         {
-          key = "kubernetes.io/arch"
+          key      = "kubernetes.io/arch"
           operator = "In"
-          values = var.stateless_windows_arch_types
+          values   = var.stateless_windows_arch_types
         },
         {
-          key = "kubernetes.io/os"
+          key      = "kubernetes.io/os"
           operator = "In"
           values = [
             "windows",
@@ -861,12 +863,12 @@ resource "kubectl_manifest" "karpenter_stateless_windows2019_provisioner" {
 resource "kubectl_manifest" "karpenter_stateless_windows2022_provisioner" {
   count = var.karpenter_windows_support ? 1 : 0
   yaml_body = yamlencode({
-    apiVersion: "karpenter.sh/v1alpha5"
-    kind: "Provisioner"
-    metadata: {
-      name: "stateless-windows2022-provisioner"
+    apiVersion : "karpenter.sh/v1alpha5"
+    kind : "Provisioner"
+    metadata : {
+      name : "stateless-windows2022-provisioner"
     }
-    spec: {
+    spec : {
       ttlSecondsAfterEmpty = 30
       providerRef = {
         name = "windows2022"
@@ -876,29 +878,29 @@ resource "kubectl_manifest" "karpenter_stateless_windows2022_provisioner" {
           cpu = var.stateless_total_cpu_limit
         }
       }
-      requirements: [
+      requirements : [
         {
-          key = "karpenter.sh/capacity-type"
+          key      = "karpenter.sh/capacity-type"
           operator = "In"
-          values = var.stateless_windows_capacity_types
+          values   = var.stateless_windows_capacity_types
         },
         {
-          key = "node.kubernetes.io/instance-type"
+          key      = "node.kubernetes.io/instance-type"
           operator = "In"
-          values = var.stateless_windows_instance_types
+          values   = var.stateless_windows_instance_types
         },
         {
-          key = "topology.kubernetes.io/zone"
+          key      = "topology.kubernetes.io/zone"
           operator = "In"
-          values = var.stateless_instance_zones
+          values   = var.stateless_instance_zones
         },
         {
-          key = "kubernetes.io/arch"
+          key      = "kubernetes.io/arch"
           operator = "In"
-          values = var.stateless_windows_arch_types
+          values   = var.stateless_windows_arch_types
         },
         {
-          key = "kubernetes.io/os"
+          key      = "kubernetes.io/os"
           operator = "In"
           values = [
             "windows",
@@ -913,7 +915,7 @@ resource "kubectl_manifest" "karpenter_stateless_windows2022_provisioner" {
 }
 
 resource "kubectl_manifest" "karpenter_windows2019_node_template" {
-  count = var.karpenter_windows_support ? 1 : 0
+  count     = var.karpenter_windows_support ? 1 : 0
   yaml_body = <<-YAML
     apiVersion: karpenter.k8s.aws/v1alpha1
     kind: AWSNodeTemplate
@@ -948,7 +950,7 @@ resource "kubectl_manifest" "karpenter_windows2019_node_template" {
 }
 
 resource "kubectl_manifest" "karpenter_windows2022_node_template" {
-  count = var.karpenter_windows_support ? 1 : 0
+  count     = var.karpenter_windows_support ? 1 : 0
   yaml_body = <<-YAML
     apiVersion: karpenter.k8s.aws/v1alpha1
     kind: AWSNodeTemplate
