@@ -11,7 +11,7 @@ locals {
 }
 
 module "db_subnet_group" {
-  source = "./modules/db_subnet_group"
+  source = "./db_subnet_group"
 
   create = local.create_db_subnet_group
 
@@ -24,7 +24,7 @@ module "db_subnet_group" {
 }
 
 module "db_parameter_group" {
-  source = "./modules/db_parameter_group"
+  source = "./db_parameter_group"
 
   create = local.create_db_parameter_group
 
@@ -39,7 +39,7 @@ module "db_parameter_group" {
 }
 
 module "db_option_group" {
-  source = "./modules/db_option_group"
+  source = "./db_option_group"
 
   create = local.create_db_option_group
 
@@ -57,7 +57,7 @@ module "db_option_group" {
 }
 
 module "db_instance" {
-  source = "./modules/db_instance"
+  source = "./db_instance"
 
   create                = local.create_db_instance
   identifier            = var.identifier
@@ -155,7 +155,7 @@ module "db_instance" {
 }
 
 module "db_instance_role_association" {
-  source = "./modules/db_instance_role_association"
+  source = "./db_instance_role_association"
 
   for_each = { for k, v in var.db_instance_role_associations : k => v if var.create_db_instance }
 
