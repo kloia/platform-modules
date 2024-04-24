@@ -2,7 +2,7 @@ locals {
   can_connect_alb_to_nginx    = var.deploy_aws_loadbalancer && (length(var.connect_hostnames_from_alb_to_nginx) > 0)
   can_connect_alb_to_istio    = var.deploy_aws_loadbalancer && var.deploy_rancher_istio && (length(var.connect_hostnames_from_alb_to_istio) > 0)
   can_connect_nginx_to_argocd = var.deploy_aws_loadbalancer && var.deploy_argocd
-  caData                      = var.enable_sso ? data.aws_ssm_paramater.sso_ca_data_network_account[0].value : ""
+  caData                      = var.enable_sso ? data.aws_ssm_parameter.sso_ca_data_network_account[0].value : ""
   ssoURL                      = var.enable_sso ? data.aws_ssm_parameter.sso_url_network_account[0].value : ""
 }
 
