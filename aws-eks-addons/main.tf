@@ -227,6 +227,12 @@ resource "helm_release" "argocd" {
   chart            = "argo-cd"
   namespace        = "argocd"
   create_namespace = true
+
+  set {
+    name  = "global.domain"
+    value = var.argocd_ingress_host
+  }
+
   set {
     name  = "server.ingress.ingressClassName"
     value = "nginx"
