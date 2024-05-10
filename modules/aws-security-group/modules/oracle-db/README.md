@@ -5,7 +5,7 @@
 ```hcl
 module "oracle_db_security_group" {
   source  = "terraform-modules/security-group/aws//modules/oracle-db"
-  version = "~> 4.0"
+  version = "~> 0.1"
 
   # omitted...
 }
