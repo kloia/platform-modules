@@ -1,6 +1,7 @@
 {
   "metadata": "0.0.0",
   "modules/metadata": "0.1.0",
+  "modules/aws-mongodbatlas-database-user": "0.1.0",
   "modules/aws-waf-ip-set": "0.1.0",
   "modules/aws-ecs-task-definition": "0.1.0",
   "modules/aws-kms": "0.1.0",
