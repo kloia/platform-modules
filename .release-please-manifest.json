@@ -1,6 +1,7 @@
 {
   "metadata": "0.0.0",
   "modules/metadata": "0.1.0",
+  "modules/aws-cloudtrail-s3-bucket": "0.1.0",
   "modules/aws-cloudtrail": "0.1.0",
   "modules/aws-vpc": "0.1.0",
   "modules/aws-efs": "0.1.0",
