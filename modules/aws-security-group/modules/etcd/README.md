@@ -5,7 +5,7 @@
 ```hcl
 module "etcd_security_group" {
   source  = "terraform-modules/security-group/aws//modules/etcd"
-  version = "~> 4.0"
+  version = "~> 0.1"
 
   # omitted...
 }
