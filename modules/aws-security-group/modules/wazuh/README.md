@@ -5,7 +5,7 @@
 ```hcl
 module "wazuh_security_group" {
   source  = "terraform-modules/security-group/aws//modules/wazuh"
-  version = "~> 4.0"
+  version = "~> 0.1"
 
   # omitted...
 }
