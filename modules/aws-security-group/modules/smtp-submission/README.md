@@ -5,7 +5,7 @@
 ```hcl
 module "smtp_submission_security_group" {
   source  = "terraform-modules/security-group/aws//modules/smtp-submission"
-  version = "~> 4.0"
+  version = "~> 0.1"
 
   # omitted...
 }
