@@ -561,5 +561,6 @@
   },
   "separate-pull-requests": true,
   "pull-request-title-pattern": "chore${scope}: release${component} ${version}",
+  "sequential-calls": true,
   "$schema": "https://raw.githubusercontent.com/googleapis/release-please/main/schemas/config.json"
 }
