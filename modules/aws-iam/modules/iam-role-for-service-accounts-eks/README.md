@@ -81,7 +81,7 @@ module "karpenter_irsa_role" {
 
 module "eks" {
   source  = "terraform-modules/eks/aws"
-  version = "~> 18.6"
+  version = "~> 0.1"
 
   cluster_name    = "my-cluster"
   cluster_version = "1.21"
