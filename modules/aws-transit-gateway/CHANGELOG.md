@@ -2,6 +2,13 @@
 
 All notable changes to this project will be documented in this file.
 
+## 0.1.0 (2024-05-10)
+
+
+### Features
+
+* import previous modules ([#153](https://github.com/kloia/platform-modules/issues/153)) ([126a74f](https://github.com/kloia/platform-modules/commit/126a74f8430ca971e61740f72de776dee210bb55))
+
 ## [2.10.0](https://github.com/terraform-aws-modules/terraform-aws-transit-gateway/compare/v2.9.0...v2.10.0) (2023-04-26)
 
 
