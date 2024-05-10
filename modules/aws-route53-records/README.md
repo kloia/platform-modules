@@ -7,7 +7,7 @@ This module creates DNS records in Route53 zone.
 ```hcl
 module "records" {
   source  = "../terraform-aws-route53-records"
-  version = "~> 2.0"
+  version = "~> 0.1"
 
   zone_name = "<zone_name>"
   private_zone = <bool> #Set true if zone is private
