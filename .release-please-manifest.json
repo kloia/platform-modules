@@ -1,6 +1,7 @@
 {
   "metadata": "0.0.0",
   "modules/metadata": "0.1.0",
+  "modules/aws-rds-aurora": "0.1.0",
   "modules/aws-mq": "0.1.0",
   "modules/aws-ssm-parameter-store": "0.1.0",
   "modules/aws-api-gateway": "0.1.0",
@@ -28,5 +29,5 @@
   "modules/aws-eks": "0.1.0",
   "modules/aws-iam": "0.1.0",
   "modules/aws-rds": "0.1.0",
-  "modules/aws-security-group": "0.1.0"
+  "modules/aws-security-group": "0.1.0",
 }
