@@ -1,5 +1,13 @@
 {
   "metadata": "0.0.0",
   "modules/metadata": "0.1.0",
-  "modules/aws-ec2-instance": "0.1.0"
+  "modules/aws-ec2-instance": "0.1.0",
+  "modules/aws-ecs": "0.1.0",
+  "modules/aws-dynamodb-table": "0.1.0",
+  "modules/aws-acm": "0.1.0",
+  "modules/aws-cloudwatch": "0.1.0",
+  "modules/aws-eks": "0.1.0",
+  "modules/aws-iam": "0.1.0",
+  "modules/aws-rds": "0.1.0",
+  "modules/aws-security-group": "0.1.0"
 }
