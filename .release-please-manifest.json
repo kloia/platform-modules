@@ -1,6 +1,7 @@
 {
   "metadata": "0.0.0",
   "modules/metadata": "0.1.0",
+  "modules/aws-s3": "0.1.0",
   "modules/aws-lambda": "0.1.0",
   "modules/aws-ec2-instance": "0.1.0",
   "modules/aws-ecs": "0.1.0",
