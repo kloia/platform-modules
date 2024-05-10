@@ -1,6 +1,7 @@
 {
   "metadata": "0.0.0",
   "modules/metadata": "0.1.0",
+  "modules/aws-ecs-service": "0.1.0",
   "modules/aws-amplify": "0.1.0",
   "modules/aws-vpc-peering-requester": "0.1.0",
   "modules/aws-ecs-load-balancer": "0.1.0",
