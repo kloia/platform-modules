@@ -1,6 +1,7 @@
 {
   "metadata": "0.0.0",
   "modules/metadata": "0.1.0",
+  "modules/aws-apigateway-v2-master": "0.1.0",
   "modules/aws-shield": "0.1.0",
   "modules/aws-key-pair": "0.1.0",
   "modules/aws-sns-master": "0.1.0",
