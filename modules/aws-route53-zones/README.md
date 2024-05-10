@@ -7,7 +7,7 @@ This module creates Route53 zones.
 ```hcl
 module "zones" {
   source  = "../terraform-aws-route53-zones"
-  version = "~> 2.0"
+  version = "~> 0.1"
 
   zones = {
     "public.route53-zone.com" = {
