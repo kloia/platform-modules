@@ -5,7 +5,7 @@
 ```hcl
 module "ipsec_500_security_group" {
   source  = "terraform-modules/security-group/aws//modules/ipsec-500"
-  version = "~> 4.0"
+  version = "~> 0.1"
 
   # omitted...
 }
