@@ -5,7 +5,7 @@
 ```hcl
 module "kubernetes_api_security_group" {
   source  = "terraform-modules/security-group/aws//modules/kubernetes-api"
-  version = "~> 4.0"
+  version = "~> 0.1"
 
   # omitted...
 }
