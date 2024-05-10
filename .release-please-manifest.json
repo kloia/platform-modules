@@ -1,7 +1,6 @@
 {
   "metadata": "0.0.0",
   "modules/metadata": "0.1.0",
-  "modules/aws-mongodbatlas-auth": "0.1.0",
   "modules/aws-cloudwatch-event-rule-master": "0.1.0",
   "modules/aws-eks-rancher-importer": "0.1.0",
   "modules/aws-self-signed-cert": "0.1.0",
@@ -47,5 +46,6 @@
   "modules/aws-eks": "0.1.0",
   "modules/aws-iam": "0.1.0",
   "modules/aws-rds": "0.1.0",
-  "modules/aws-security-group": "0.1.0"
+  "modules/aws-security-group": "0.1.0",
+  "modules/aws-mongodbatlas-auth": "0.1.0"
 }
