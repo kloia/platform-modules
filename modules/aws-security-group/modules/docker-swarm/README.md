@@ -5,7 +5,7 @@
 ```hcl
 module "docker_swarm_security_group" {
   source  = "terraform-modules/security-group/aws//modules/docker-swarm"
-  version = "~> 4.0"
+  version = "~> 0.1"
 
   # omitted...
 }
