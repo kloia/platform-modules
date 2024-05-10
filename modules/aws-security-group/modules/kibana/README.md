@@ -5,7 +5,7 @@
 ```hcl
 module "kibana_security_group" {
   source  = "terraform-modules/security-group/aws//modules/kibana"
-  version = "~> 4.0"
+  version = "~> 0.1"
 
   # omitted...
 }
