@@ -9,7 +9,7 @@ Terraform module which creates Cloudwatch resources on AWS.
 ```hcl
 module "log_metric_filter" {
   source  = "terraform-aws-modules/cloudwatch/aws//modules/log-metric-filter"
-  version = "~> 3.0"
+  version = "~> 0.1"
 
   log_group_name = "my-application-logs"
 
