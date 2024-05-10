@@ -7,7 +7,7 @@ Terraform module which creates Transit Gateway resources on AWS.
 ```hcl
 module "tgw" {
   source  = "terraform-aws-modules/transit-gateway/aws"
-  version = "~> 2.0"
+  version = "~> 0.1"
 
   name        = "my-tgw"
   description = "My TGW shared with several other AWS accounts"
