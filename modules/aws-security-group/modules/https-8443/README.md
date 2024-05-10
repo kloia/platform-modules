@@ -5,7 +5,7 @@
 ```hcl
 module "https_8443_security_group" {
   source  = "terraform-modules/security-group/aws//modules/https-8443"
-  version = "~> 4.0"
+  version = "~> 0.1"
 
   # omitted...
 }
