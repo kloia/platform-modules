@@ -1,6 +1,7 @@
 {
   "metadata": "0.0.0",
   "modules/metadata": "0.1.0",
+  "modules/aws-ecs-load-balancer": "0.1.0",
   "modules/aws-rds-global-cluster": "0.1.0",
   "modules/aws-dax": "0.1.0",
   "modules/aws-mongodbatlas-database-user": "0.1.0",
