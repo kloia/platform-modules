@@ -7,8 +7,8 @@
       "bump-minor-pre-major": true,
       "bump-patch-for-minor-pre-major": false,
       "draft": false,
-      "prerelease": false,
-    },
+      "prerelease": false
+    }
   },
   "separate-pull-requests": true,
   "pull-request-title-pattern": "chore${scope}: release${component} ${version}",
