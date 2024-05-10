@@ -5,7 +5,7 @@
 ```hcl
 module "http_80_security_group" {
   source  = "terraform-modules/security-group/aws//modules/http-80"
-  version = "~> 4.0"
+  version = "~> 0.1"
 
   # omitted...
 }
