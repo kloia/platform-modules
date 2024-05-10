@@ -1,0 +1,11 @@
+*.tfstate
+*.tfstate.*
+**/*.pem
+**/.terraform
+**/terraform.tfstate
+**/terraform.tfstate.backup
+.idea
+*.iml
+
+.build-harness
+build-harness

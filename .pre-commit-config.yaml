@@ -11,8 +11,6 @@ repos:
     hooks:
       - id: terraform_fmt
       - id: terragrunt_fmt
-      # per module tflint config
-      - id: terraform_tflint
       # global tflint config
       - id: terraform_tflint
         args:
