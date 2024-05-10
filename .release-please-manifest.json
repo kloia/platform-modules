@@ -1,6 +1,7 @@
 {
   "metadata": "0.0.0",
   "modules/metadata": "0.1.0",
+  "modules/aws-mongodbatlas-cluster": "0.1.0",
   "modules/aws-route53-records": "0.1.0",
   "modules/aws-vpc-peering-accepter": "0.1.0",
   "modules/aws-security-hub": "0.1.0",
