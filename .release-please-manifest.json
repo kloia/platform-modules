@@ -1,6 +1,7 @@
 {
   "metadata": "0.0.0",
   "modules/metadata": "0.1.0",
+  "modules/aws-alb-master": "0.1.0",
   "modules/aws-cloudwatch-event-rule-master": "0.1.0",
   "modules/aws-eks-rancher-importer": "0.1.0",
   "modules/aws-self-signed-cert": "0.1.0",
