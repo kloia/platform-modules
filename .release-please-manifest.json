@@ -1,6 +1,7 @@
 {
   "metadata": "0.0.0",
   "modules/metadata": "0.1.0",
+  "modules/aws-mongodbatlas-access": "0.1.0",
   "modules/aws-centralized-logging": "0.1.0",
   "modules/aws-waf": "0.1.0",
   "modules/aws-elasticsearch": "0.1.0",
