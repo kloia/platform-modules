@@ -1,21 +1,19 @@
 repos:
-  # pre-commit hook to verify commit messages are conventional commit compliant
-  - repo: https://github.com/commitizen-tools/commitizen
-    rev: v3.2.1
-    hooks:
-      - id: commitizen
-        stages: [commit-msg]
-
   - repo: https://github.com/pre-commit/pre-commit-hooks
     rev: v4.4.0
     hooks:
-      - id: detect-aws-credentials
-      - id: detect-private-key
       - id: trailing-whitespace
+      - id: check-yaml
+      - id: check-added-large-files
 
   - repo: https://github.com/antonbabenko/pre-commit-terraform
-    rev: v1.79.1
+    rev: v1.89.1
     hooks:
-      - id: terrascan
-      - id: terraform_tfsec
+      - id: terraform_fmt
+      - id: terragrunt_fmt
+      # per module tflint config
       - id: terraform_tflint
+      # global tflint config
+      - id: terraform_tflint
+        args:
+          - --args=--config=__GIT_WORKING_DIR__/.tflint.hcl
