@@ -1,4 +1,4 @@
-<img src="/assets/images/logos/kloia-logo-multicolor.svg" alt="Kloia Logo" title="Kloia" align="left" height="96" width="96"/>
+<img src="/assets/images/logos/kloia-logo-multicolor.svg" alt="Kloia Logo" title="Kloia" align="left" height="72" width="72"/>
 
 # Kloia Platform Modules
 
