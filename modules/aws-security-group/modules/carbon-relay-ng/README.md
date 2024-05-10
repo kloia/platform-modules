@@ -5,7 +5,7 @@
 ```hcl
 module "carbon_relay-ng_security_group" {
   source  = "terraform-modules/security-group/aws//modules/carbon-relay-ng"
-  version = "~> 4.0"
+  version = "~> 0.1"
 
   # omitted...
 }
