@@ -7,7 +7,7 @@ Terraform module which creates SNS resources on AWS
 ```hcl
 module "sns_topic" {
   source  = "terraform-aws-modules/sns/aws"
-  version = "~> 3.0"
+  version = "~> 0.1"
 
   name  = "my-topic"
 }
