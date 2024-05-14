@@ -123,6 +123,24 @@ variable "encryption_at_rest_provider" {
   default     = ""
 }
 
+variable "kms_customer_master_key_id" {
+  type        = string
+  description = "The AWS customer master key used to encrypt and decrypt the MongoDB master keys."
+  default     = null
+}
+
+variable "kms_region" {
+  type        = string
+  description = "The AWS region in which the AWS customer master key exists needed for atlas encryption at rest. Example values: EU_WEST_1, US_EAST_1"
+  default     = null
+}
+
+variable "atlas_role_id" {
+  type        = string
+  description = "Variable to define the atlas role needed for atlas encryption at rest."
+  default     = null
+}
+
 locals {
   cloud_provider = "AWS"
 }
