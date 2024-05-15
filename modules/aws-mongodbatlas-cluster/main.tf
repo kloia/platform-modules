@@ -152,9 +152,9 @@ resource "mongodbatlas_encryption_at_rest" "aws_encryption" {
 
   aws_kms_config {
     enabled                = true
-    customer_master_key_id = coalesce(lookup(var.aws_kms_config, "customer_master_key_id"), var.kms_customer_master_key_id)
-    region                 = coalesce(lookup(var.aws_kms_config, "region"), var.kms_region)
-    role_id                = coalesce(lookup(var.aws_kms_config, "atlas_role_id"), var.atlas_role_id)
+    customer_master_key_id = coalesce(lookup(var.aws_kms_config, "customer_master_key_id", null), var.kms_customer_master_key_id)
+    region                 = coalesce(lookup(var.aws_kms_config, "region", null), var.kms_region)
+    role_id                = coalesce(lookup(var.aws_kms_config, "atlas_role_id", null), var.atlas_role_id)
   }
 }
 
