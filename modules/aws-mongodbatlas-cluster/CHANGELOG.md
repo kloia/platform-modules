@@ -1,5 +1,12 @@
 # Changelog
 
+## [0.2.1](https://github.com/kloia/platform-modules/compare/aws-mongodbatlas-cluster-v0.2.0...aws-mongodbatlas-cluster-v0.2.1) (2024-05-16)
+
+
+### Bug Fixes
+
+* **aws-mongodbatlas-cluster:** added default value for map lookup in aws_kms_config ([#220](https://github.com/kloia/platform-modules/issues/220)) ([ad2e473](https://github.com/kloia/platform-modules/commit/ad2e4734097093e27c8af76c49cc0f4520981cc9))
+
 ## [0.2.0](https://github.com/kloia/platform-modules/compare/aws-mongodbatlas-cluster-v0.1.0...aws-mongodbatlas-cluster-v0.2.0) (2024-05-15)
 
 
