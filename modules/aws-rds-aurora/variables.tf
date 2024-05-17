@@ -91,7 +91,7 @@ variable "allocated_storage" {
 variable "allow_major_version_upgrade" {
   description = "Enable to allow major engine version upgrades when changing engine versions. Defaults to `false`"
   type        = bool
-  default     = false
+  default     = true
 }
 
 variable "apply_immediately" {
@@ -151,7 +151,7 @@ variable "db_cluster_db_instance_parameter_group_name" {
 variable "deletion_protection" {
   description = "If the DB instance should have deletion protection enabled. The database can't be deleted when this value is set to `true`. The default is `false`"
   type        = bool
-  default     = null
+  default     = true
 }
 
 variable "enable_global_write_forwarding" {
@@ -515,6 +515,81 @@ variable "read_replica" {
   description = "Read replica for RDS"
 }
 
+# variable "ad_domain" {
+#   type        = string
+#   description = "AD Domain for RDS SQL Server"
+# }
+
+variable "ad_domain_ou" {
+  type        = string
+  description = "AD Domain OU for RDS SQL Server"
+}
+
+variable "ad_domain_fqdn" {
+  type        = string
+  description = "AD Domain FQDN for RDS SQL Server"
+}
+
+variable "ad_domain_dns_ips" {
+  type        = list(string)
+  description = "AD Domain DNS IPS for RDS SQL Server"
+}
+
+variable "ad_domain_auth_secret_arn" {
+  type        = string
+  description = "AD Domain Secret ARN for RDS SQL Server"
+}
+
+variable "option_group" {
+  type = list(object({
+    option_name = string
+    option_rule_names = optional(list(object({
+      rule_name = string
+      option_rule_value = any
+    })))
+  }))
+}
+
+variable "parameter_group" {
+  type = list(object({
+    parameter_name = string
+    parameter_value = any
+  }))
+}
+
+variable "enable_custom_option_group" {
+  type        = bool
+  default     = false
+  description = "Custom Option Group Creation"
+}
+
+variable "enable_custom_parameter_group" {
+  type        = bool
+  default     = false
+  description = "Custom Paramater Group Creation"
+}
+
+variable "max_allocated_storage" {
+  description = "The amount of storage in gibibytes (GiB) to allocate to each DB instance in the Multi-AZ DB cluster. (This setting is required to create a Multi-AZ DB cluster)"
+  type        = number
+  default     = null
+}
+
+variable "option_group_engine_version" {
+  type        = string
+  default     = "16.00"
+  description = "Option Group Major engine version"
+}
+
+variable "option_name" {
+  type        = string
+  description = "Option name for without option settings of ptions"
+}
+
+# variable "ssrs_query_file" {
+#   type        = string
+#   description = "SSRS Query file path"
+# }
 ################################################################################
 # Autoscaling
 ################################################################################
