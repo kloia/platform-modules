@@ -1,0 +1,27 @@
+name: "PR Title Lint"
+
+on:
+  pull_request_target:
+    types:
+      - opened
+      - edited
+      - synchronize
+
+permissions:
+  pull-requests: write
+
+jobs:
+  validate-title:
+    name: Validate PR title
+    runs-on: ubuntu-latest
+    steps:
+      - name: Create Github App Token for Release Please
+        uses: actions/create-github-app-token@v1
+        id: app-token
+        with:
+          app-id: ${{ vars.RELEASE_PLEASE_GH_APP_ID }}
+          private-key: ${{ secrets.RELEASE_PLEASE_GH_APP_PRIVATE_KEY }}
+
+      - uses: amannn/action-semantic-pull-request@v5
+        env:
+          GITHUB_TOKEN: ${{ steps.app-token.outputs.token }}

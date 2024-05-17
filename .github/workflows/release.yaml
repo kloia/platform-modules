@@ -1,0 +1,127 @@
+on:
+  push:
+    branches:
+      - main
+
+permissions:
+  contents: write
+  pull-requests: write
+
+name: release
+
+jobs:
+  release-please:
+    runs-on: ubuntu-latest
+    outputs:
+      release: ${{ toJson(steps.release-please.outputs) }}
+      releases_created: ${{ steps.release-please.outputs.releases_created }}
+    steps:
+      - name: Create Github App Token for Release Please
+        uses: actions/create-github-app-token@v1
+        id: app-token
+        with:
+          app-id: ${{ vars.RELEASE_PLEASE_GH_APP_ID }}
+          private-key: ${{ secrets.RELEASE_PLEASE_GH_APP_PRIVATE_KEY }}
+
+      - uses: googleapis/release-please-action@v4
+        id: release-please
+        with:
+          token: ${{ steps.app-token.outputs.token }}
+          config-file: release-please-config.json
+          manifest-file: .release-please-manifest.json
+
+  upload-artifact:
+    if: ${{ needs.release-please.outputs.releases_created }}
+    needs:
+      - release-please
+    strategy:
+      matrix:
+        released_path: ${{ fromJson(fromJson(needs.release-please.outputs.release).paths_released) }}
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v3
+        with:
+          ref: ${{ needs.release-please.outputs.release.tag_name }}
+          fetch-depth: 1
+
+      - name: Extract info from release
+        id: info
+        run: |
+          tag_name='${{ fromJson(needs.release-please.outputs.release)[format('{0}--tag_name', matrix.released_path)] }}'
+          echo "tag_name=$tag_name" >> "$GITHUB_OUTPUT"
+
+          artifact_path='${{ fromJson(needs.release-please.outputs.release)[format('{0}--tag_name', matrix.released_path)] }}.zip'
+          echo "artifact_path=$artifact_path" >> "$GITHUB_OUTPUT"
+
+      - name: Package artifact
+        working-directory: ${{ matrix.released_path }}
+        run: |
+          zip -r ../../${{ steps.info.outputs.artifact_path }} .
+
+      - name: Upload artifact
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          gh release upload ${{ steps.info.outputs.tag_name }} ${{ steps.info.outputs.artifact_path }}
+
+  create-module-tag:
+    if: ${{ needs.release-please.outputs.releases_created }}
+    needs:
+      - release-please
+    strategy:
+      matrix:
+        released_path: ${{ fromJson(fromJson(needs.release-please.outputs.release).paths_released) }}
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v3
+        id: checkout
+        with:
+          ref: ${{ needs.release-please.outputs.release.tag_name }}
+          fetch-depth: 0
+
+      - name: Extract info from release
+        id: info
+        run: |
+          tag_name='${{ fromJson(needs.release-please.outputs.release)[format('{0}--tag_name', matrix.released_path)] }}'
+          echo "tag_name=$tag_name" >> "$GITHUB_OUTPUT"
+
+          component_name=$(cat release-please-config.json | jq '.packages."${{ matrix.released_path }}".component' -r)
+          echo "component_name=$component_name" >> "$GITHUB_OUTPUT"
+
+          major='${{ fromJson(needs.release-please.outputs.release)[format('{0}--major', matrix.released_path)] }}'
+          echo "major=$major" >> "$GITHUB_OUTPUT"
+
+          minor='${{ fromJson(needs.release-please.outputs.release)[format('{0}--minor', matrix.released_path)] }}'
+          echo "minor=$minor" >> "$GITHUB_OUTPUT"
+
+          patch='${{ fromJson(needs.release-please.outputs.release)[format('{0}--patch', matrix.released_path)] }}'
+          echo "patch=$patch" >> "$GITHUB_OUTPUT"
+
+      - name: Checkout repo as orphan branch
+        uses: actions/checkout@v3
+        with:
+          ref: ${{ needs.release-please.outputs.release.tag_name }}
+          fetch-depth: 0
+          path: "orphan"
+
+      - name: Create orphan commit and separate version tags
+        working-directory: "orphan"
+        run: |
+          # kloia-tfmodules-releaser[bot] <169448830+kloia-tfmodules-releaser[bot]@users.noreply.github.com>
+          git config user.name "kloia-tfmodules-releaser[bot]"
+          git config user.email "169448830+kloia-tfmodules-releaser[bot]@users.noreply.github.com"
+          git checkout --orphan orphan/${{ github.sha }}
+          git rm -rf .
+          cp -r --copy-contents ../${{ matrix.released_path }}/* .
+          git add .
+          git commit \
+            -m 'chore: release module ${{ steps.info.tag_name }}' \
+            -m 'Original-Commit-Sha: ${{ github.sha }}'
+          git tag -f module/${{ steps.info.outputs.component_name }}/v${{ steps.info.outputs.major}}
+          git tag -f module/${{ steps.info.outputs.component_name }}/v${{ steps.info.outputs.major}}.${{ steps.info.outputs.minor }}
+          git tag -f module/${{ steps.info.outputs.component_name }}/v${{ steps.info.outputs.major}}.${{ steps.info.outputs.minor }}.${{ steps.info.outputs.patch }}
+          git push -f origin module/${{ steps.info.outputs.component_name }}/v${{ steps.info.outputs.major}}
+          git push -f origin module/${{ steps.info.outputs.component_name }}/v${{ steps.info.outputs.major}}.${{ steps.info.outputs.minor }}
+          git push -f origin module/${{ steps.info.outputs.component_name }}/v${{ steps.info.outputs.major}}.${{ steps.info.outputs.minor }}.${{ steps.info.outputs.patch }}

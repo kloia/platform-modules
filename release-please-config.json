@@ -1,0 +1,567 @@
+{
+  "packages": {
+    "modules/metadata": {
+      "component": "metadata",
+      "changelog-path": "CHANGELOG.md",
+      "release-type": "terraform-module",
+      "bump-minor-pre-major": true,
+      "bump-patch-for-minor-pre-major": false,
+      "draft": false,
+      "prerelease": false
+    },
+    "modules/aws-acm": {
+      "component": "aws-acm",
+      "changelog-path": "CHANGELOG.md",
+      "release-type": "terraform-module",
+      "bump-minor-pre-major": true,
+      "bump-patch-for-minor-pre-major": false,
+      "draft": false,
+      "prerelease": false
+    },
+    "modules/aws-alb-master": {
+      "component": "aws-alb-master",
+      "changelog-path": "CHANGELOG.md",
+      "release-type": "terraform-module",
+      "bump-minor-pre-major": true,
+      "bump-patch-for-minor-pre-major": false,
+      "draft": false,
+      "prerelease": false
+    },
+    "modules/aws-amplify": {
+      "component": "aws-amplify",
+      "changelog-path": "CHANGELOG.md",
+      "release-type": "terraform-module",
+      "bump-minor-pre-major": true,
+      "bump-patch-for-minor-pre-major": false,
+      "draft": false,
+      "prerelease": false
+    },
+    "modules/aws-api-gateway": {
+      "component": "aws-api-gateway",
+      "changelog-path": "CHANGELOG.md",
+      "release-type": "terraform-module",
+      "bump-minor-pre-major": true,
+      "bump-patch-for-minor-pre-major": false,
+      "draft": false,
+      "prerelease": false
+    },
+    "modules/aws-apigateway-v2-master": {
+      "component": "aws-apigateway-v2-master",
+      "changelog-path": "CHANGELOG.md",
+      "release-type": "terraform-module",
+      "bump-minor-pre-major": true,
+      "bump-patch-for-minor-pre-major": false,
+      "draft": false,
+      "prerelease": false
+    },
+    "modules/aws-centralized-logging": {
+      "component": "aws-centralized-logging",
+      "changelog-path": "CHANGELOG.md",
+      "release-type": "terraform-module",
+      "bump-minor-pre-major": true,
+      "bump-patch-for-minor-pre-major": false,
+      "draft": false,
+      "prerelease": false
+    },
+    "modules/aws-client-vpn": {
+      "component": "aws-client-vpn",
+      "changelog-path": "CHANGELOG.md",
+      "release-type": "terraform-module",
+      "bump-minor-pre-major": true,
+      "bump-patch-for-minor-pre-major": false,
+      "draft": false,
+      "prerelease": false
+    },
+    "modules/aws-cloudfront": {
+      "component": "aws-cloudfront",
+      "changelog-path": "CHANGELOG.md",
+      "release-type": "terraform-module",
+      "bump-minor-pre-major": true,
+      "bump-patch-for-minor-pre-major": false,
+      "draft": false,
+      "prerelease": false
+    },
+    "modules/aws-cloudtrail": {
+      "component": "aws-cloudtrail",
+      "changelog-path": "CHANGELOG.md",
+      "release-type": "terraform-module",
+      "bump-minor-pre-major": true,
+      "bump-patch-for-minor-pre-major": false,
+      "draft": false,
+      "prerelease": false
+    },
+    "modules/aws-cloudtrail-s3-bucket": {
+      "component": "aws-cloudtrail-s3-bucket",
+      "changelog-path": "CHANGELOG.md",
+      "release-type": "terraform-module",
+      "bump-minor-pre-major": true,
+      "bump-patch-for-minor-pre-major": false,
+      "draft": false,
+      "prerelease": false
+    },
+    "modules/aws-cloudwatch": {
+      "component": "aws-cloudwatch",
+      "changelog-path": "CHANGELOG.md",
+      "release-type": "terraform-module",
+      "bump-minor-pre-major": true,
+      "bump-patch-for-minor-pre-major": false,
+      "draft": false,
+      "prerelease": false
+    },
+    "modules/aws-cloudwatch-event-rule-master": {
+      "component": "aws-cloudwatch-event-rule-master",
+      "changelog-path": "CHANGELOG.md",
+      "release-type": "terraform-module",
+      "bump-minor-pre-major": true,
+      "bump-patch-for-minor-pre-major": false,
+      "draft": false,
+      "prerelease": false
+    },
+    "modules/aws-cognito-user-pool": {
+      "component": "aws-cognito-user-pool",
+      "changelog-path": "CHANGELOG.md",
+      "release-type": "terraform-module",
+      "bump-minor-pre-major": true,
+      "bump-patch-for-minor-pre-major": false,
+      "draft": false,
+      "prerelease": false
+    },
+    "modules/aws-dax": {
+      "component": "aws-dax",
+      "changelog-path": "CHANGELOG.md",
+      "release-type": "terraform-module",
+      "bump-minor-pre-major": true,
+      "bump-patch-for-minor-pre-major": false,
+      "draft": false,
+      "prerelease": false
+    },
+    "modules/aws-dynamodb-table": {
+      "component": "aws-dynamodb-table",
+      "changelog-path": "CHANGELOG.md",
+      "release-type": "terraform-module",
+      "bump-minor-pre-major": true,
+      "bump-patch-for-minor-pre-major": false,
+      "draft": false,
+      "prerelease": false
+    },
+    "modules/aws-ec2-instance": {
+      "component": "aws-ec2-instance",
+      "changelog-path": "CHANGELOG.md",
+      "release-type": "terraform-module",
+      "bump-minor-pre-major": true,
+      "bump-patch-for-minor-pre-major": false,
+      "draft": false,
+      "prerelease": false
+    },
+    "modules/aws-ecr": {
+      "component": "aws-ecr",
+      "changelog-path": "CHANGELOG.md",
+      "release-type": "terraform-module",
+      "bump-minor-pre-major": true,
+      "bump-patch-for-minor-pre-major": false,
+      "draft": false,
+      "prerelease": false
+    },
+    "modules/aws-ecs": {
+      "component": "aws-ecs",
+      "changelog-path": "CHANGELOG.md",
+      "release-type": "terraform-module",
+      "bump-minor-pre-major": true,
+      "bump-patch-for-minor-pre-major": false,
+      "draft": false,
+      "prerelease": false
+    },
+    "modules/aws-ecs-load-balancer": {
+      "component": "aws-ecs-load-balancer",
+      "changelog-path": "CHANGELOG.md",
+      "release-type": "terraform-module",
+      "bump-minor-pre-major": true,
+      "bump-patch-for-minor-pre-major": false,
+      "draft": false,
+      "prerelease": false
+    },
+    "modules/aws-ecs-service": {
+      "component": "aws-ecs-service",
+      "changelog-path": "CHANGELOG.md",
+      "release-type": "terraform-module",
+      "bump-minor-pre-major": true,
+      "bump-patch-for-minor-pre-major": false,
+      "draft": false,
+      "prerelease": false
+    },
+    "modules/aws-ecs-task-definition": {
+      "component": "aws-ecs-task-definition",
+      "changelog-path": "CHANGELOG.md",
+      "release-type": "terraform-module",
+      "bump-minor-pre-major": true,
+      "bump-patch-for-minor-pre-major": false,
+      "draft": false,
+      "prerelease": false
+    },
+    "modules/aws-efs": {
+      "component": "aws-efs",
+      "changelog-path": "CHANGELOG.md",
+      "release-type": "terraform-module",
+      "bump-minor-pre-major": true,
+      "bump-patch-for-minor-pre-major": false,
+      "draft": false,
+      "prerelease": false
+    },
+    "modules/aws-eks": {
+      "component": "aws-eks",
+      "changelog-path": "CHANGELOG.md",
+      "release-type": "terraform-module",
+      "bump-minor-pre-major": true,
+      "bump-patch-for-minor-pre-major": false,
+      "draft": false,
+      "prerelease": false
+    },
+    "modules/aws-eks-addons": {
+      "component": "aws-eks-addons",
+      "changelog-path": "CHANGELOG.md",
+      "release-type": "terraform-module",
+      "bump-minor-pre-major": true,
+      "bump-patch-for-minor-pre-major": false,
+      "draft": false,
+      "prerelease": false
+    },
+    "modules/aws-eks-rancher-importer": {
+      "component": "aws-eks-rancher-importer",
+      "changelog-path": "CHANGELOG.md",
+      "release-type": "terraform-module",
+      "bump-minor-pre-major": true,
+      "bump-patch-for-minor-pre-major": false,
+      "draft": false,
+      "prerelease": false
+    },
+    "modules/aws-eks-rancher-joiner": {
+      "component": "aws-eks-rancher-joiner",
+      "changelog-path": "CHANGELOG.md",
+      "release-type": "terraform-module",
+      "bump-minor-pre-major": true,
+      "bump-patch-for-minor-pre-major": false,
+      "draft": false,
+      "prerelease": false
+    },
+    "modules/aws-elasticache-redis": {
+      "component": "aws-elasticache-redis",
+      "changelog-path": "CHANGELOG.md",
+      "release-type": "terraform-module",
+      "bump-minor-pre-major": true,
+      "bump-patch-for-minor-pre-major": false,
+      "draft": false,
+      "prerelease": false
+    },
+    "modules/aws-elasticsearch": {
+      "component": "aws-elasticsearch",
+      "changelog-path": "CHANGELOG.md",
+      "release-type": "terraform-module",
+      "bump-minor-pre-major": true,
+      "bump-patch-for-minor-pre-major": false,
+      "draft": false,
+      "prerelease": false
+    },
+    "modules/aws-guardduty-master": {
+      "component": "aws-guardduty-master",
+      "changelog-path": "CHANGELOG.md",
+      "release-type": "terraform-module",
+      "bump-minor-pre-major": true,
+      "bump-patch-for-minor-pre-major": false,
+      "draft": false,
+      "prerelease": false
+    },
+    "modules/aws-iam": {
+      "component": "aws-iam",
+      "changelog-path": "CHANGELOG.md",
+      "release-type": "terraform-module",
+      "bump-minor-pre-major": true,
+      "bump-patch-for-minor-pre-major": false,
+      "draft": false,
+      "prerelease": false
+    },
+    "modules/aws-key-pair": {
+      "component": "aws-key-pair",
+      "changelog-path": "CHANGELOG.md",
+      "release-type": "terraform-module",
+      "bump-minor-pre-major": true,
+      "bump-patch-for-minor-pre-major": false,
+      "draft": false,
+      "prerelease": false
+    },
+    "modules/aws-kms": {
+      "component": "aws-kms",
+      "changelog-path": "CHANGELOG.md",
+      "release-type": "terraform-module",
+      "bump-minor-pre-major": true,
+      "bump-patch-for-minor-pre-major": false,
+      "draft": false,
+      "prerelease": false
+    },
+    "modules/aws-lambda": {
+      "component": "aws-lambda",
+      "changelog-path": "CHANGELOG.md",
+      "release-type": "terraform-module",
+      "bump-minor-pre-major": true,
+      "bump-patch-for-minor-pre-major": false,
+      "draft": false,
+      "prerelease": false
+    },
+    "modules/aws-mongodbatlas-access": {
+      "component": "aws-mongodbatlas-access",
+      "changelog-path": "CHANGELOG.md",
+      "release-type": "terraform-module",
+      "bump-minor-pre-major": true,
+      "bump-patch-for-minor-pre-major": false,
+      "draft": false,
+      "prerelease": false
+    },
+    "modules/aws-mongodbatlas-auth": {
+      "component": "aws-mongodbatlas-auth",
+      "changelog-path": "CHANGELOG.md",
+      "release-type": "terraform-module",
+      "bump-minor-pre-major": true,
+      "bump-patch-for-minor-pre-major": false,
+      "draft": false,
+      "prerelease": false
+    },
+    "modules/aws-mongodbatlas-cluster": {
+      "component": "aws-mongodbatlas-cluster",
+      "changelog-path": "CHANGELOG.md",
+      "release-type": "terraform-module",
+      "bump-minor-pre-major": true,
+      "bump-patch-for-minor-pre-major": false,
+      "draft": false,
+      "prerelease": false
+    },
+    "modules/aws-mongodbatlas-database-user": {
+      "component": "aws-mongodbatlas-database-user",
+      "changelog-path": "CHANGELOG.md",
+      "release-type": "terraform-module",
+      "bump-minor-pre-major": true,
+      "bump-patch-for-minor-pre-major": false,
+      "draft": false,
+      "prerelease": false
+    },
+    "modules/aws-mq": {
+      "component": "aws-mq",
+      "changelog-path": "CHANGELOG.md",
+      "release-type": "terraform-module",
+      "bump-minor-pre-major": true,
+      "bump-patch-for-minor-pre-major": false,
+      "draft": false,
+      "prerelease": false
+    },
+    "modules/aws-msk-apache-kafka-cluster-master": {
+      "component": "aws-msk-apache-kafka-cluster-master",
+      "changelog-path": "CHANGELOG.md",
+      "release-type": "terraform-module",
+      "bump-minor-pre-major": true,
+      "bump-patch-for-minor-pre-major": false,
+      "draft": false,
+      "prerelease": false
+    },
+    "modules/aws-rds": {
+      "component": "aws-rds",
+      "changelog-path": "CHANGELOG.md",
+      "release-type": "terraform-module",
+      "bump-minor-pre-major": true,
+      "bump-patch-for-minor-pre-major": false,
+      "draft": false,
+      "prerelease": false
+    },
+    "modules/aws-rds-aurora": {
+      "component": "aws-rds-aurora",
+      "changelog-path": "CHANGELOG.md",
+      "release-type": "terraform-module",
+      "bump-minor-pre-major": true,
+      "bump-patch-for-minor-pre-major": false,
+      "draft": false,
+      "prerelease": false
+    },
+    "modules/aws-rds-global-cluster": {
+      "component": "aws-rds-global-cluster",
+      "changelog-path": "CHANGELOG.md",
+      "release-type": "terraform-module",
+      "bump-minor-pre-major": true,
+      "bump-patch-for-minor-pre-major": false,
+      "draft": false,
+      "prerelease": false
+    },
+    "modules/aws-route53-health-check-main": {
+      "component": "aws-route53-health-check-main",
+      "changelog-path": "CHANGELOG.md",
+      "release-type": "terraform-module",
+      "bump-minor-pre-major": true,
+      "bump-patch-for-minor-pre-major": false,
+      "draft": false,
+      "prerelease": false
+    },
+    "modules/aws-route53-records": {
+      "component": "aws-route53-records",
+      "changelog-path": "CHANGELOG.md",
+      "release-type": "terraform-module",
+      "bump-minor-pre-major": true,
+      "bump-patch-for-minor-pre-major": false,
+      "draft": false,
+      "prerelease": false
+    },
+    "modules/aws-route53-zones": {
+      "component": "aws-route53-zones",
+      "changelog-path": "CHANGELOG.md",
+      "release-type": "terraform-module",
+      "bump-minor-pre-major": true,
+      "bump-patch-for-minor-pre-major": false,
+      "draft": false,
+      "prerelease": false
+    },
+    "modules/aws-s3": {
+      "component": "aws-s3",
+      "changelog-path": "CHANGELOG.md",
+      "release-type": "terraform-module",
+      "bump-minor-pre-major": true,
+      "bump-patch-for-minor-pre-major": false,
+      "draft": false,
+      "prerelease": false
+    },
+    "modules/aws-secrets-manager": {
+      "component": "aws-secrets-manager",
+      "changelog-path": "CHANGELOG.md",
+      "release-type": "terraform-module",
+      "bump-minor-pre-major": true,
+      "bump-patch-for-minor-pre-major": false,
+      "draft": false,
+      "prerelease": false
+    },
+    "modules/aws-security-group": {
+      "component": "aws-security-group",
+      "changelog-path": "CHANGELOG.md",
+      "release-type": "terraform-module",
+      "bump-minor-pre-major": true,
+      "bump-patch-for-minor-pre-major": false,
+      "draft": false,
+      "prerelease": false
+    },
+    "modules/aws-security-hub": {
+      "component": "aws-security-hub",
+      "changelog-path": "CHANGELOG.md",
+      "release-type": "terraform-module",
+      "bump-minor-pre-major": true,
+      "bump-patch-for-minor-pre-major": false,
+      "draft": false,
+      "prerelease": false
+    },
+    "modules/aws-self-signed-cert": {
+      "component": "aws-self-signed-cert",
+      "changelog-path": "CHANGELOG.md",
+      "release-type": "terraform-module",
+      "bump-minor-pre-major": true,
+      "bump-patch-for-minor-pre-major": false,
+      "draft": false,
+      "prerelease": false
+    },
+    "modules/aws-shield": {
+      "component": "aws-shield",
+      "changelog-path": "CHANGELOG.md",
+      "release-type": "terraform-module",
+      "bump-minor-pre-major": true,
+      "bump-patch-for-minor-pre-major": false,
+      "draft": false,
+      "prerelease": false
+    },
+    "modules/aws-sns": {
+      "component": "aws-sns",
+      "changelog-path": "CHANGELOG.md",
+      "release-type": "terraform-module",
+      "bump-minor-pre-major": true,
+      "bump-patch-for-minor-pre-major": false,
+      "draft": false,
+      "prerelease": false
+    },
+    "modules/aws-sns-master": {
+      "component": "aws-sns-master",
+      "changelog-path": "CHANGELOG.md",
+      "release-type": "terraform-module",
+      "bump-minor-pre-major": true,
+      "bump-patch-for-minor-pre-major": false,
+      "draft": false,
+      "prerelease": false
+    },
+    "modules/aws-ssm-parameter-store": {
+      "component": "aws-ssm-parameter-store",
+      "changelog-path": "CHANGELOG.md",
+      "release-type": "terraform-module",
+      "bump-minor-pre-major": true,
+      "bump-patch-for-minor-pre-major": false,
+      "draft": false,
+      "prerelease": false
+    },
+    "modules/aws-transit-gateway": {
+      "component": "aws-transit-gateway",
+      "changelog-path": "CHANGELOG.md",
+      "release-type": "terraform-module",
+      "bump-minor-pre-major": true,
+      "bump-patch-for-minor-pre-major": false,
+      "draft": false,
+      "prerelease": false
+    },
+    "modules/aws-vpc": {
+      "component": "aws-vpc",
+      "changelog-path": "CHANGELOG.md",
+      "release-type": "terraform-module",
+      "bump-minor-pre-major": true,
+      "bump-patch-for-minor-pre-major": false,
+      "draft": false,
+      "prerelease": false
+    },
+    "modules/aws-vpc-peering-accepter": {
+      "component": "aws-vpc-peering-accepter",
+      "changelog-path": "CHANGELOG.md",
+      "release-type": "terraform-module",
+      "bump-minor-pre-major": true,
+      "bump-patch-for-minor-pre-major": false,
+      "draft": false,
+      "prerelease": false
+    },
+    "modules/aws-vpc-peering-requester": {
+      "component": "aws-vpc-peering-requester",
+      "changelog-path": "CHANGELOG.md",
+      "release-type": "terraform-module",
+      "bump-minor-pre-major": true,
+      "bump-patch-for-minor-pre-major": false,
+      "draft": false,
+      "prerelease": false
+    },
+    "modules/aws-waf": {
+      "component": "aws-waf",
+      "changelog-path": "CHANGELOG.md",
+      "release-type": "terraform-module",
+      "bump-minor-pre-major": true,
+      "bump-patch-for-minor-pre-major": false,
+      "draft": false,
+      "prerelease": false
+    },
+    "modules/aws-waf-ip-set": {
+      "component": "aws-waf-ip-set",
+      "changelog-path": "CHANGELOG.md",
+      "release-type": "terraform-module",
+      "bump-minor-pre-major": true,
+      "bump-patch-for-minor-pre-major": false,
+      "draft": false,
+      "prerelease": false
+    },
+    "modules/terraform-aws-sqs": {
+      "component": "terraform-aws-sqs",
+      "changelog-path": "CHANGELOG.md",
+      "release-type": "terraform-module",
+      "bump-minor-pre-major": true,
+      "bump-patch-for-minor-pre-major": false,
+      "draft": false,
+      "prerelease": false
+    }
+  },
+  "separate-pull-requests": true,
+  "pull-request-title-pattern": "chore${scope}: release${component} ${version}",
+  "sequential-calls": true,
+  "last-release-sha": "5f0fe938996e11835e8a236d69c19bac2c3411a7",
+  "$schema": "https://raw.githubusercontent.com/googleapis/release-please/main/schemas/config.json"
+}
