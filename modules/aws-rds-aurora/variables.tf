@@ -544,7 +544,7 @@ variable "option_group" {
   type = list(object({
     option_name = string
     option_rule_names = optional(list(object({
-      rule_name = string
+      rule_name         = string
       option_rule_value = any
     })))
   }))
@@ -552,7 +552,7 @@ variable "option_group" {
 
 variable "parameter_group" {
   type = list(object({
-    parameter_name = string
+    parameter_name  = string
     parameter_value = any
   }))
 }
