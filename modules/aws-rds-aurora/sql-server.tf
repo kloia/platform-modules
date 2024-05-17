@@ -382,4 +382,4 @@ resource "aws_db_instance" "rds_sql_server_read_replica" {
 #   provisioner "local-exec" {
 #     command = "sqlcmd -S ${aws_db_instance.rds_sql_server.address} -U ${aws_db_instance.rds_sql_server.username} -P ${aws_db_instance.rds_sql_server.password} -d your_database_name -i ${data.local_file.sql_query.filename}"
 #   }
-# }
+
