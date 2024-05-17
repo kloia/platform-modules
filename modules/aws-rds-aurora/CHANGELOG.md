@@ -1,5 +1,12 @@
 # Changelog
 
+## [0.3.0](https://github.com/kloia/platform-modules/compare/aws-rds-aurora-v0.2.0...aws-rds-aurora-v0.3.0) (2024-05-17)
+
+
+### Features
+
+* Rds sql server ssrs ([#225](https://github.com/kloia/platform-modules/issues/225)) ([608cd3f](https://github.com/kloia/platform-modules/commit/608cd3f6ebc32b37e423879b0012bd980f0dc794))
+
 ## [0.2.0](https://github.com/kloia/platform-modules/compare/aws-rds-aurora-v0.1.0...aws-rds-aurora-v0.2.0) (2024-05-17)
 
 
