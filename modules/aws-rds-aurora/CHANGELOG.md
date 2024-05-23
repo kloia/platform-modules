@@ -1,5 +1,16 @@
 # Changelog
 
+## [0.4.0](https://github.com/kloia/platform-modules/compare/aws-rds-aurora-v0.3.0...aws-rds-aurora-v0.4.0) (2024-05-23)
+
+
+### ⚠ BREAKING CHANGES
+
+* **rds-aurora:** needs apply method to be supplied for all parameter groups
+
+### Features
+
+* **rds-aurora:** add apply method ([#227](https://github.com/kloia/platform-modules/issues/227)) ([1aee7e3](https://github.com/kloia/platform-modules/commit/1aee7e391dee949c13636f532ac68c5e7286bbeb))
+
 ## [0.3.0](https://github.com/kloia/platform-modules/compare/aws-rds-aurora-v0.2.0...aws-rds-aurora-v0.3.0) (2024-05-17)
 
 
