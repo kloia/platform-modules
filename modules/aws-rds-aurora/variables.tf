@@ -552,8 +552,9 @@ variable "option_group" {
 
 variable "parameter_group" {
   type = list(object({
-    parameter_name  = string
-    parameter_value = any
+    parameter_name         = string
+    parameter_value        = any
+    parameter_apply_method = string
   }))
 }
 
