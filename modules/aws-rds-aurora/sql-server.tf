@@ -270,8 +270,9 @@ resource "aws_db_parameter_group" "sql_server" {
   dynamic "parameter" {
     for_each = var.enable_custom_parameter_group ? var.parameter_group : []
     content {
-      name  = parameter.value.parameter_name
-      value = parameter.value.parameter_value
+      name         = parameter.value.parameter_name
+      value        = parameter.value.parameter_value
+      apply_method = parameter.value.parameter_apply_method
     }
   }
 }
