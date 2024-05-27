@@ -154,6 +154,9 @@ resource "kubernetes_annotations" "alb_ingress_connect_nginx_annotation" {
     "alb.ingress.kubernetes.io/listen-ports"       = "[{\"HTTP\": 80}, {\"HTTPS\": 443}]"
     "alb.ingress.kubernetes.io/healthcheck-path"   = "/healthz"
   }
+  depends_on = [
+    kubernetes_ingress_v1.alb_ingress_connect_nginx
+  ]
 }
 
 resource "kubernetes_ingress_v1" "alb_ingress_connect_istio" {
