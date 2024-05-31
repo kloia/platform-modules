@@ -31,7 +31,7 @@ jobs:
           manifest-file: .release-please-manifest.json
 
   upload-artifact:
-    if: ${{ needs.release-please.outputs.releases_created }}
+    if: ${{ needs.release-please.outputs.releases_created && fromJson(needs.release-please.outputs.release).paths_released != '' && fromJson(needs.release-please.outputs.release).paths_released != '[]' }}
     needs:
       - release-please
     strategy:
@@ -66,7 +66,7 @@ jobs:
           gh release upload ${{ steps.info.outputs.tag_name }} ${{ steps.info.outputs.artifact_path }}
 
   create-module-tag:
-    if: ${{ needs.release-please.outputs.releases_created }}
+    if: ${{ needs.release-please.outputs.releases_created && fromJson(needs.release-please.outputs.release).paths_released != '' && fromJson(needs.release-please.outputs.release).paths_released != '[]' }}
     needs:
       - release-please
     strategy:
