@@ -1,6 +1,6 @@
 {
   "metadata": "0.0.0",
-  "modules/metadata": "0.1.0",
+  "modules/metadata": "0.1.1",
   "modules/aws-client-vpn": "0.1.0",
   "modules/aws-ecr": "0.1.0",
   "modules/aws-eks-addons": "0.1.1",
