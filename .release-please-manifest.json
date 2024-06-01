@@ -36,7 +36,7 @@
   "modules/aws-mq": "0.1.0",
   "modules/aws-ssm-parameter-store": "0.1.0",
   "modules/aws-api-gateway": "0.1.0",
-  "modules/aws-secrets-manager": "0.1.0",
+  "modules/aws-secrets-manager": "0.1.1",
   "modules/aws-cloudtrail-s3-bucket": "0.1.0",
   "modules/aws-cloudtrail": "0.1.0",
   "modules/aws-vpc": "0.1.0",
