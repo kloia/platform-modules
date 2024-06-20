@@ -1,9 +1,7 @@
-### TERRAFORM
+### Terraform
+
 # Local .terraform directories
 **/.terraform/*
-
-# Terraform lockfile
-.terraform.lock.hcl
 
 # .tfstate files
 *.tfstate
@@ -11,12 +9,7 @@
 
 # Crash log files
 crash.log
-
-# Exclude all .tfvars files, which are likely to contain sentitive data, such as
-# password, private keys, and other secrets. These should not be part of version
-# control as they are data points which are potentially sensitive and subject
-# to change depending on the environment.
-*.tfvars
+crash.*.log
 
 # Ignore override files as they are usually used to override resources locally and so
 # are not checked in
@@ -29,11 +22,55 @@ override.tf.json
 .terraformrc
 terraform.rc
 
-### EDITORS
-.idea/
-.vscode/
+### MacOS
 
-### OS
-
-# macOS
+# General
 .DS_Store
+.AppleDouble
+.LSOverride
+
+# Icon must end with two \r
+Icon
+
+# Files that might appear in the root of a volume
+.DocumentRevisions-V100
+.fseventsd
+.Spotlight-V100
+.TemporaryItems
+.Trashes
+.VolumeIcon.icns
+.com.apple.timemachine.donotpresent
+
+# Directories potentially created on remote AFP share
+.AppleDB
+.AppleDesktop
+Network Trash Folder
+Temporary Items
+.apdisk
+
+### Windows
+
+# Windows thumbnail cache files
+Thumbs.db
+Thumbs.db:encryptable
+ehthumbs.db
+ehthumbs_vista.db
+
+# Dump file
+*.stackdump
+
+# Folder config file
+[Dd]esktop.ini
+
+# Recycle Bin used on file shares
+$RECYCLE.BIN/
+
+# Windows Installer files
+*.cab
+*.msi
+*.msix
+*.msm
+*.msp
+
+# Windows shortcuts
+*.lnk
