@@ -435,3 +435,32 @@ variable "waf_acl_arn" {
   default     = ""
   type        = string
 }
+
+variable "deploy_adot_collector" {
+  default     = false
+  description = "enable the ADOT collector"
+}
+
+variable "adot_collector_role" {
+  description = "ADOT collector IAM role ARN"
+  default     = "arn:aws:iam::123456789012:role/adot-role"
+  type        = string
+}
+
+variable "adot_collector_namespace" {
+  description = "ADOT collector namespace name"
+  default     = "opentelemetry-operator-system"
+  type        = string
+}
+
+variable "adot_collector_service_account" {
+  description = "ADOT collector service account name"
+  default     = "opentelemetry-operator-system"
+  type        = string
+}
+
+variable "adot_collector_hostname" {
+  description = "ADOT collector IAM role ARN"
+  default     = "trace.example.com"
+  type        = string
+}

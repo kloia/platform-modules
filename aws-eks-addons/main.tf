@@ -909,7 +909,7 @@ resource "kubectl_manifest" "karpenter_stateless_windows2022_provisioner" {
           key      = "kubernetes.io/os"
           operator = "In"
           values = [
-            "windows",
+            "windows"
           ]
         },
       ]
@@ -988,4 +988,94 @@ resource "kubectl_manifest" "karpenter_windows2022_node_template" {
   depends_on = [
     helm_release.karpenter[0]
   ]
+}
+
+
+resource "kubectl_manifest" "deploy_adot_collector_service_account" {
+  count     = var.deploy_adot_collector ? 1 : 0
+  yaml_body = <<-YAML
+    apiVersion: v1
+    kind: ServiceAccount
+    metadata:
+      annotations:
+        eks.amazonaws.com/role-arn: ${var.adot_collector_role}
+      name:  ${var.adot_collector_service_account}
+      namespace: ${var.adot_collector_namespace}
+  YAML
+}
+
+resource "kubectl_manifest" "deploy_adot_collector" {
+  count     = var.deploy_adot_collector ? 1 : 0
+  yaml_body = <<-YAML
+    apiVersion: opentelemetry.io/v1alpha1
+    kind: OpenTelemetryCollector
+    metadata:
+      name: adot
+      namespace: ${var.adot_collector_namespace}
+    spec:
+      mode: deployment
+      serviceAccount: ${var.adot_collector_service_account}
+      managementState: managed
+      podDisruptionBudget:
+        maxUnavailable: 1
+      replicas: 2
+      targetAllocator:
+        prometheusCR:
+          scrapeInterval: 30s
+      upgradeStrategy: automatic
+      config: |
+        receivers:
+          awsxray:
+            transport: udp
+          otlp:
+            protocols:
+              grpc:
+                endpoint: 0.0.0.0:4317
+              http:
+                endpoint: 0.0.0.0:4318
+        processors:
+
+        exporters:
+          awsxray:
+            region:  ${var.cluster_region}
+        service:
+          pipelines:
+            traces:
+              receivers: [awsxray, otlp]
+              processors: []
+              exporters: [awsxray]
+  YAML
+}
+
+resource "kubectl_manifest" "deploy_adot_collector_ingress" {
+  count     = var.deploy_adot_collector ? 1 : 0
+  yaml_body = <<-YAML
+    apiVersion: networking.k8s.io/v1
+    kind: Ingress
+    metadata:
+      annotations:
+        nginx.ingress.kubernetes.io/configuration-snippet: |
+          more_set_headers "Access-Control-Allow-Origin: $http_origin";
+        nginx.ingress.kubernetes.io/cors-allow-credentials: "true"
+        nginx.ingress.kubernetes.io/cors-allow-headers: Content-Type, authorization, x-ms-request-id,
+          x-ms-request-root-id, x-originating-page
+        nginx.ingress.kubernetes.io/cors-allow-methods: PUT, GET, POST, OPTIONS, DELETE
+        nginx.ingress.kubernetes.io/cors-allow-origin: "*"
+        nginx.ingress.kubernetes.io/enable-cors: "true"
+      name: adot-collector
+      namespace: ${var.adot_collector_namespace}
+    spec:
+      ingressClassName: nginx
+      rules:
+      - host: ${var.adot_collector_hostname}
+        http:
+          paths:
+          - backend:
+              service:
+                name: adot-collector
+                port:
+                  number: 4318
+            path: /
+            pathType: Prefix
+  YAML
 }
