@@ -47,7 +47,7 @@ Some of the addon/controller policies that are currently supported include:
 ```hcl
 module "eks" {
   source  = "terraform-modules/eks/aws"
-  version = "~> 0.2"
+  version = "~> 0.3"
 
   cluster_name    = "my-cluster"
   cluster_version = "1.22"
