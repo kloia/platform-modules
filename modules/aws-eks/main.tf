@@ -10,7 +10,7 @@ data "aws_iam_session_context" "current" {
 }
 
 locals {
-  create = var.create 
+  create = var.create
 
   partition = data.aws_partition.current.partition
 
