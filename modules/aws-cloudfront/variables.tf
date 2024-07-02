@@ -161,6 +161,18 @@ variable "create_and_attach_origin_request_policy" {
   default     = true
 }
 
+variable "create_and_attach_cache_policy" {
+  description = "Controls if CloudFront cache policy should be created"
+  type        = bool
+  default     = true
+}
+
+variable "route53" {
+  description = "Controls if Route53 resources cache policy should be created"
+  type        = bool
+  default     = false
+}
+
 variable "cloudfront_elb" {
   description = "Controls if CloudFront origin will be a Load Balancer"
   type        = bool
