@@ -17,7 +17,7 @@ resource "aws_cloudfront_origin_access_identity" "this" {
 
 data "aws_route53_zone" "selected" {
   provider     = aws.shared_infra
-  count        = length(var.aliases) > 0 ? 1 : 0
+  count        = var.route53 && length(var.aliases) > 0 ? 1 : 0
   name         = var.zone_name
   private_zone = false
 }
@@ -29,7 +29,7 @@ data "aws_s3_bucket" "existing_bucket" {
 
 resource "aws_route53_record" "this" {
   provider = aws.shared_infra
-  count    = length(var.aliases)
+  count    = var.route53 ? length(var.aliases) : 0
   zone_id  = data.aws_route53_zone.selected[0].id
   name     = var.aliases[count.index]
   type     = "A"
@@ -274,7 +274,7 @@ resource "aws_cloudfront_distribution" "this" {
       trusted_signers           = lookup(i.value, "trusted_signers", null)
       trusted_key_groups        = lookup(i.value, "trusted_key_groups", null)
 
-      cache_policy_id = var.create_and_attach_origin_request_policy || lookup(i.value, "managed_cache_disabled_policy", false) ? data.aws_cloudfront_cache_policy.managed_cache_disabled.id : lookup(i.value, "cache_policy_id", null)
+      cache_policy_id = var.create_and_attach_cache_policy ? aws_cloudfront_cache_policy.this[0].id : (lookup(i.value, "managed_cache_disabled_policy", false) ? data.aws_cloudfront_cache_policy.managed_cache_disabled.id : lookup(i.value, "cache_policy_id", null))
       origin_request_policy_id = var.create_and_attach_origin_request_policy ? aws_cloudfront_origin_request_policy.this[0].id : (
         lookup(i.value, "origin_request_policy_id", null) == "managed_origin_request_policy" ? data.aws_cloudfront_origin_request_policy.managed_origin_request_policy.id : lookup(i.value, "origin_request_policy_id", null)
       )
@@ -451,6 +451,29 @@ resource "aws_cloudfront_origin_request_policy" "this" {
 
 }
 
+
+resource "aws_cloudfront_cache_policy" "this" {
+  count       = var.create_distribution && var.create_and_attach_cache_policy ? 1 : 0
+  name        = var.cache_policy_name
+  comment     = "Policy with caching enabled. Supports Gzip and Brotli compression."
+  default_ttl = 86400
+  max_ttl     = 31536000
+  min_ttl     = 1
+  parameters_in_cache_key_and_forwarded_to_origin {
+    cookies_config {
+      cookie_behavior = "all"
+    }
+    headers_config {
+      header_behavior = "whitelist"
+      headers {
+        items = ["Origin", "Access-Control-Request-Headers"]
+      }
+    }
+    query_strings_config {
+      query_string_behavior = "all"
+    }
+  }
+}
 
 data "aws_cloudfront_cache_policy" "managed_cache_disabled" {
   name = "Managed-CachingDisabled"
