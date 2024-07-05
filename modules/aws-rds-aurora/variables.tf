@@ -540,6 +540,11 @@ variable "ad_domain_auth_secret_arn" {
   description = "AD Domain Secret ARN for RDS SQL Server"
 }
 
+variable "db_group_name" {
+  type        = string
+  description = "DB parameter and option group name prefix"
+}
+
 variable "option_group" {
   type = list(object({
     option_name = string
