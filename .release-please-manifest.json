@@ -61,5 +61,6 @@
   "modules/aws-iam": "0.1.0",
   "modules/aws-rds": "0.1.0",
   "modules/aws-security-group": "0.1.0",
-  "modules/aws-mongodbatlas-auth": "0.1.0"
+  "modules/aws-mongodbatlas-auth": "0.1.0",
+  "modules/aws-rds-sql-server-read-replica": "0.1.0"
 }
