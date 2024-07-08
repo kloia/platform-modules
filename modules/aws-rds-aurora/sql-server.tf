@@ -234,7 +234,7 @@ resource "aws_iam_role" "monitoring_role" {
 
 resource "aws_db_option_group" "this" {
   count                    = var.enable_custom_option_group ? 1 : 0
-  name                     = "${var.name}-option-group"
+  name                     = "${var.db_group_name}-option-group"
   option_group_description = "RDS SSRS and SSIS Option Group"
   engine_name              = var.engine
   major_engine_version     = var.option_group_engine_version
@@ -264,7 +264,7 @@ resource "aws_db_option_group" "this" {
 
 resource "aws_db_parameter_group" "sql_server" {
   count  = var.enable_custom_parameter_group ? 1 : 0
-  name   = "${var.name}-paramater-group"
+  name   = "${var.db_group_name}-paramater-group"
   family = var.db_parameter_group_family
 
   dynamic "parameter" {
@@ -358,8 +358,19 @@ resource "aws_db_instance" "rds_sql_server_read_replica" {
   kms_key_id           = var.kms_key_id
   parameter_group_name = var.custom_db_paramater_group_name
 
+
+  domain_ou              = var.ad_domain_ou
+  domain_fqdn            = var.ad_domain_fqdn
+  domain_dns_ips         = var.ad_domain_dns_ips
+  domain_auth_secret_arn = var.ad_domain_auth_secret_arn
+
   storage_type      = var.storage_type
   storage_encrypted = var.storage_encrypted
+
+  monitoring_interval             = 60
+  monitoring_role_arn             = aws_iam_role.monitoring_role[0].arn
+  performance_insights_enabled    = true
+  enabled_cloudwatch_logs_exports = ["error"]
 
   vpc_security_group_ids = compact(concat([try(aws_security_group.this[0].id, "")], var.vpc_security_group_ids))
 
