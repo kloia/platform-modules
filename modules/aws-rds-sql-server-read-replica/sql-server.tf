@@ -155,7 +155,7 @@ resource "aws_db_instance" "rds_sql_server_read_replica" {
   maintenance_window  = var.preferred_maintenance_window
   deletion_protection = var.deletion_protection
 
-  copy_tags_to_snapshot = true
+  copy_tags_to_snapshot = var.copy_tags_to_snapshot
   skip_final_snapshot   = var.skip_final_snapshot
 
   instance_class       = var.instance_class

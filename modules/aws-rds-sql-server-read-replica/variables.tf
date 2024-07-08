@@ -342,6 +342,12 @@ variable "option_name" {
   default = ""
 }
 
+variable "copy_tags_to_snapshot" {
+  description = "Copy all Cluster `tags` to snapshots"
+  type        = bool
+  default     = true
+}
+
 ################################################################################
 # Security Group
 ################################################################################
