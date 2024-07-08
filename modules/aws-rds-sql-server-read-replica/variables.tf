@@ -228,6 +228,24 @@ variable "iam_role_force_detach_policies" {
   default     = null
 }
 
+variable "monitoring_interval" {
+  description = "Monitoring interval second"
+  type        = number
+  default     = 60
+}
+
+variable "performance_insights_enabled" {
+  description = "performance enablement "
+  type        = bool
+  default     = true
+}
+
+variable "logs_exports" {
+  description = "Log exports"
+  type        = list(string)
+  default     = ["error"]
+}
+
 variable "iam_role_max_session_duration" {
   description = "Maximum session duration (in seconds) that you want to set for the monitoring role"
   type        = number

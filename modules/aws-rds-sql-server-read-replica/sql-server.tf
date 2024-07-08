@@ -167,10 +167,10 @@ resource "aws_db_instance" "rds_sql_server_read_replica" {
   storage_encrypted     = var.storage_encrypted
   max_allocated_storage = var.max_allocated_storage
 
-  monitoring_interval             = 60
+  monitoring_interval             = var.monitoring_interval
   monitoring_role_arn             = aws_iam_role.monitoring_role.arn
-  performance_insights_enabled    = true
-  enabled_cloudwatch_logs_exports = ["error"]
+  performance_insights_enabled    = var.performance_insights_enabled
+  enabled_cloudwatch_logs_exports = var.logs_exports
 
 
 
