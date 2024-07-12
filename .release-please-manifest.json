@@ -32,7 +32,7 @@
   "modules/aws-guardduty-master": "0.1.0",
   "modules/aws-eks-rancher-joiner": "0.1.1",
   "modules/aws-elasticache-redis": "0.1.0",
-  "modules/aws-rds-aurora": "0.4.0",
+  "modules/aws-rds-aurora": "0.5.0",
   "modules/aws-mq": "0.1.0",
   "modules/aws-ssm-parameter-store": "0.1.0",
   "modules/aws-api-gateway": "0.1.0",
@@ -61,5 +61,6 @@
   "modules/aws-iam": "0.1.0",
   "modules/aws-rds": "0.1.0",
   "modules/aws-security-group": "0.1.0",
-  "modules/aws-mongodbatlas-auth": "0.1.0"
+  "modules/aws-mongodbatlas-auth": "0.1.0",
+  "modules/aws-rds-sql-server-read-replica": "0.1.0"
 }
