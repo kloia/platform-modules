@@ -378,6 +378,15 @@
       "draft": false,
       "prerelease": false
     },
+    "modules/aws-rds-sql-server-read-replica": {
+      "component": "aws-sql-server-read-replica",
+      "changelog-path": "CHANGELOG.md",
+      "release-type": "terraform-module",
+      "bump-minor-pre-major": true,
+      "bump-patch-for-minor-pre-major": false,
+      "draft": false,
+      "prerelease": false
+    },
     "modules/aws-rds-global-cluster": {
       "component": "aws-rds-global-cluster",
       "changelog-path": "CHANGELOG.md",
