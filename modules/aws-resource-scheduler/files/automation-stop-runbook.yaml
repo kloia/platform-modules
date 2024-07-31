@@ -1,0 +1,53 @@
+schemaVersion: '0.3'
+description: |-
+  *Replace this default text with instructions or other information about your runbook.*
+
+  ---
+  # What is Markdown?
+  Markdown is a lightweight markup language that converts your content with plain text formatting to structurally valid rich text.
+  ## You can add headings
+  You can add *italics* or make the font **bold**.
+  1. Create numbered lists
+  * Add bullet points
+  >Indent `code samples`
+
+  You can create a [link to another webpage](https://aws.amazon.com).
+mainSteps:
+  - name: Start_spor_pr_vevn_51
+    action: aws:changeInstanceState
+    nextStep: RunCommandOn_spor_pr_vevn_51
+    isEnd: false
+    inputs:
+      InstanceIds:
+        - i-06358b8cfe5780c83
+      DesiredState: running
+  - name: RunCommandOn_spor_pr_vevn_51
+    action: aws:runCommand
+    nextStep: Start_spor_pr_vbi_51
+    isEnd: false
+    inputs:
+      DocumentName: AWS-RunPowerShellScript
+      Parameters:
+        commands:
+          - E:\test\script.ps1
+      InstanceIds:
+        - i-06358b8cfe5780c83
+  - name: Start_spor_pr_vbi_51
+    action: aws:changeInstanceState
+    nextStep: RunCommandOn_spor_pr_vbi_51
+    isEnd: false
+    inputs:
+      InstanceIds:
+        - i-0fc9ce99c63a8e016
+      DesiredState: running
+  - name: RunCommandOn_spor_pr_vbi_51
+    action: aws:runCommand
+    isEnd: true
+    inputs:
+      DocumentName: AWS-RunShellScript
+      InstanceIds:
+        - i-0fc9ce99c63a8e016
+      Parameters:
+        commands:
+          - /home/ec2-user/script.sh
+        workingDirectory: /home/ec2-user/s
