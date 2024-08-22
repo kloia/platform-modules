@@ -98,5 +98,5 @@ git switch -c new-module/$MODULE_NAME
 git add modules/$MODULE_NAME
 git add release-please-config.json
 git commit -m \"feat: add new module $MODULE_NAME\"
-git push -u
+git push -u origin new-module/$MODULE_NAME
 "
