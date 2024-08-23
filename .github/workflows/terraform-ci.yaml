@@ -1,0 +1,64 @@
+name: "PR Title Lint"
+
+permissions:
+  pull-requests: write
+
+on:
+  push:
+    branches:
+      - main
+    paths:
+      - modules/**/*.tf
+  pull_request:
+    branches:
+      - main
+    paths:
+      - modules/**/*.tf
+
+jobs:
+  terraform-checks:
+    name: Validate Terraform format
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Setup Terraform
+        uses: hashicorp/setup-terraform@v2
+        with:
+          terraform_version: 1.5.7 # Specify your desired Terraform version
+
+      - name: Setup TFLint
+        uses: terraform-linters/setup-tflint@v3
+        with:
+          tflint_version: v0.53.0 # Specify your desired TFLint version
+
+      - name: Get changed modules
+        id: changed-modules
+        uses: tj-actions/changed-files@v35
+        with:
+          files: modules/**/*.tf
+
+      - name: Terraform fmt
+        run: terraform fmt -check -recursive -diff modules/
+        continue-on-error: true
+
+      - name: Check Terraform formatting
+        run: |
+          if [ ${{ steps.fmt.outcome }} == "failure" ]; then
+            echo "Terraform files are not properly formatted. Please run 'terraform fmt' to fix."
+            exit 1
+          fi
+
+      - name: Run TFLint
+        run: |
+          for file in ${{ steps.changed-modules.outputs.all_changed_files }}; do
+            module_dir=$(dirname "$file")
+            if [ ! -f "$module_dir/.tflint.hcl" ]; then
+              echo "module_dir=$module_dir" >> $GITHUB_OUTPUT
+              echo "No .tflint.hcl found in $module_dir. Skipping."
+              continue
+            fi
+            echo "Running TFLint in $module_dir"
+            tflint -f compact "$module_dir"
+          done
