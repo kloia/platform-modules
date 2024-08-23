@@ -1,4 +1,4 @@
-name: "PR Title Lint"
+name: "Terraform CI checks"
 
 permissions:
   pull-requests: write
@@ -39,8 +39,13 @@ jobs:
         with:
           files: modules/**/*.tf
 
-      - name: Terraform fmt
-        run: terraform fmt -check -recursive -diff modules/
+      - name: Run Terraform fmt
+        run: |
+          for file in ${{ steps.changed-modules.outputs.all_changed_files }}; do
+            module_dir=$(dirname "$file")
+            echo "Running terraform fmt in $module_dir"
+            terraform ftm -check -recursive -diff "$module_dir"
+          done
         continue-on-error: true
 
       - name: Check Terraform formatting
