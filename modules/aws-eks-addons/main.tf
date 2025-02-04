@@ -220,7 +220,7 @@ resource "kubernetes_annotations" "alb_ingress_connect_internal_nginx_annotation
     "alb.ingress.kubernetes.io/healthcheck-path"   = "/healthz"
   }
   depends_on = [
-    kubernetes_ingress_v1.alb_ingress_connect_nginx
+    kubernetes_ingress_v1.alb_ingress_connect_nginx_internal
   ]
 }
 
