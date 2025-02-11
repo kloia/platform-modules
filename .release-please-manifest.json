@@ -28,7 +28,7 @@
   "modules/aws-centralized-logging": "0.1.0",
   "modules/aws-waf": "0.1.0",
   "modules/aws-elasticsearch": "0.1.0",
-  "modules/aws-msk-apache-kafka-cluster-master": "0.2.0",
+  "modules/aws-msk-apache-kafka-cluster-master": "0.2.1",
   "modules/aws-guardduty-master": "0.1.0",
   "modules/aws-eks-rancher-joiner": "0.1.1",
   "modules/aws-elasticache-redis": "0.1.0",
