@@ -69,3 +69,8 @@ output "password" {
   description = ""
 }
 
+output "cluster_uuid" {
+  description = "MSK Cluster UUID"
+  value       = join("", aws_msk_cluster.default[*].cluster_uuid)
+}
+
