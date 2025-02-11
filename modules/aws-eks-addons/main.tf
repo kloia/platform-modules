@@ -159,6 +159,76 @@ resource "kubernetes_annotations" "alb_ingress_connect_nginx_annotation" {
   ]
 }
 
+resource "kubernetes_ingress_v1" "alb_ingress_connect_nginx_internal" {
+  count = var.enable_internal_alb ? 1 : 0
+  lifecycle {
+    ignore_changes = [metadata["*cattle*"]]
+  }
+  wait_for_load_balancer = true
+  metadata {
+    name      = var.connect_hostnames_from_alb_internal_ing_prefix != "" ? "${var.connect_hostnames_from_alb_internal_ing_prefix}-nginx-internal" : "ing-nginx-internal"
+    namespace = "ingress-nginx"
+
+  }
+
+  spec {
+    ingress_class_name = "alb"
+    dynamic "rule" {
+      for_each = toset(var.connect_hostnames_from_internal_alb_to_nginx)
+      content {
+        host = rule.key
+        http {
+          path {
+            path      = "/"
+            path_type = "Prefix"
+            backend {
+              service {
+                name = "ingress-nginx-controller"
+                port {
+                  number = 80
+                }
+              }
+            }
+          }
+        }
+      }
+    }
+  }
+  depends_on = [
+    helm_release.aws_lb_controller, helm_release.ingress_nginx
+  ]
+}
+
+resource "kubernetes_annotations" "alb_ingress_connect_internal_nginx_annotation" {
+  count = var.enable_internal_alb ? 1 : 0
+  api_version = "networking.k8s.io/v1"
+  kind        = "Ingress"
+  force       = true
+  metadata {
+    name      = var.connect_hostnames_from_alb_internal_ing_prefix != "" ? "${var.connect_hostnames_from_alb_internal_ing_prefix}-nginx-internal" : "ing-nginx-internal"
+    namespace = "ingress-nginx"
+  }
+  annotations = {
+    "alb.ingress.kubernetes.io/load-balancer-name" = var.internal_loadbalancer_name
+    "alb.ingress.kubernetes.io/certificate-arn"    = var.acm_certificate_arn
+    "alb.ingress.kubernetes.io/wafv2-acl-arn"      = var.internal_waf_acl_arn
+    "alb.ingress.kubernetes.io/scheme"             = "internal"
+    "alb.ingress.kubernetes.io/target-type"        = "instance"
+    "alb.ingress.kubernetes.io/group.name"         = "internal"
+    "alb.ingress.kubernetes.io/ssl-redirect"       = "443"
+    "alb.ingress.kubernetes.io/listen-ports"       = "[{\"HTTP\": 80}, {\"HTTPS\": 443}]"
+    "alb.ingress.kubernetes.io/healthcheck-path"   = "/healthz"
+  }
+  depends_on = [
+    kubernetes_ingress_v1.alb_ingress_connect_nginx_internal
+  ]
+}
+
+
+
+
+
+
 resource "kubernetes_ingress_v1" "alb_ingress_connect_istio" {
   count = local.can_connect_alb_to_istio ? 1 : 0
   lifecycle {

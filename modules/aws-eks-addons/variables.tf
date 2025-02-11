@@ -29,6 +29,12 @@ variable "loadbalancer_name" {
   default     = ""
 }
 
+variable "internal_loadbalancer_name" {
+  description = "Internal load balancer name "
+  type        = string
+  default     = ""
+}
+
 variable "argocd_ssl_redirect_annotation" {
   description = "Argocd ssl redirect configuration "
   type        = bool
@@ -183,6 +189,24 @@ variable "enable_shield_advanced_protection_from_alb_to_istio" {
   description = "Setup Shield for traffic from ALB to Istio"
   type        = bool
   default     = false
+}
+
+variable "enable_internal_alb" {
+  description = "Whether to create an internal ALB"
+  type        = bool
+  default     = false
+}
+
+variable "connect_hostnames_from_alb_internal_ing_prefix" {
+  description = "Prefix to give internal ingress names when connecting alb hostnames"
+  type        = string
+  default     = "internal-ing-servicename"
+}
+
+variable "connect_hostnames_from_internal_alb_to_nginx" {
+  description = "Incoming internal ALB connections with the matching hostnames will be handled internally by nginx"
+  type        = list(string)
+  default     = []
 }
 
 variable "deploy_argo_workflow" {
@@ -432,6 +456,12 @@ variable "deploy_karpenter_crds" {
 
 variable "waf_acl_arn" {
   description = "wafv2 acl arn"
+  default     = ""
+  type        = string
+}
+
+variable "internal_waf_acl_arn" {
+  description = "wafv2 acl arn for internal alb"
   default     = ""
   type        = string
 }
