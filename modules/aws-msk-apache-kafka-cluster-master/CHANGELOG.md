@@ -1,5 +1,12 @@
 # Changelog
 
+## [0.2.2](https://github.com/kloia/platform-modules/compare/aws-msk-apache-kafka-cluster-master-v0.2.1...aws-msk-apache-kafka-cluster-master-v0.2.2) (2025-02-11)
+
+
+### Bug Fixes
+
+* msk output definition ([#260](https://github.com/kloia/platform-modules/issues/260)) ([924801d](https://github.com/kloia/platform-modules/commit/924801d25c0c07ac7b5a8055dbccd214b040f433))
+
 ## [0.2.1](https://github.com/kloia/platform-modules/compare/aws-msk-apache-kafka-cluster-master-v0.2.0...aws-msk-apache-kafka-cluster-master-v0.2.1) (2025-02-11)
 
 
