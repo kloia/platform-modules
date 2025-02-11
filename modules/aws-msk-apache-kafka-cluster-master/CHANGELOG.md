@@ -1,5 +1,12 @@
 # Changelog
 
+## [0.2.1](https://github.com/kloia/platform-modules/compare/aws-msk-apache-kafka-cluster-master-v0.2.0...aws-msk-apache-kafka-cluster-master-v0.2.1) (2025-02-11)
+
+
+### Bug Fixes
+
+* add cluster_uuid output to aws-msk-apache-kafka-cluster-master module ([ed8cb78](https://github.com/kloia/platform-modules/commit/ed8cb78dec8ce94ad9e643c4cc7e585cd1f773ee))
+
 ## [0.2.0](https://github.com/kloia/platform-modules/compare/aws-msk-apache-kafka-cluster-master-v0.1.0...aws-msk-apache-kafka-cluster-master-v0.2.0) (2024-08-20)
 
 
