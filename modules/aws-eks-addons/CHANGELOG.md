@@ -1,5 +1,12 @@
 # Changelog
 
+## [0.2.0](https://github.com/kloia/platform-modules/compare/aws-eks-addons-v0.1.1...aws-eks-addons-v0.2.0) (2025-02-11)
+
+
+### Features
+
+* add conditional internal alb ([#258](https://github.com/kloia/platform-modules/issues/258)) ([0372aac](https://github.com/kloia/platform-modules/commit/0372aacdd2ebb7f502104d6fc30d4dcfbc39e510))
+
 ## [0.1.1](https://github.com/kloia/platform-modules/compare/aws-eks-addons-v0.1.0...aws-eks-addons-v0.1.1) (2024-05-28)
 
 
