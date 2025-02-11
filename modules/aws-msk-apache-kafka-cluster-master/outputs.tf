@@ -59,13 +59,13 @@ output "bootstrap_brokers_public_sasl_scram" {
 }
 
 output "username" {
+  value = var.client_sasl_scram_enabled ? "msk" : null
   # this might need to change later on, currently hardcoded in the module
-  value       = "msk"
   description = ""
 }
 
 output "password" {
-  value       = random_password.password[0].result
+  value       =  var.client_sasl_scram_enabled ? random_password.password[0].result : null
   description = ""
 }
 
