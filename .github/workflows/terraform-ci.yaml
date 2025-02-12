@@ -83,5 +83,6 @@ jobs:
               continue
             fi
             echo "Running TFLint in $module_dir"
+            tflint --init --chdir "$module_dir"
             tflint -f compact --chdir "$module_dir"
           done
