@@ -63,5 +63,6 @@
   "modules/aws-security-group": "0.1.0",
   "modules/aws-mongodbatlas-auth": "0.1.0",
   "modules/aws-rds-sql-server-read-replica": "0.1.0",
-  "modules/aws-cloudwatch-dashboard": "0.1.0"
+  "modules/aws-cloudwatch-dashboard": "0.1.0",
+  "modules/aws-budget": "0.1.0"
 }
