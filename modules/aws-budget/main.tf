@@ -52,8 +52,8 @@ resource "aws_budgets_budget" "budget" {
   dynamic "cost_filter" {
     for_each = each.value.cost_filter == null ? {} : each.value.cost_filter
     content {
-      name   = cost_filter.key
-      values = cost_filter.value
+      name   = cost_filter.value.name
+      values = cost_filter.value.values
     }
   }
 
