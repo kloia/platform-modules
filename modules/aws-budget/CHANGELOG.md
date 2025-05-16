@@ -1,5 +1,12 @@
 # Changelog
 
+## [0.2.0](https://github.com/kloia/platform-modules/compare/aws-budget-v0.1.0...aws-budget-v0.2.0) (2025-05-16)
+
+
+### Features
+
+* **aws-budget:** add dynamic cost types configuration to budget resource ([#265](https://github.com/kloia/platform-modules/issues/265)) ([05b5553](https://github.com/kloia/platform-modules/commit/05b55531d2b71b893c13a3ccef310cf8290db431))
+
 ## 0.1.0 (2025-02-17)
 
 
