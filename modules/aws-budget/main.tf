@@ -6,10 +6,29 @@ resource "aws_budgets_budget" "budget" {
   budget_type  = each.value.budget_type
   limit_amount = each.value.limit_amount
   limit_unit   = each.value.limit_unit
-  time_unit         = each.value.time_unit
+  time_unit    = each.value.time_unit
 
   time_period_start = lookup(each.value, "time_period_start", null)
   time_period_end   = lookup(each.value, "time_period_end", null)
+
+  dynamic "cost_types" {
+    for_each = lookup(each.value, "cost_types", null) != null ? try(tolist(each.value.cost_types), [
+      each.value.cost_types
+    ]) : []
+    content {
+      include_credit             = lookup(cost_types.value, "include_credit", null)
+      include_discount           = lookup(cost_types.value, "include_discount", null)
+      include_other_subscription = lookup(cost_types.value, "include_other_subscription", null)
+      include_recurring          = lookup(cost_types.value, "include_recurring", null)
+      include_refund             = lookup(cost_types.value, "include_refund", null)
+      include_subscription       = lookup(cost_types.value, "include_subscription", null)
+      include_support            = lookup(cost_types.value, "include_support", null)
+      include_tax                = lookup(cost_types.value, "include_tax", null)
+      include_upfront            = lookup(cost_types.value, "include_upfront", null)
+      use_amortized              = lookup(cost_types.value, "use_amortized", null)
+      use_blended                = lookup(cost_types.value, "use_blended", null)
+    }
+  }
 
   dynamic "auto_adjust_data" {
     for_each = lookup(each.value, "auto_adjust_data", null) != null ? try(tolist(each.value.auto_adjust_data), [
@@ -33,8 +52,8 @@ resource "aws_budgets_budget" "budget" {
   dynamic "cost_filter" {
     for_each = each.value.cost_filter == null ? {} : each.value.cost_filter
     content {
-      name   = cost_filter.key
-      values = cost_filter.value
+      name   = cost_filter.value.name
+      values = cost_filter.value.values
     }
   }
 

@@ -24,7 +24,7 @@ variable "budgets" {
       notification_type   = string
 
       subscriber_email_addresses = optional(list(string))
-      subscriber_sns_topic_arns = optional(list(string))
+      subscriber_sns_topic_arns  = optional(list(string))
     }), null)
 
     cost_filter = optional(map(object({
