@@ -1,5 +1,12 @@
 # Changelog
 
+## [0.2.1](https://github.com/kloia/platform-modules/compare/aws-budget-v0.2.0...aws-budget-v0.2.1) (2025-05-20)
+
+
+### Bug Fixes
+
+* **aws-budget:** update default values in variables.tf to null ([#267](https://github.com/kloia/platform-modules/issues/267)) ([b71d1f3](https://github.com/kloia/platform-modules/commit/b71d1f355a91deebafa3d1b4433ac620868d0026))
+
 ## [0.2.0](https://github.com/kloia/platform-modules/compare/aws-budget-v0.1.0...aws-budget-v0.2.0) (2025-05-16)
 
 
