@@ -15,7 +15,7 @@ variable "budgets" {
       historical_options = optional(object({
         budget_adjustment_period = string
       }))
-    }), {})
+    }), null)
 
     notification = optional(object({
       comparison_operator = string
@@ -30,7 +30,7 @@ variable "budgets" {
     cost_filter = optional(map(object({
       name   = string
       values = list(string)
-    })), {})
+    })), null)
 
     cost_types = optional(object({
       include_credit             = optional(bool, false)
