@@ -321,6 +321,26 @@ variable "stateless_windows_arch_types" {
   type        = list(string)
 }
 
+variable "stateful_application_taints" {
+  description = "stateful application taints for scheduling"
+  default     = []
+  type = list(object({
+    key    = string
+    value  = string
+    effect = string
+  }))
+}
+
+variable "stateless_application_taints" {
+  description = "stateful application taints for scheduling"
+  default     = []
+  type = list(object({
+    key    = string
+    value  = string
+    effect = string
+  }))
+}
+
 variable "stateful_application_toleration_value" {
   description = "stateful application tolerance value for scheduling"
   default     = "stateful-application"
@@ -367,6 +387,12 @@ variable "karpenter_node_template_throughput" {
   description = "Node Throughput"
   default     = "125"
   type        = string
+}
+
+variable "karpenter_custom_provisioners" {
+  description = "Karpenter custom provisioners"
+  default     = []
+  type        = list(string)
 }
 
 variable "enable_sso" {
