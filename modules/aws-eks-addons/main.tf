@@ -881,6 +881,15 @@ resource "kubectl_manifest" "karpenter_node_template" {
   ]
 }
 
+resource "kubectl_manifest" "karpenter_custom_node_template" {
+  count     = length(var.karpenter_custom_node_templates)
+  yaml_body = var.karpenter_custom_node_templates[count.index]
+
+  depends_on = [
+    helm_release.karpenter[0]
+  ]
+}
+
 resource "kubectl_manifest" "karpenter_windows_with_aws_cni" {
   count      = var.karpenter_windows_support ? 1 : 0
   yaml_body  = <<YAML

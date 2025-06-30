@@ -395,6 +395,12 @@ variable "karpenter_custom_provisioners" {
   type        = list(string)
 }
 
+variable "karpenter_custom_node_templates" {
+  description = "Karpenter custom node templates"
+  default     = []
+  type        = list(string)
+}
+
 variable "enable_sso" {
   default     = false
   description = "Creation control logic of AWS SSO integration at ArgoCD"
