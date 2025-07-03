@@ -1,5 +1,12 @@
 # Changelog
 
+## [0.3.0](https://github.com/kloia/platform-modules/compare/aws-eks-addons-v0.2.0...aws-eks-addons-v0.3.0) (2025-07-03)
+
+
+### Features
+
+* **eks-addons:** internal alb output value added if exists ([#270](https://github.com/kloia/platform-modules/issues/270)) ([6f0d468](https://github.com/kloia/platform-modules/commit/6f0d468532c3a805dde1e164e0fa14d6631a40d6))
+
 ## [0.2.0](https://github.com/kloia/platform-modules/compare/aws-eks-addons-v0.1.1...aws-eks-addons-v0.2.0) (2025-02-11)
 
 
