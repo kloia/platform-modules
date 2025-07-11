@@ -1,5 +1,12 @@
 # Changelog
 
+## [0.3.1](https://github.com/kloia/platform-modules/compare/aws-eks-v0.3.0...aws-eks-v0.3.1) (2025-07-11)
+
+
+### Bug Fixes
+
+* **eks:** provider major version pinned to 5 ([#272](https://github.com/kloia/platform-modules/issues/272)) ([3be6c2e](https://github.com/kloia/platform-modules/commit/3be6c2ec7bcfe032ff152e549d2968f062ba0589))
+
 ## [0.3.0](https://github.com/kloia/platform-modules/compare/aws-eks-v0.2.0...aws-eks-v0.3.0) (2024-06-24)
 
 
