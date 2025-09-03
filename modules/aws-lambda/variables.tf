@@ -131,7 +131,7 @@ variable "dead_letter_target_arn" {
 
 variable "environment_variables" {
   description = "A map that defines environment variables for the Lambda Function."
-  type        = map(string)
+  type        = map(any)
   default     = {}
 }
 
