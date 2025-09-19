@@ -32,12 +32,13 @@ resource "aws_cloudwatch_event_target" "default" {
   input_path = var.input_path != "" ? var.input_path : null
   role_arn   = var.target_role_arn
 
-  input_transformer {
+  dynamic "input_transformer" {
+    for_each = var.input_template != "" && length(keys(var.input_paths)) > 0 ? [true]: []
 
-    input_paths    = var.input_path == "" ? var.input_paths : null
-    input_template = var.input_path == "" ? var.input_template : null
+    content {
+      input_paths    = var.input_path == "" ? var.input_paths : null
+      input_template = var.input_path == "" ? var.input_template : null
+    }
   }
-
-
 }
 
