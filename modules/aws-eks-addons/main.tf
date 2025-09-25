@@ -200,7 +200,7 @@ resource "kubernetes_ingress_v1" "alb_ingress_connect_nginx_internal" {
 }
 
 resource "kubernetes_annotations" "alb_ingress_connect_internal_nginx_annotation" {
-  count = var.enable_internal_alb ? 1 : 0
+  count       = var.enable_internal_alb ? 1 : 0
   api_version = "networking.k8s.io/v1"
   kind        = "Ingress"
   force       = true
@@ -728,13 +728,13 @@ resource "kubectl_manifest" "karpenter_stateful_provisioner" {
           cpu = var.stateful_total_cpu_limit
         }
       }
-      taints = [
+      taints = concat([
         {
           effect = "NoSchedule"
           key    = "workload"
           value  = var.stateful_application_toleration_value
         },
-      ]
+      ], var.stateful_application_taints)
       requirements : [
         {
           key      = "workload"
@@ -803,6 +803,7 @@ resource "kubectl_manifest" "karpenter_stateless_provisioner" {
           cpu = var.stateless_total_cpu_limit
         }
       }
+      taints = var.stateless_application_taints
       requirements : [
         {
           key      = "karpenter.sh/capacity-type"
@@ -841,6 +842,15 @@ resource "kubectl_manifest" "karpenter_stateless_provisioner" {
   ]
 }
 
+resource "kubectl_manifest" "karpenter_custom_provisioner" {
+  count     = length(var.karpenter_custom_provisioners)
+  yaml_body = var.karpenter_custom_provisioners[count.index]
+
+  depends_on = [
+    helm_release.karpenter[0]
+  ]
+}
+
 resource "kubectl_manifest" "karpenter_node_template" {
   count     = var.deploy_karpenter && var.deploy_karpenter_crds ? 1 : 0
   yaml_body = <<-YAML
@@ -865,6 +875,15 @@ resource "kubectl_manifest" "karpenter_node_template" {
       tags:
         karpenter.sh/discovery: ${var.cluster_name}
   YAML
+
+  depends_on = [
+    helm_release.karpenter[0]
+  ]
+}
+
+resource "kubectl_manifest" "karpenter_custom_node_template" {
+  count     = length(var.karpenter_custom_node_templates)
+  yaml_body = var.karpenter_custom_node_templates[count.index]
 
   depends_on = [
     helm_release.karpenter[0]
