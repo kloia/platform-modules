@@ -12,7 +12,7 @@ resource "random_string" "log_s3_name" {
 }
 
 module "lb_logs_s3" {
-  source = "../terraform-aws-s3"
+  source = "../aws-s3"
   count  = var.enable_s3_logs ? 1 : 0
 
 
