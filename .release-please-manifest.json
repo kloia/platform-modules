@@ -54,7 +54,7 @@
   "modules/aws-lambda": "0.2.0",
   "modules/aws-ec2-instance": "0.1.0",
   "modules/aws-ecs": "0.1.0",
-  "modules/aws-dynamodb-table": "0.1.0",
+  "modules/aws-dynamodb-table": "0.1.1",
   "modules/aws-acm": "0.1.0",
   "modules/aws-cloudwatch": "0.1.0",
   "modules/aws-eks": "0.3.1",
