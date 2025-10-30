@@ -494,3 +494,9 @@ variable "adot_collector_hostname" {
   default     = "trace.example.com"
   type        = string
 }
+
+variable "nginx_version" {
+  description = "Ingress NGINX Helm chart version"
+  default     = "4.4.0"
+  type        = string
+}
