@@ -1,5 +1,12 @@
 # Changelog
 
+## [0.4.0](https://github.com/kloia/platform-modules/compare/aws-eks-addons-v0.3.0...aws-eks-addons-v0.4.0) (2025-10-30)
+
+
+### Features
+
+* **eks-addons:** parameterize ingress Nginx helm chart version ([#286](https://github.com/kloia/platform-modules/issues/286)) ([d4f33b2](https://github.com/kloia/platform-modules/commit/d4f33b28d5db10f6b1ff2a62b97995163f31e42c))
+
 ## [0.3.0](https://github.com/kloia/platform-modules/compare/aws-eks-addons-v0.2.0...aws-eks-addons-v0.3.0) (2025-07-03)
 
 
