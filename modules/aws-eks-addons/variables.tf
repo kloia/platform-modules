@@ -552,3 +552,9 @@ variable "rancher_logging_version" {
   default     = null
   type        = string
 }
+
+variable "argocd_version" {
+  description = "ArgoCD version"
+  default     = null
+  type        = string
+}
