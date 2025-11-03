@@ -498,5 +498,63 @@ variable "adot_collector_hostname" {
 variable "nginx_version" {
   description = "Ingress NGINX Helm chart version"
   default     = "4.4.0"
+}
+variable "metrics_server_version" {
+  description = "Metrics Server version"
+  default     = null
+  type        = string
+}
+
+variable "trivy_version" {
+  description = "Trivy version"
+  default     = null
+  type        = string
+}
+
+variable "cert_manager_version" {
+  description = "Cert Manager version"
+  default     = null
+  type        = string
+}
+
+variable "rancher_version" {
+  description = "Rancher version"
+  default     = null
+  type        = string
+}
+
+variable "rancher_monitoring_crd_version" {
+  description = "Rancher Monitoring CRD version"
+  default     = null
+  type        = string
+}
+
+variable "rancher_monitoring_version" {
+  description = "Rancher Monitoring version"
+  default     = null
+  type        = string
+}
+
+variable "rancher_istio_version" {
+  description = "Rancher Istio version"
+  default     = null
+  type        = string
+}
+
+variable "argo_workflow_version" {
+  description = "Argo Workflow version"
+  default     = null
+  type        = string
+}
+
+variable "rancher_logging_version" {
+  description = "Rancher Logging version"
+  default     = null
+  type        = string
+}
+
+variable "argocd_version" {
+  description = "ArgoCD version"
+  default     = null
   type        = string
 }

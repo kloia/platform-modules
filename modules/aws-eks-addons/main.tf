@@ -300,6 +300,7 @@ resource "helm_release" "argocd" {
   chart            = "argo-cd"
   namespace        = "argocd"
   create_namespace = true
+  version          = var.argocd_version
 
   set {
     name  = "global.domain"
@@ -533,33 +534,46 @@ resource "kubectl_manifest" "argocd_bootstrapper_application" {
         path : "helm"
         helm : {
           values : yamlencode({
-            certManager : {
+            certManager : merge({
               enable : var.deploy_cert_manager
-            }
-            metricsServer : {
+            }, var.cert_manager_version == null ? {} : {
+              targetRevision : var.cert_manager_version
+            })
+            metricsServer : merge({
               enable : var.deploy_metrics_server
-            }
-            trivy : {
+            }, var.metrics_server_version == null ? {} : {
+              targetRevision : var.metrics_server_version
+            })
+            trivy : merge({
               enable : var.deploy_trivy
-            }
-            rancher : {
+            }, var.trivy_version == null ? {} : {
+              targetRevision : var.trivy_version
+            })
+            rancher : merge({
               enable : var.deploy_rancher
               values : {
                 hostname : var.rancher_hostname
               }
-            }
-            rancherMonitoringCrd : {
+            }, var.rancher_version == null ? {} : {
+              targetRevision : var.rancher_version
+            })
+            rancherMonitoringCrd : merge({
               enable : local.deploy_rancher_monitoring
-            }
-            rancherMonitoring : {
+            }, var.rancher_monitoring_crd_version == null ? {} : {
+              targetRevision : var.rancher_monitoring_crd_version
+            })
+            rancherMonitoring : merge({
               enable : local.deploy_rancher_monitoring
-            }
-            rancherIstio : {
+            }, var.rancher_monitoring_version == null ? {} : {
+              targetRevision : var.rancher_monitoring_version
+            })
+            rancherIstio : merge({
               enable : local.deploy_rancher_istio
-            }
-            argoWorkflow : {
+            }, var.rancher_istio_version == null ? {} : {
+              targetRevision : var.rancher_istio_version
+            })
+            argoWorkflow : merge({
               enable : var.deploy_argo_workflow
-              targetRevision : "0.36.1"
               values : {
                 server : {
                   ingress : {
@@ -569,8 +583,10 @@ resource "kubectl_manifest" "argocd_bootstrapper_application" {
                   extraArgs : var.argo_workflow_extra_args
                 }
               }
-            }
-            rancherLogging : {
+            }, var.argo_workflow_version == null ? {} : {
+              targetRevision : var.argo_workflow_version
+            })
+            rancherLogging : merge({
               enable : var.deploy_rancher_logging
               values : {
                 fluentd : {
@@ -587,7 +603,9 @@ resource "kubectl_manifest" "argocd_bootstrapper_application" {
 
                 }
               }
-            }
+            }, var.rancher_logging_version == null ? {} : {
+              targetRevision : var.rancher_logging_version
+            })
           })
         }
       }
