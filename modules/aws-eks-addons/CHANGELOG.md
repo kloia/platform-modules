@@ -1,5 +1,12 @@
 # Changelog
 
+## [0.5.0](https://github.com/kloia/platform-modules/compare/aws-eks-addons-v0.4.0...aws-eks-addons-v0.5.0) (2025-11-03)
+
+
+### Features
+
+* **eks-addons:** add version variables for cert manager, metrics server, trivy, rancher, and argo workflow ([#287](https://github.com/kloia/platform-modules/issues/287)) ([3bb7df6](https://github.com/kloia/platform-modules/commit/3bb7df63443c6d255a615b4dc6f811de1c24a401))
+
 ## [0.4.0](https://github.com/kloia/platform-modules/compare/aws-eks-addons-v0.3.0...aws-eks-addons-v0.4.0) (2025-10-30)
 
 
