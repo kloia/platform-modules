@@ -619,9 +619,9 @@ resource "kubectl_manifest" "argocd_bootstrapper_application" {
     }
   })
   depends_on = [helm_release.argocd]
-  # lifecycle {
-  #   ignore_changes = all
-  # }
+  lifecycle {
+    ignore_changes = all
+  }
 }
 
 
