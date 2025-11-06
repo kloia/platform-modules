@@ -343,6 +343,14 @@ resource "aws_iam_policy" "cluster_encryption" {
 # EKS Addons
 ################################################################################
 
+data "aws_eks_addon_version" "this" {
+  for_each = { for k, v in var.cluster_addons : k => v if local.create }
+
+  addon_name         = try(each.value.name, each.key)
+  kubernetes_version = coalesce(var.cluster_version, aws_eks_cluster.this[0].version)
+  most_recent        = try(each.value.most_recent, null)
+}
+
 resource "aws_eks_addon" "this" {
   for_each = { for k, v in var.cluster_addons : k => v if local.create }
 
