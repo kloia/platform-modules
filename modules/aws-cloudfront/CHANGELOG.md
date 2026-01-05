@@ -1,5 +1,16 @@
 # Changelog
 
+## [1.0.0](https://github.com/kloia/platform-modules/compare/aws-cloudfront-v0.2.0...aws-cloudfront-v1.0.0) (2026-01-05)
+
+
+### ⚠ BREAKING CHANGES
+
+* deny_insecure_transport_policy is now enabled by default.
+
+### Features
+
+* added policy to deny SSL transport policy. ([#290](https://github.com/kloia/platform-modules/issues/290)) ([fef021b](https://github.com/kloia/platform-modules/commit/fef021bbea4fd7175b275dcf75a1f7b5482c6f9e))
+
 ## [0.2.0](https://github.com/kloia/platform-modules/compare/aws-cloudfront-v0.1.0...aws-cloudfront-v0.2.0) (2024-07-02)
 
 

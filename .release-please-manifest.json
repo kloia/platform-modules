@@ -42,7 +42,7 @@
   "modules/aws-vpc": "0.1.0",
   "modules/aws-efs": "0.1.0",
   "modules/aws-transit-gateway": "0.1.0",
-  "modules/aws-cloudfront": "0.2.0",
+  "modules/aws-cloudfront": "1.0.0",
   "modules/aws-apigateway-v2-master": "0.1.0",
   "modules/aws-shield": "0.1.0",
   "modules/aws-key-pair": "0.1.0",
