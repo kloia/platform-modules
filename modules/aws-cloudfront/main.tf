@@ -25,6 +25,7 @@ data "aws_route53_zone" "selected" {
 data "aws_s3_bucket" "existing_bucket" {
   count  = var.s3_bucket_name != "" && var.create_s3_bucket == false ? 1 : 0
   bucket = var.s3_bucket_name
+  provider = aws.ireland
 }
 
 resource "aws_route53_record" "this" {
@@ -41,14 +42,16 @@ resource "aws_route53_record" "this" {
 }
 
 resource "aws_s3_bucket" "this" {
-  count  = var.create_origin_access_identity && var.create_s3_bucket ? 1 : 0
-  bucket = var.s3_bucket_name
-  # object_ownership = var.object_ownership
+    provider = aws.ireland
+    count  = var.create_origin_access_identity && var.create_s3_bucket ? 1 : 0
+    bucket = var.s3_bucket_name
+    # object_ownership = var.object_ownership
 }
 
 resource "aws_s3_bucket_cors_configuration" "this" {
-  count  = ((length(var.cors_rule) > 0 ? true : false) && var.create_origin_access_identity) ? 1 : 0
-  bucket = aws_s3_bucket.this[0].id
+  count     = ((length(var.cors_rule) > 0 ? true : false) && var.create_origin_access_identity) ? 1 : 0
+  provider  = aws.ireland
+  bucket    = aws_s3_bucket.this[0].id
   #expected_bucket_owner = var.expected_bucket_owner
 
   dynamic "cors_rule" {
@@ -66,30 +69,44 @@ resource "aws_s3_bucket_cors_configuration" "this" {
 }
 
 resource "aws_s3_bucket_policy" "s3_policy" {
+  provider = aws.ireland
   for_each = local.create_origin_access_identity && var.create_s3_bucket ? var.origin_access_identities : {}
   bucket   = aws_s3_bucket.this[0].id
-  policy = jsonencode(
-    {
-      Version = "2008-10-17",
-      Id      = "PolicyForCloudFrontPrivateContent",
-      Statement = [
+  policy   = jsonencode(
+{
+    Version = "2008-10-17",
+    Id      = "PolicyForCloudFrontPrivateContent",
+    Statement = [
         {
-          Sid    = "1",
-          Effect = "Allow",
-          Principal = {
-            "AWS" : "arn:aws:iam::cloudfront:user/CloudFront Origin Access Identity ${aws_cloudfront_origin_access_identity.this[each.key].id}"
-          },
-          Action   = "s3:GetObject",
-          Resource = var.bucket_policy_resources == null ? ["arn:aws:s3:::${aws_s3_bucket.this[0].id}/*"] : var.bucket_policy_resources # split(",",var.bucket_policy_resources)
-
+            Sid= "1",
+            Effect= "Allow",
+            Principal = {
+                "AWS": "arn:aws:iam::cloudfront:user/CloudFront Origin Access Identity ${aws_cloudfront_origin_access_identity.this[each.key].id}"
+            },
+            Action = "s3:GetObject",
+            Resource = var.bucket_policy_resources == null ? ["arn:aws:s3:::${aws_s3_bucket.this[0].id}/*"] : var.bucket_policy_resources # split(",",var.bucket_policy_resources)
+                        
         },
-      ]
-    }
-  )
+        {
+          Sid    = "AllowSSLRequestsOnly",
+          Effect = "Deny",
+          Principal = "*",
+          Action   = "s3:*",
+          Resource = var.bucket_policy_resources == null ? ["arn:aws:s3:::${aws_s3_bucket.this[0].id}","arn:aws:s3:::${aws_s3_bucket.this[0].id}/*"] : var.bucket_policy_resources,
+          Condition = {
+            Bool = {
+              "aws:SecureTransport" = "false"
+            }
+          }
+        }
+    ]
+}
+)
 }
 
 resource "aws_s3_bucket_ownership_controls" "this" {
-  count  = var.control_object_ownership ? 1 : 0
+  count    = var.control_object_ownership ? 1 : 0
+  provider = aws.ireland
   bucket = aws_s3_bucket.this[0].id # local.create_origin_access_identity ? aws_s3_bucket_policy.s3_policy[0].id : aws_s3_bucket.this[0].id
 
   rule {
@@ -104,8 +121,9 @@ resource "aws_s3_bucket_ownership_controls" "this" {
 }
 
 resource "aws_s3_bucket_website_configuration" "this" {
-  count  = length(keys(var.website)) > 0 ? 1 : 0
-  bucket = aws_s3_bucket.this[0].id
+  count    = length(keys(var.website)) > 0 ? 1 : 0
+  provider = aws.ireland
+  bucket   = aws_s3_bucket.this[0].id
 
   dynamic "index_document" {
     for_each = try([var.website["index_document"]], [])
@@ -189,8 +207,8 @@ resource "aws_cloudfront_distribution" "this" {
     for_each = var.origin
 
     content {
-      domain_name = var.cloudfront_elb ? lookup(origin.value, "domain_name", origin.key) : lookup(origin.value, "domain_name",
-      var.s3_bucket_name != "" && var.create_s3_bucket == false ? data.aws_s3_bucket.existing_bucket[0].bucket_domain_name : aws_s3_bucket.this[0].bucket_domain_name)
+      domain_name              = var.cloudfront_elb ? lookup(origin.value, "domain_name",origin.key) : lookup(origin.value, "domain_name", 
+                                  var.s3_bucket_name != "" && var.create_s3_bucket == false ? data.aws_s3_bucket.existing_bucket[0].bucket_domain_name : aws_s3_bucket.this[0].bucket_domain_name)
       origin_id                = lookup(origin.value, "origin_id", origin.key)
       origin_path              = lookup(origin.value, "origin_path", "")
       connection_attempts      = lookup(origin.value, "connection_attempts", null)
@@ -433,24 +451,23 @@ resource "aws_cloudfront_monitoring_subscription" "this" {
 }
 
 resource "aws_cloudfront_origin_request_policy" "this" {
-  count   = var.create_distribution && var.create_and_attach_origin_request_policy ? 1 : 0
-  name    = var.origin_request_policy_name
-  comment = "origin request policy includes the following headers"
-  cookies_config {
-    cookie_behavior = "all"
-  }
-  headers_config {
-    header_behavior = "whitelist"
-    headers {
-      items = var.origin_request_policy_headers
+    count = var.create_distribution && var.create_and_attach_origin_request_policy ? 1 : 0
+    name    = var.origin_request_policy_name
+    comment = "origin request policy includes the following headers"
+    cookies_config {
+      cookie_behavior = "all"
     }
-  }
-  query_strings_config {
-    query_string_behavior = "all"
-  }
-
+    headers_config {
+      header_behavior = "whitelist"
+      headers {
+        items = var.origin_request_policy_headers
+      }
+    }
+    query_strings_config {
+      query_string_behavior = "all"
+    }
+  
 }
-
 
 resource "aws_cloudfront_cache_policy" "this" {
   count       = var.create_distribution && var.create_and_attach_cache_policy ? 1 : 0
