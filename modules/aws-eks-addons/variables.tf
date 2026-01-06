@@ -553,6 +553,18 @@ variable "rancher_logging_version" {
   type        = string
 }
 
+variable "rancher_logging_enabled" {
+  description = "Rancher Logging enabled"
+  default     = true
+  type        = bool
+}
+
+variable "rancher_logging_target_revision" {
+  description = "Rancher Logging target revision"
+  default     = null
+  type        = string
+}
+
 variable "argocd_version" {
   description = "ArgoCD version"
   default     = null

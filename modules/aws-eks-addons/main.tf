@@ -589,6 +589,9 @@ resource "kubectl_manifest" "argocd_bootstrapper_application" {
             rancherLogging : merge({
               enable : var.deploy_rancher_logging
               values : {
+                logging: {
+                  enabled : var.rancher_logging_enabled
+                }
                 fluentd : {
                   resources : {
                     limits : {
@@ -604,7 +607,9 @@ resource "kubectl_manifest" "argocd_bootstrapper_application" {
                 }
               }
             }, var.rancher_logging_version == null ? {} : {
-              targetRevision : var.rancher_logging_version
+              version : var.rancher_logging_version
+            }, var.rancher_logging_target_revision == null ? {} : {
+              targetRevision : var.rancher_logging_target_revision
             })
           })
         }
