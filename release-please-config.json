@@ -517,7 +517,7 @@
       "component": "aws-vpc",
       "changelog-path": "CHANGELOG.md",
       "release-type": "terraform-module",
-      "bump-minor-pre-major": true,
+      "bump-minor-pre-major": false,
       "bump-patch-for-minor-pre-major": false,
       "draft": false,
       "prerelease": false
