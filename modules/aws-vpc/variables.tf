@@ -147,6 +147,12 @@ variable "enable_nat_gateway" {
   default     = false
 }
 
+variable "availability_mode" {
+  description = "(Optional) Specifies whether to create a zonal (single-AZ) or regional (multi-AZ) NAT gateway. Valid values are zonal and regional. Defaults to zonal."
+  type        = string
+  default     = "zonal"
+}
+
 variable "nat_gateway_destination_cidr_block" {
   description = "Used to pass a custom destination route for private NAT Gateway. If not specified, the default 0.0.0.0/0 is used as a destination route."
   type        = string
