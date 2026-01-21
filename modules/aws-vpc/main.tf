@@ -498,7 +498,7 @@ locals {
 resource "aws_eip" "nat" {
   count = local.create_vpc && var.enable_nat_gateway && false == var.reuse_nat_ips ? local.nat_gateway_count : 0
 
-  vpc = true
+  domain = "vpc"
 
   tags = merge(
     {
@@ -513,16 +513,15 @@ resource "aws_eip" "nat" {
 }
 
 resource "aws_nat_gateway" "this" {
-  count = local.create_vpc && var.enable_nat_gateway ? local.nat_gateway_count : 0
+  count             = local.create_vpc && var.enable_nat_gateway ? local.nat_gateway_count : 0
+  availability_mode = var.availability_mode
 
-  allocation_id = element(
-    local.nat_gateway_ips,
-    var.single_nat_gateway ? 0 : count.index,
-  )
-  subnet_id = element(
-    aws_subnet.public[*].id,
-    var.single_nat_gateway ? 0 : count.index,
-  )
+  # ONLY for Zonal mode (Standard)
+  allocation_id = var.availability_mode == "zonal" ? element(local.nat_gateway_ips, var.single_nat_gateway ? 0 : count.index) : null
+  subnet_id     = var.availability_mode == "zonal" ? element(aws_subnet.public[*].id, var.single_nat_gateway ? 0 : count.index) : null
+
+  # ONLY for Regional mode
+  vpc_id = var.availability_mode == "regional" ? local.vpc_id : null
 
   tags = merge(
     {
