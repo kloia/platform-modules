@@ -406,6 +406,12 @@ variable "manage_default_network_acl" {
   default     = false
 }
 
+variable "default_network_acl_subnets" {
+  description = "List of Subnet IDs to apply the ACL to"
+  type        = list(string)
+  default     = []
+}
+
 variable "default_network_acl_name" {
   description = "Name to be used on the Default Network ACL"
   type        = string

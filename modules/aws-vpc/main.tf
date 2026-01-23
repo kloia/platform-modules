@@ -341,7 +341,7 @@ resource "aws_default_network_acl" "this" {
 
   # subnet_ids is using lifecycle ignore_changes, so it is not necessary to list
   # any explicitly. See https://github.com/terraform-aws-modules/terraform-aws-vpc/issues/736.
-  subnet_ids = null
+  subnet_ids = var.default_network_acl_subnets
 
   dynamic "ingress" {
     for_each = var.default_network_acl_ingress
