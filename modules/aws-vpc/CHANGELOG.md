@@ -1,5 +1,13 @@
 # Changelog
 
+## [1.1.0](https://github.com/kloia/platform-modules/compare/aws-vpc-v1.0.0...aws-vpc-v1.1.0) (2026-01-23)
+
+
+### Features
+
+* added variable to specify subnets association for default nacl ([#296](https://github.com/kloia/platform-modules/issues/296)) ([4cfe002](https://github.com/kloia/platform-modules/commit/4cfe002cf01674cd9a2ded2b48f7caab8836d2b0))
+* added variable to specify subnets association when managing ([4cfe002](https://github.com/kloia/platform-modules/commit/4cfe002cf01674cd9a2ded2b48f7caab8836d2b0))
+
 ## [1.0.0](https://github.com/kloia/platform-modules/compare/aws-vpc-v0.1.0...aws-vpc-v1.0.0) (2026-01-21)
 
 

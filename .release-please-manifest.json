@@ -39,7 +39,7 @@
   "modules/aws-secrets-manager": "0.1.1",
   "modules/aws-cloudtrail-s3-bucket": "0.1.0",
   "modules/aws-cloudtrail": "0.1.0",
-  "modules/aws-vpc": "1.0.0",
+  "modules/aws-vpc": "1.1.0",
   "modules/aws-efs": "0.1.0",
   "modules/aws-transit-gateway": "0.1.0",
   "modules/aws-cloudfront": "1.0.0",
