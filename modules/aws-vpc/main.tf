@@ -301,6 +301,24 @@ resource "aws_subnet" "public" {
   )
 }
 
+resource "aws_vpc_block_public_access_exclusion" "public" {
+  count = var.enable_public_subnet_block_public_access_exclusion ? ( local.create_vpc && length(var.public_subnets) > 0 && ( false == var.one_nat_gateway_per_az || length(var.public_subnets) >= length(var.azs) ) ? length(var.public_subnets) : 0 ) : 0
+
+  subnet_id = element(aws_subnet.public[*].id, count.index)
+
+  internet_gateway_exclusion_mode = var.public_subnet_internet_gateway_exclusion_mode != null ? var.public_subnet_internet_gateway_exclusion_mode : "allow-bidirectional"
+
+  tags = merge(
+    {
+      "Name" = format(
+        "${var.name}-${var.public_subnet_suffix}-%s-exclusion",
+        element(var.azs, count.index),
+      )
+    },
+    var.tags
+  )
+}
+
 ################################################################################
 # Private subnet
 ################################################################################

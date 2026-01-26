@@ -127,6 +127,18 @@ variable "enable_dns_support" {
   default     = true
 }
 
+variable "enable_public_subnet_block_public_access_exclusion" {
+  description = "Enable VPC block public access exclusion to public subnet"
+  type        = bool
+  default     = true
+}
+
+variable "public_subnet_internet_gateway_exclusion_mode" {
+  description = "Controls internet gateway exclusion mode for public subnets. Valid values are 'allow-bidirectional', 'allow-outbound-only', 'deny-all'"
+  type        = string
+  default     = false
+}
+
 # tflint-ignore: terraform_unused_declarations
 variable "enable_classiclink" {
   description = "[DEPRECATED](https://github.com/hashicorp/terraform/issues/31730) Should be true to enable ClassicLink for the VPC. Only valid in regions and accounts that support EC2 Classic."
