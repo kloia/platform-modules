@@ -1,5 +1,12 @@
 # Changelog
 
+## [0.6.0](https://github.com/kloia/platform-modules/compare/aws-eks-addons-v0.5.0...aws-eks-addons-v0.6.0) (2026-01-26)
+
+
+### Features
+
+* **eks-addons:** add notification configuration ([#298](https://github.com/kloia/platform-modules/issues/298)) ([f5fb552](https://github.com/kloia/platform-modules/commit/f5fb552a7c3f5094a4d472665c99b5a696d2e817))
+
 ## [0.5.0](https://github.com/kloia/platform-modules/compare/aws-eks-addons-v0.4.0...aws-eks-addons-v0.5.0) (2025-11-03)
 
 
