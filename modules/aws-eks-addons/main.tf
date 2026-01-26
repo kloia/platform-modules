@@ -4,6 +4,7 @@ locals {
   can_connect_nginx_to_argocd = var.deploy_aws_loadbalancer && var.deploy_argocd
   caData                      = var.enable_sso ? data.aws_ssm_parameter.sso_ca_data_network_account[0].value : ""
   ssoURL                      = var.enable_sso ? data.aws_ssm_parameter.sso_url_network_account[0].value : ""
+  slackToken                  = var.enable_notification ? data.aws_ssm_parameter.notification_slack_token[0].value : ""
 }
 
 resource "kubernetes_service_account" "service-common-service-account" {
@@ -292,6 +293,12 @@ data "aws_ssm_parameter" "sso_url_network_account" {
   name     = var.sso_url_network_account
 }
 
+data "aws_ssm_parameter" "notification_slack_token" {
+  provider = aws.network_infra
+  count    = var.enable_notification ? 1 : 0
+  name     = var.notification_slack_token
+}
+
 
 resource "helm_release" "argocd" {
   count            = var.deploy_argocd ? 1 : 0
@@ -414,7 +421,9 @@ resource "helm_release" "argocd" {
     ssoURL             = local.ssoURL,
     redirectURI        = "${var.sso_callback_url}",
     entityIssuer       = "${var.sso_callback_url}",
-    currentEnvironment = "${var.current_environment}"
+    currentEnvironment = "${var.current_environment}",
+    slackToken         = local.slackToken,
+    argocdUrl          = var.argocd_ingress_host
     })
   ] : []
 
