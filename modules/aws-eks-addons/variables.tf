@@ -558,3 +558,14 @@ variable "argocd_version" {
   default     = null
   type        = string
 }
+
+variable "enable_notification" {
+  description = "Enable ArgoCD notifications integration (Slack)"
+  type        = bool
+  default     = false
+}
+
+variable "notification_slack_token" {
+  default     = ""
+  description = "Value of the Slack Token for ArgoCD Notification"
+}
