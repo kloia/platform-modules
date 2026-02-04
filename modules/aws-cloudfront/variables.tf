@@ -16,6 +16,39 @@ variable "origin_access_identities" {
   default     = {}
 }
 
+variable "create_origin_access_control" {
+  description = "Controls if CloudFront origin access control should be created"
+  type        = bool
+  default     = false
+}
+
+variable "origin_access_controls" {
+  description = "Map of CloudFront origin access control configurations"
+  type = map(object({
+    description      = optional(string, null)
+    origin_type      = optional(string, "s3")
+    signing_behavior = optional(string, "always")
+    signing_protocol = optional(string, "sigv4")
+  }))
+  default = {}
+  
+  validation {
+    condition = alltrue([
+      for k, v in var.origin_access_controls : 
+      contains(["s3", "mediastore", "lambda"], v.origin_type)
+    ])
+    error_message = "origin_type must be one of: s3, mediastore, lambda"
+  }
+  
+  validation {
+    condition = alltrue([
+      for k, v in var.origin_access_controls : 
+      contains(["always", "never", "no-override"], v.signing_behavior)
+    ])
+    error_message = "signing_behavior must be one of: always, never, no-override"
+  }
+}
+
 variable "aliases" {
   description = "Extra CNAMEs (alternate domain names), if any, for this distribution."
   type        = list(string)
