@@ -1,5 +1,12 @@
 # Changelog
 
+## [1.1.0](https://github.com/kloia/platform-modules/compare/aws-cloudfront-v1.0.0...aws-cloudfront-v1.1.0) (2026-02-05)
+
+
+### Features
+
+* **aws-cloudfront:** add oac for cloudfront s3 auth ([#303](https://github.com/kloia/platform-modules/issues/303)) ([b765576](https://github.com/kloia/platform-modules/commit/b765576604757e218ff6db7b2f88568119599da6))
+
 ## [1.0.0](https://github.com/kloia/platform-modules/compare/aws-cloudfront-v0.2.0...aws-cloudfront-v1.0.0) (2026-01-05)
 
 
