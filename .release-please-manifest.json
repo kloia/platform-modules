@@ -64,7 +64,7 @@
   "modules/aws-mongodbatlas-auth": "0.1.0",
   "modules/aws-rds-sql-server-read-replica": "0.1.0",
   "modules/aws-cloudwatch-dashboard": "0.1.0",
-  "modules/aws-budget": "0.2.1",
+  "modules/aws-budget": "0.3.0",
   "modules/aws-eks-karpenter": "0.1.0",
   "modules/aws-eks-k8s-manifests": "0.1.0"
 }
