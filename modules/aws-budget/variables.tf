@@ -32,6 +32,82 @@ variable "budgets" {
       values = list(string)
     })), null)
 
+    filter_expression = optional(object({
+      # Top-level leaf filters (used when no logical operator is needed)
+      dimensions = optional(object({
+        key           = string
+        values        = list(string)
+        match_options = optional(list(string))
+      }))
+      tags = optional(object({
+        key           = string
+        values        = list(string)
+        match_options = optional(list(string))
+      }))
+      cost_categories = optional(object({
+        key           = string
+        values        = list(string)
+        match_options = optional(list(string))
+      }))
+
+      # NOT logical operator
+      not = optional(object({
+        dimensions = optional(object({
+          key           = string
+          values        = list(string)
+          match_options = optional(list(string))
+        }))
+        tags = optional(object({
+          key           = string
+          values        = list(string)
+          match_options = optional(list(string))
+        }))
+        cost_categories = optional(object({
+          key           = string
+          values        = list(string)
+          match_options = optional(list(string))
+        }))
+      }))
+
+      # AND logical operator (list of expressions)
+      and = optional(list(object({
+        dimensions = optional(object({
+          key           = string
+          values        = list(string)
+          match_options = optional(list(string))
+        }))
+        tags = optional(object({
+          key           = string
+          values        = list(string)
+          match_options = optional(list(string))
+        }))
+        cost_categories = optional(object({
+          key           = string
+          values        = list(string)
+          match_options = optional(list(string))
+        }))
+      })))
+
+      # OR logical operator (list of expressions)
+      or = optional(list(object({
+        dimensions = optional(object({
+          key           = string
+          values        = list(string)
+          match_options = optional(list(string))
+        }))
+        tags = optional(object({
+          key           = string
+          values        = list(string)
+          match_options = optional(list(string))
+        }))
+        cost_categories = optional(object({
+          key           = string
+          values        = list(string)
+          match_options = optional(list(string))
+        }))
+      })))
+    }), null)
+
     cost_types = optional(object({
       include_credit             = optional(bool, false)
       include_discount           = optional(bool, false)
@@ -43,20 +119,16 @@ variable "budgets" {
       include_tax                = optional(bool, false)
       include_upfront            = optional(bool, false)
       use_blended                = optional(bool, false)
-      }), {
-      include_credit             = false
-      include_discount           = false
-      include_other_subscription = false
-      include_recurring          = false
-      include_refund             = false
-      include_subscription       = true
-      include_support            = false
-      include_tax                = false
-      include_upfront            = false
-      use_blended                = false
-    })
+      }), null)
 
     tags = optional(map(string), {})
   }))
   default = []
+  validation {
+    condition = alltrue([
+      for b in var.budgets :
+      !(b.cost_filter != null && b.filter_expression != null)
+    ])
+    error_message = "A budget cannot have both 'cost_filter' and 'filter_expression' set at the same time. They are mutually exclusive."
+  }
 }

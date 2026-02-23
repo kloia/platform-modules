@@ -57,6 +57,136 @@ resource "aws_budgets_budget" "budget" {
     }
   }
 
+  dynamic "filter_expression" {
+    for_each = lookup(each.value, "filter_expression", null) != null ? [each.value.filter_expression] : []
+
+    content {
+
+      # ── top-level leaf: dimensions ──────────────────────────────────────────
+      dynamic "dimensions" {
+        for_each = lookup(filter_expression.value, "dimensions", null) != null ? [filter_expression.value.dimensions] : []
+        content {
+          key           = dimensions.value.key
+          values        = dimensions.value.values
+          match_options = lookup(dimensions.value, "match_options", null)
+        }
+      }
+
+      # ── top-level leaf: tags ────────────────────────────────────────────────
+      dynamic "tags" {
+        for_each = lookup(filter_expression.value, "tags", null) != null ? [filter_expression.value.tags] : []
+        content {
+          key           = tags.value.key
+          values        = tags.value.values
+          match_options = lookup(tags.value, "match_options", null)
+        }
+      }
+
+      # ── top-level leaf: cost_categories ────────────────────────────────────
+      dynamic "cost_categories" {
+        for_each = lookup(filter_expression.value, "cost_categories", null) != null ? [filter_expression.value.cost_categories] : []
+        content {
+          key           = cost_categories.value.key
+          values        = cost_categories.value.values
+          match_options = lookup(cost_categories.value, "match_options", null)
+        }
+      }
+
+      # ── NOT ─────────────────────────────────────────────────────────────────
+      dynamic "not" {
+        for_each = lookup(filter_expression.value, "not", null) != null ? [filter_expression.value.not] : []
+        content {
+          dynamic "dimensions" {
+            for_each = lookup(not.value, "dimensions", null) != null ? [not.value.dimensions] : []
+            content {
+              key           = dimensions.value.key
+              values        = dimensions.value.values
+              match_options = lookup(dimensions.value, "match_options", null)
+            }
+          }
+          dynamic "tags" {
+            for_each = lookup(not.value, "tags", null) != null ? [not.value.tags] : []
+            content {
+              key           = tags.value.key
+              values        = tags.value.values
+              match_options = lookup(tags.value, "match_options", null)
+            }
+          }
+          dynamic "cost_categories" {
+            for_each = lookup(not.value, "cost_categories", null) != null ? [not.value.cost_categories] : []
+            content {
+              key           = cost_categories.value.key
+              values        = cost_categories.value.values
+              match_options = lookup(cost_categories.value, "match_options", null)
+            }
+          }
+        }
+      }
+
+      # ── AND ─────────────────────────────────────────────────────────────────
+      dynamic "and" {
+        for_each = lookup(filter_expression.value, "and", null) != null ? filter_expression.value.and : []
+        content {
+          dynamic "dimensions" {
+            for_each = lookup(and.value, "dimensions", null) != null ? [and.value.dimensions] : []
+            content {
+              key           = dimensions.value.key
+              values        = dimensions.value.values
+              match_options = lookup(dimensions.value, "match_options", null)
+            }
+          }
+          dynamic "tags" {
+            for_each = lookup(and.value, "tags", null) != null ? [and.value.tags] : []
+            content {
+              key           = tags.value.key
+              values        = tags.value.values
+              match_options = lookup(tags.value, "match_options", null)
+            }
+          }
+          dynamic "cost_categories" {
+            for_each = lookup(and.value, "cost_categories", null) != null ? [and.value.cost_categories] : []
+            content {
+              key           = cost_categories.value.key
+              values        = cost_categories.value.values
+              match_options = lookup(cost_categories.value, "match_options", null)
+            }
+          }
+        }
+      }
+
+      # ── OR ──────────────────────────────────────────────────────────────────
+      dynamic "or" {
+        for_each = lookup(filter_expression.value, "or", null) != null ? filter_expression.value.or : []
+        content {
+          dynamic "dimensions" {
+            for_each = lookup(or.value, "dimensions", null) != null ? [or.value.dimensions] : []
+            content {
+              key           = dimensions.value.key
+              values        = dimensions.value.values
+              match_options = lookup(dimensions.value, "match_options", null)
+            }
+          }
+          dynamic "tags" {
+            for_each = lookup(or.value, "tags", null) != null ? [or.value.tags] : []
+            content {
+              key           = tags.value.key
+              values        = tags.value.values
+              match_options = lookup(tags.value, "match_options", null)
+            }
+          }
+          dynamic "cost_categories" {
+            for_each = lookup(or.value, "cost_categories", null) != null ? [or.value.cost_categories] : []
+            content {
+              key           = cost_categories.value.key
+              values        = cost_categories.value.values
+              match_options = lookup(cost_categories.value, "match_options", null)
+            }
+          }
+        }
+      }
+    }
+  }
+
   dynamic "notification" {
     for_each = lookup(each.value, "notification", null) != null ? try(tolist(each.value.notification), [
       each.value.notification
