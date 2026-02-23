@@ -1,5 +1,12 @@
 # Changelog
 
+## [0.3.0](https://github.com/kloia/platform-modules/compare/aws-budget-v0.2.1...aws-budget-v0.3.0) (2026-02-23)
+
+
+### Features
+
+* added filter_expression and conflict validation  ([#305](https://github.com/kloia/platform-modules/issues/305)) ([f9ebc29](https://github.com/kloia/platform-modules/commit/f9ebc29da75c42033e2e24e664c8e30d270129d6))
+
 ## [0.2.1](https://github.com/kloia/platform-modules/compare/aws-budget-v0.2.0...aws-budget-v0.2.1) (2025-05-20)
 
 
