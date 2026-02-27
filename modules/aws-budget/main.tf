@@ -202,3 +202,69 @@ resource "aws_budgets_budget" "budget" {
     }
   }
 }
+
+resource "aws_ce_anomaly_monitor" "service_monitor" {
+  count = var.create_ce_anomaly_monitor ? 1 : 0
+
+  name              = var.cost_anomaly_monitor_name
+  monitor_type      = var.cost_anomaly_monitor_type
+  monitor_dimension = var.cost_anomaly_monitor_type == "DIMENSIONAL" ? var.cost_anomaly_monitor_dimension : null
+}
+
+resource "aws_ce_anomaly_subscription" "subscription" {
+  for_each = { for s in var.cost_anomaly_subscriptions : s.name => s }
+
+  name             = each.value.name
+  frequency        = each.value.frequency
+  monitor_arn_list = concat(
+    aws_ce_anomaly_monitor.service_monitor[*].arn,
+    var.cost_anomaly_monitor_arn_list
+  )
+
+  threshold_expression {
+    dynamic "dimension" {
+      for_each = each.value.threshold_expression.dimension != null ? [each.value.threshold_expression.dimension] : []
+      content {
+        key           = dimension.value.key
+        match_options = dimension.value.match_options
+        values        = dimension.value.values
+      }
+    }
+
+    dynamic "and" {
+      for_each = each.value.threshold_expression.and != null ? each.value.threshold_expression.and : []
+      content {
+        dynamic "dimension" {
+          for_each = and.value.dimension != null ? [and.value.dimension] : []
+          content {
+            key           = dimension.value.key
+            match_options = dimension.value.match_options
+            values        = dimension.value.values
+          }
+        }
+      }
+    }
+
+    dynamic "or" {
+      for_each = each.value.threshold_expression.or != null ? each.value.threshold_expression.or : []
+      content {
+        dynamic "dimension" {
+          for_each = or.value.dimension != null ? [or.value.dimension] : []
+          content {
+            key           = dimension.value.key
+            match_options = dimension.value.match_options
+            values        = dimension.value.values
+          }
+        }
+      }
+    }
+  }
+
+  dynamic "subscriber" {
+    for_each = each.value.subscribers
+    content {
+      type    = subscriber.value.type
+      address = subscriber.value.address
+    }
+  }
+}
