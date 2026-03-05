@@ -132,3 +132,98 @@ variable "budgets" {
     error_message = "A budget cannot have both 'cost_filter' and 'filter_expression' set at the same time. They are mutually exclusive."
   }
 }
+
+variable "create_ce_anomaly_monitor" {
+  description = "Whether to create a Cost Explorer anomaly monitor."
+  type        = bool
+  default     = false
+}
+
+variable "cost_anomaly_monitor_name" {
+  description = "The name of the monitor."
+  type        = string
+  default     = "Kloia-Services-Monitor"
+}
+
+variable "cost_anomaly_monitor_type" {
+  description = "The possible type values are DIMENSIONAL, CUSTOM. DIMENSIONAL monitors specific AWS service dimensions. CUSTOM monitors based on a custom expression."
+  type        = string
+  default     = "DIMENSIONAL"
+}
+
+variable "cost_anomaly_monitor_dimension" {
+  description = "The dimension to monitor. Only applicable when monitor_type is DIMENSIONAL. Valid value: SERVICE."
+  type        = string
+  default     = "SERVICE"
+}
+
+variable "cost_anomaly_monitor_arn_list" {
+  description = "A list of cost anomaly monitor ARNs to associate with all subscriptions. Combined with the ARN of the monitor created by this module if create_ce_anomaly_monitor is true."
+  type        = list(string)
+  default     = []
+}
+
+variable "cost_anomaly_subscriptions" {
+  description = <<-EOT
+    List of anomaly subscriptions to create. Each subscription has its own frequency, threshold, and subscribers.
+    DAILY/WEEKLY frequency only supports EMAIL subscribers.
+    IMMEDIATE frequency supports both EMAIL and SNS subscribers.
+
+    Example:
+      cost_anomaly_subscriptions = [
+        {
+          name      = "daily-email-digest"
+          frequency = "DAILY"
+          threshold_expression = {
+            and = [
+              { dimension = { key = "ANOMALY_TOTAL_IMPACT_ABSOLUTE",    match_options = ["GREATER_THAN_OR_EQUAL"], values = ["100"] } },
+              { dimension = { key = "ANOMALY_TOTAL_IMPACT_PERCENTAGE", match_options = ["GREATER_THAN_OR_EQUAL"], values = ["20"]  } }
+            ]
+          }
+          subscribers = [
+            { type = "EMAIL", address = "finops@kloia.com" }
+          ]
+        },
+        {
+          name      = "immediate-sns-alert"
+          frequency = "IMMEDIATE"
+          threshold_expression = {
+            dimension = { key = "ANOMALY_TOTAL_IMPACT_ABSOLUTE", match_options = ["GREATER_THAN_OR_EQUAL"], values = ["100"] }
+          }
+          subscribers = [
+            { type = "SNS", address = "arn:aws:sns:us-east-1:123456789:alerts" }
+          ]
+        }
+      ]
+  EOT
+  type = list(object({
+    name      = string
+    frequency = string
+    threshold_expression = object({
+      dimension = optional(object({
+        key           = string
+        match_options = list(string)
+        values        = list(string)
+      }))
+      and = optional(list(object({
+        dimension = optional(object({
+          key           = string
+          match_options = list(string)
+          values        = list(string)
+        }))
+      })))
+      or = optional(list(object({
+        dimension = optional(object({
+          key           = string
+          match_options = list(string)
+          values        = list(string)
+        }))
+      })))
+    })
+    subscribers = list(object({
+      type    = string
+      address = string
+    }))
+  }))
+  default = []
+}
