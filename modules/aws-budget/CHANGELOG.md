@@ -1,5 +1,13 @@
 # Changelog
 
+## [0.4.0](https://github.com/kloia/platform-modules/compare/aws-budget-v0.3.0...aws-budget-v0.4.0) (2026-03-05)
+
+
+### Features
+
+* added anomaly detection alerts into budget module ([#307](https://github.com/kloia/platform-modules/issues/307)) ([86efbfd](https://github.com/kloia/platform-modules/commit/86efbfda952070280ff074f107c1e247485f86a4))
+* manage cost anomaly detection alert. ([86efbfd](https://github.com/kloia/platform-modules/commit/86efbfda952070280ff074f107c1e247485f86a4))
+
 ## [0.3.0](https://github.com/kloia/platform-modules/compare/aws-budget-v0.2.1...aws-budget-v0.3.0) (2026-02-23)
 
 
