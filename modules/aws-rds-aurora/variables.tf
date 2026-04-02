@@ -523,26 +523,31 @@ variable "read_replica" {
 variable "ad_domain_ou" {
   type        = string
   description = "AD Domain OU for RDS SQL Server"
+  default     = null
 }
 
 variable "ad_domain_fqdn" {
   type        = string
   description = "AD Domain FQDN for RDS SQL Server"
+  default     = null
 }
 
 variable "ad_domain_dns_ips" {
   type        = list(string)
   description = "AD Domain DNS IPS for RDS SQL Server"
+  default     = null
 }
 
 variable "ad_domain_auth_secret_arn" {
   type        = string
   description = "AD Domain Secret ARN for RDS SQL Server"
+  default     = null
 }
 
 variable "db_group_name" {
   type        = string
   description = "DB parameter and option group name prefix"
+  default     = null
 }
 
 variable "option_group" {
@@ -553,6 +558,7 @@ variable "option_group" {
       option_rule_value = any
     })))
   }))
+  default = []
 }
 
 variable "parameter_group" {
@@ -561,6 +567,7 @@ variable "parameter_group" {
     parameter_value        = any
     parameter_apply_method = string
   }))
+  default = []
 }
 
 variable "enable_custom_option_group" {
@@ -590,6 +597,7 @@ variable "option_group_engine_version" {
 variable "option_name" {
   type        = string
   description = "Option name for without option settings of ptions"
+  default     = null
 }
 
 # variable "ssrs_query_file" {
