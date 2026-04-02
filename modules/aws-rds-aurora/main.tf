@@ -13,7 +13,7 @@ locals {
   cluster_parameter_group_name = try(coalesce(var.db_cluster_parameter_group_name, var.name), null)
   db_parameter_group_name      = try(coalesce(var.db_parameter_group_name, var.name), null)
 
-  master_password  = var.create_random_password && var.rds_custom ? random_password.master_password[0].result : var.master_password
+  master_password  = var.create_random_password ? random_password.master_password[0].result : var.master_password
   backtrack_window = (var.engine == "aurora-mysql" || var.engine == "aurora") && var.engine_mode != "serverless" ? var.backtrack_window : 0
 
   is_serverless = var.engine_mode == "serverless"
@@ -356,17 +356,14 @@ resource "aws_security_group_rule" "default_ingress" {
   security_group_id        = aws_security_group.this[0].id
 }
 
-# TODO - change to map of ingress rules under one resource at next breaking change
-resource "aws_security_group_rule" "cidr_ingress" {
-  count = var.create_security_group && length(var.allowed_cidr_blocks) > 0 ? 1 : 0
+resource "aws_vpc_security_group_ingress_rule" "cidr_ingress" {
+  for_each = var.create_security_group ? toset(var.allowed_cidr_blocks) : toset([])
 
-  description = "From allowed CIDRs"
-
-  type              = "ingress"
+  description       = "From allowed CIDRs"
   from_port         = local.port
   to_port           = local.port
-  protocol          = "tcp"
-  cidr_blocks       = var.allowed_cidr_blocks
+  ip_protocol       = "tcp"
+  cidr_ipv4         = each.value
   security_group_id = aws_security_group.this[0].id
 }
 
@@ -418,7 +415,7 @@ resource "aws_rds_cluster_parameter_group" "this" {
 ################################################################################
 
 resource "aws_db_parameter_group" "this" {
-  count = local.create_cluster && var.create_db_parameter_group && var.rds_custom ? 1 : 0
+  count = local.create_cluster && var.create_db_parameter_group ? 1 : 0
 
   name        = var.db_parameter_group_use_name_prefix ? null : local.db_parameter_group_name
   name_prefix = var.db_parameter_group_use_name_prefix ? "${local.db_parameter_group_name}-" : null
