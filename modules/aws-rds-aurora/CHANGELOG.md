@@ -1,5 +1,16 @@
 # Changelog
 
+## [0.6.0](https://github.com/kloia/platform-modules/compare/aws-rds-aurora-v0.5.0...aws-rds-aurora-v0.6.0) (2026-04-02)
+
+
+### ⚠ BREAKING CHANGES
+
+* aws_security_group_rule.cidr_ingress replaced with aws_vpc_security_group_ingress_rule using for_each. Existing deployments must perform state migration when upgrading:   1. terragrunt state rm 'aws_security_group_rule.cidr_ingress[0]' 2. terragrunt import 'aws_vpc_security_group_ingress_rule.cidr_ingress["<cidr>"]' <sgr-id> for each CIDR
+
+### Bug Fixes
+
+* aurora postgres compatibility and sql server variable defaults ([#311](https://github.com/kloia/platform-modules/issues/311)) ([aca6e07](https://github.com/kloia/platform-modules/commit/aca6e0775fd95171b9168ea163b704538f3f5542))
+
 ## [0.5.0](https://github.com/kloia/platform-modules/compare/aws-rds-aurora-v0.4.0...aws-rds-aurora-v0.5.0) (2024-07-08)
 
 
