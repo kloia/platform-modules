@@ -466,6 +466,12 @@ variable "internal_waf_acl_arn" {
   type        = string
 }
 
+variable "internal_acm_certificate_arn" {
+  description = "ACM Certificate ARN for internal ALB. If not set, falls back to acm_certificate_arn."
+  default     = ""
+  type        = string
+}
+
 variable "deploy_adot_collector" {
   default     = false
   description = "enable the ADOT collector"

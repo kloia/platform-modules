@@ -211,7 +211,7 @@ resource "kubernetes_annotations" "alb_ingress_connect_internal_nginx_annotation
   }
   annotations = {
     "alb.ingress.kubernetes.io/load-balancer-name" = var.internal_loadbalancer_name
-    "alb.ingress.kubernetes.io/certificate-arn"    = var.acm_certificate_arn
+    "alb.ingress.kubernetes.io/certificate-arn"    = var.internal_acm_certificate_arn != "" ? "${var.acm_certificate_arn},${var.internal_acm_certificate_arn}" : var.acm_certificate_arn
     "alb.ingress.kubernetes.io/wafv2-acl-arn"      = var.internal_waf_acl_arn
     "alb.ingress.kubernetes.io/scheme"             = "internal"
     "alb.ingress.kubernetes.io/target-type"        = "instance"
