@@ -16,7 +16,7 @@ locals {
   mq_logs = { logs = { "general_log_enabled" : var.general_log_enabled, "audit_log_enabled" : var.audit_log_enabled } }
 
   broker_security_groups = try([var.security_group_id], [])
-  subnet_ids             = local.mq_admin_user_needed ? [data.aws_subnets.private_subnets_with_queue_tag.ids[0], data.aws_subnets.private_subnets_with_queue_tag.ids[1]] : data.aws_subnets.private_subnets_with_queue_tag.ids
+  subnet_ids             = var.deployment_mode == "SINGLE_INSTANCE" ? [data.aws_subnets.private_subnets_with_queue_tag.ids[0]] : (local.mq_admin_user_needed ? [data.aws_subnets.private_subnets_with_queue_tag.ids[0], data.aws_subnets.private_subnets_with_queue_tag.ids[1]] : data.aws_subnets.private_subnets_with_queue_tag.ids)
 }
 
 resource "random_pet" "mq_admin_user" {
