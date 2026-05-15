@@ -122,3 +122,18 @@ resource "aws_ecr_replication_configuration" "example" {
     }
   }
 }
+
+locals {
+  # Build the effective policy map: repos with overrides use their dedicated policy,
+  # all other repos use the default lifecycle_policy (if set).
+  lifecycle_policies = {
+    for repo in var.ecr_repo_names : repo => lookup(var.lifecycle_policy_overrides, repo, var.lifecycle_policy)
+    if lookup(var.lifecycle_policy_overrides, repo, var.lifecycle_policy) != ""
+  }
+}
+
+resource "aws_ecr_lifecycle_policy" "this" {
+  for_each   = local.lifecycle_policies
+  repository = aws_ecr_repository.this[each.key].name
+  policy     = each.value
+}

@@ -25,14 +25,16 @@ variable "allowed_write_principals" {
   default     = []
 }
 
-variable "lifecycle_policy_rules_count" {
-  description = "The amount of lifecycle_policy_rules, this to make sure we are not running into computed count problems"
-  default     = "0"
+variable "lifecycle_policy" {
+  description = "Default JSON lifecycle policy to apply to all ECR repositories. Leave empty to skip."
+  type        = string
+  default     = ""
 }
 
-variable "lifecycle_policy_rules" {
-  description = "List of json lifecycle policy rules, created by another module: doingcloudright/ecr-lifecycle-policy-rule/aws"
-  default     = []
+variable "lifecycle_policy_overrides" {
+  description = "Map of repo name to JSON lifecycle policy. Repos in this map use their dedicated policy instead of the default lifecycle_policy."
+  type        = map(string)
+  default     = {}
 }
 
 variable "image_tag_mutability" {
