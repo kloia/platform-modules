@@ -117,3 +117,9 @@ variable "custom_response_bodies" {
   description = "Custom response bodies to be referenced on a per rule basis. https://registry.terraform.io/providers/hashicorp/aws/latest/docs/resources/wafv2_web_acl#custom-response-body"
   default     = []
 }
+
+variable "association_resource_arns" {
+  type        = list(string)
+  description = "List of ARNs of the resources (ALB, API Gateway, etc.) to associate with the WebACL."
+  default     = []
+}
