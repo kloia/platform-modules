@@ -2146,3 +2146,13 @@ resource "aws_wafv2_web_acl_logging_configuration" "main" {
   }
 }
 
+
+###############################################################################
+# WebACL Association
+###############################################################################
+
+resource "aws_wafv2_web_acl_association" "this" {
+  for_each     = toset(var.association_resource_arns)
+  resource_arn = each.value
+  web_acl_arn  = aws_wafv2_web_acl.waf_acl[0].arn
+}
