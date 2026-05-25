@@ -93,7 +93,7 @@ variable "s3_targets" {
   description = "List of S3 target configurations for the crawler."
   type = list(object({
     path                = string
-    exclusions          = optional(list(string), [])
+    exclusions          = optional(list(string))
     connection_name     = optional(string)
     event_queue_arn     = optional(string)
     dlq_event_queue_arn = optional(string)
@@ -105,8 +105,8 @@ variable "s3_targets" {
 variable "schema_change_policy" {
   description = "Behavior when the crawler discovers a changed schema. update_behavior: UPDATE_IN_DATABASE or LOG. delete_behavior: DELETE_FROM_DATABASE, LOG, or DEPRECATE_IN_DATABASE."
   type = object({
-    update_behavior = optional(string, "UPDATE_IN_DATABASE")
-    delete_behavior = optional(string, "LOG")
+    update_behavior = optional(string)
+    delete_behavior = optional(string)
   })
   default = {}
 }
@@ -114,7 +114,7 @@ variable "schema_change_policy" {
 variable "recrawl_policy" {
   description = "Recrawl behavior. recrawl_behavior: CRAWL_EVERYTHING, CRAWL_NEW_FOLDERS_ONLY, or CRAWL_EVENT_MODE."
   type = object({
-    recrawl_behavior = optional(string, "CRAWL_EVERYTHING")
+    recrawl_behavior = optional(string)
   })
   default = {}
 }
