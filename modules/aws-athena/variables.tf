@@ -59,7 +59,7 @@ variable "encryption_option" {
   default     = null
 
   validation {
-    condition     = var.encryption_option == null || contains(["SSE_S3", "SSE_KMS", "CSE_KMS"], var.encryption_option)
+    condition     = var.encryption_option == null ? true : contains(["SSE_S3", "SSE_KMS", "CSE_KMS"], var.encryption_option)
     error_message = "encryption_option must be SSE_S3, SSE_KMS, CSE_KMS, or null."
   }
 }
