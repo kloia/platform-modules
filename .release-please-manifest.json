@@ -68,5 +68,5 @@
   "modules/aws-eks-karpenter": "0.1.0",
   "modules/aws-eks-k8s-manifests": "0.1.0",
   "modules/aws-glue": "0.2.0",
-  "modules/aws-athena": "0.1.0"
+  "modules/aws-athena": "0.2.0"
 }
