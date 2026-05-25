@@ -66,5 +66,6 @@
   "modules/aws-cloudwatch-dashboard": "0.1.0",
   "modules/aws-budget": "0.4.0",
   "modules/aws-eks-karpenter": "0.1.0",
-  "modules/aws-eks-k8s-manifests": "0.1.0"
+  "modules/aws-eks-k8s-manifests": "0.1.0",
+  "modules/aws-athena": "0.1.0"
 }
