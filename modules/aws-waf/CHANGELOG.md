@@ -1,5 +1,12 @@
 # Changelog
 
+## [0.3.0](https://github.com/kloia/platform-modules/compare/aws-waf-v0.2.0...aws-waf-v0.3.0) (2026-06-18)
+
+
+### Features
+
+* **aws-waf:** wire custom_response_bodies into web ACL resource ([#330](https://github.com/kloia/platform-modules/issues/330)) ([dab25a1](https://github.com/kloia/platform-modules/commit/dab25a15ea32485e93445a41f9990bfa072af26d))
+
 ## [0.2.0](https://github.com/kloia/platform-modules/compare/aws-waf-v0.1.0...aws-waf-v0.2.0) (2026-05-19)
 
 
