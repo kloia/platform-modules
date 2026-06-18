@@ -2082,6 +2082,15 @@ resource "aws_wafv2_web_acl" "waf_acl" {
     }
   }
 
+  dynamic "custom_response_body" {
+    for_each = var.custom_response_bodies
+    content {
+      key          = custom_response_body.value.key
+      content      = custom_response_body.value.content
+      content_type = custom_response_body.value.content_type
+    }
+  }
+
   visibility_config {
     cloudwatch_metrics_enabled = var.cw_metrics
     metric_name                = var.metric_name
