@@ -569,3 +569,15 @@ variable "notification_slack_token" {
   default     = ""
   description = "Value of the Slack Token for ArgoCD Notification"
 }
+
+variable "alb_tags" {
+  description = "Extra AWS tags applied to the ALBs created for the nginx ingress connectors. Rendered into the alb.ingress.kubernetes.io/tags annotation on both the external and internal connector ingresses. Empty by default (no extra tags)."
+  type        = map(string)
+  default     = {}
+}
+
+variable "nginx_controller_pod_labels" {
+  description = "Extra pod labels applied to the ingress-nginx controller pods (set as controller.podLabels in the ingress-nginx Helm release). Empty by default (no extra labels)."
+  type        = map(string)
+  default     = {}
+}
