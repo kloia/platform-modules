@@ -83,6 +83,12 @@ resource "helm_release" "ingress_nginx" {
   version          = var.nginx_version
   create_namespace = true
 
+  values = length(var.nginx_controller_pod_labels) > 0 ? [yamlencode({
+    controller = {
+      podLabels = var.nginx_controller_pod_labels
+    }
+  })] : []
+
   set {
     name  = "controller.service.type"
     value = "NodePort"
@@ -144,7 +150,7 @@ resource "kubernetes_annotations" "alb_ingress_connect_nginx_annotation" {
     name      = var.connect_hostnames_from_alb_ing_prefix != "" ? "${var.connect_hostnames_from_alb_ing_prefix}-nginx" : "ing-nginx"
     namespace = "ingress-nginx"
   }
-  annotations = {
+  annotations = merge({
     "alb.ingress.kubernetes.io/load-balancer-name" = var.loadbalancer_name
     "alb.ingress.kubernetes.io/certificate-arn"    = var.acm_certificate_arn
     "alb.ingress.kubernetes.io/wafv2-acl-arn"      = var.waf_acl_arn
@@ -154,7 +160,9 @@ resource "kubernetes_annotations" "alb_ingress_connect_nginx_annotation" {
     "alb.ingress.kubernetes.io/ssl-redirect"       = "443"
     "alb.ingress.kubernetes.io/listen-ports"       = "[{\"HTTP\": 80}, {\"HTTPS\": 443}]"
     "alb.ingress.kubernetes.io/healthcheck-path"   = "/healthz"
-  }
+    }, length(var.alb_tags) > 0 ? {
+    "alb.ingress.kubernetes.io/tags" = join(",", [for k, v in var.alb_tags : "${k}=${v}"])
+  } : {})
   depends_on = [
     kubernetes_ingress_v1.alb_ingress_connect_nginx
   ]
@@ -209,7 +217,7 @@ resource "kubernetes_annotations" "alb_ingress_connect_internal_nginx_annotation
     name      = var.connect_hostnames_from_alb_internal_ing_prefix != "" ? "${var.connect_hostnames_from_alb_internal_ing_prefix}-nginx-internal" : "ing-nginx-internal"
     namespace = "ingress-nginx"
   }
-  annotations = {
+  annotations = merge({
     "alb.ingress.kubernetes.io/load-balancer-name" = var.internal_loadbalancer_name
     "alb.ingress.kubernetes.io/certificate-arn"    = var.acm_certificate_arn
     "alb.ingress.kubernetes.io/wafv2-acl-arn"      = var.internal_waf_acl_arn
@@ -219,7 +227,9 @@ resource "kubernetes_annotations" "alb_ingress_connect_internal_nginx_annotation
     "alb.ingress.kubernetes.io/ssl-redirect"       = "443"
     "alb.ingress.kubernetes.io/listen-ports"       = "[{\"HTTP\": 80}, {\"HTTPS\": 443}]"
     "alb.ingress.kubernetes.io/healthcheck-path"   = "/healthz"
-  }
+    }, length(var.alb_tags) > 0 ? {
+    "alb.ingress.kubernetes.io/tags" = join(",", [for k, v in var.alb_tags : "${k}=${v}"])
+  } : {})
   depends_on = [
     kubernetes_ingress_v1.alb_ingress_connect_nginx_internal
   ]
