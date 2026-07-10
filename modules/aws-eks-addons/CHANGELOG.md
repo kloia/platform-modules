@@ -1,5 +1,12 @@
 # Changelog
 
+## [0.7.0](https://github.com/kloia/platform-modules/compare/aws-eks-addons-v0.6.0...aws-eks-addons-v0.7.0) (2026-07-10)
+
+
+### Features
+
+* support optional ALB tags and nginx controller pod labels ([#332](https://github.com/kloia/platform-modules/issues/332)) ([a972aeb](https://github.com/kloia/platform-modules/commit/a972aeb74f16a30cf6682816d9730753bc1231cb))
+
 ## [0.6.0](https://github.com/kloia/platform-modules/compare/aws-eks-addons-v0.5.0...aws-eks-addons-v0.6.0) (2026-01-26)
 
 
