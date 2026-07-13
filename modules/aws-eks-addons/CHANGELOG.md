@@ -1,5 +1,12 @@
 # Changelog
 
+## [0.7.1](https://github.com/kloia/platform-modules/compare/aws-eks-addons-v0.7.0...aws-eks-addons-v0.7.1) (2026-07-13)
+
+
+### Bug Fixes
+
+* **eks-addons:** stop nginx ingress stripping ALB annotations ([#334](https://github.com/kloia/platform-modules/issues/334)) ([5136278](https://github.com/kloia/platform-modules/commit/5136278eab1375b8221cab3de88c0c9fc7201f18))
+
 ## [0.7.0](https://github.com/kloia/platform-modules/compare/aws-eks-addons-v0.6.0...aws-eks-addons-v0.7.0) (2026-07-10)
 
 
