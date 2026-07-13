@@ -103,8 +103,12 @@ resource "helm_release" "ingress_nginx" {
 
 resource "kubernetes_ingress_v1" "alb_ingress_connect_nginx" {
   count = local.can_connect_alb_to_nginx ? 1 : 0
+  # Annotations are owned by the paired kubernetes_annotations resource (force=true). Ignore the whole
+  # annotations map so this resource never strips them on update. Otherwise every ingress change wipes the
+  # alb.ingress.* annotations, the AWS LB Controller spawns a new (auto-named) LB, and a 2nd apply is needed
+  # for kubernetes_annotations to re-add them. (Covers the previous metadata["*cattle*"] ignore too.)
   lifecycle {
-    ignore_changes = [metadata["*cattle*"]]
+    ignore_changes = [metadata[0].annotations]
   }
   wait_for_load_balancer = true
   metadata {
@@ -170,8 +174,12 @@ resource "kubernetes_annotations" "alb_ingress_connect_nginx_annotation" {
 
 resource "kubernetes_ingress_v1" "alb_ingress_connect_nginx_internal" {
   count = var.enable_internal_alb ? 1 : 0
+  # Annotations are owned by the paired kubernetes_annotations resource (force=true). Ignore the whole
+  # annotations map so this resource never strips them on update. Otherwise every ingress change wipes the
+  # alb.ingress.* annotations, the AWS LB Controller spawns a new (auto-named) LB, and a 2nd apply is needed
+  # for kubernetes_annotations to re-add them. (Covers the previous metadata["*cattle*"] ignore too.)
   lifecycle {
-    ignore_changes = [metadata["*cattle*"]]
+    ignore_changes = [metadata[0].annotations]
   }
   wait_for_load_balancer = true
   metadata {
