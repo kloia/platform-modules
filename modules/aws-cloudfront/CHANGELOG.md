@@ -1,5 +1,12 @@
 # Changelog
 
+## [1.2.0](https://github.com/kloia/platform-modules/compare/aws-cloudfront-v1.1.0...aws-cloudfront-v1.2.0) (2026-08-11)
+
+
+### Features
+
+* **aws-cloudfront:** allow overriding the OAI bucket policy ([#336](https://github.com/kloia/platform-modules/issues/336)) ([0eb88af](https://github.com/kloia/platform-modules/commit/0eb88afc5d96105c71a85c961db22d91be4d320e))
+
 ## [1.1.0](https://github.com/kloia/platform-modules/compare/aws-cloudfront-v1.0.0...aws-cloudfront-v1.1.0) (2026-02-05)
 
 
