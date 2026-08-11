@@ -85,7 +85,12 @@ resource "aws_s3_bucket_policy" "s3_policy" {
   provider = aws.ireland
   for_each = local.create_origin_access_identity && var.create_s3_bucket ? var.origin_access_identities : {}
   bucket   = aws_s3_bucket.this[0].id
-  policy   = jsonencode(
+  # `bucket_policy_override` takes the rendered policy verbatim. It exists for buckets whose live policy
+  # predates this module's shape: adopting them otherwise forces an in-place policy rewrite on the first
+  # apply, which is a real change to a live access control even when the statements are equivalent.
+  # Prefer the generated policy; set the override only to hold an existing policy steady, and drop it once
+  # the bucket has been reconciled.
+  policy   = var.bucket_policy_override != null ? var.bucket_policy_override : jsonencode(
 {
     Version = "2008-10-17",
     Id      = "PolicyForCloudFrontPrivateContent",
