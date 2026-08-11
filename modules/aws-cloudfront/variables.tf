@@ -265,6 +265,18 @@ variable "bucket_policy_resources" {
   type        = list(any)
 }
 
+variable "bucket_policy_override" {
+  description = <<-EOT
+    Optional raw JSON used verbatim as the origin-access-identity bucket policy, bypassing the generated one.
+    Intended for adopting a bucket whose live policy predates this module's shape, where the generated policy
+    would otherwise rewrite a live access control on first apply (e.g. a statement whose Resource is a bare
+    string rather than a list, or a duplicate legacy statement). Leave null to use the generated policy;
+    remove the override once the bucket has been reconciled.
+  EOT
+  default     = null
+  type        = string
+}
+
 variable "cors_rule" {
   description = "List of maps containing rules for Cross-Origin Resource Sharing."
   type        = any
