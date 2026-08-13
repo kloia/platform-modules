@@ -2130,7 +2130,7 @@ resource "aws_wafv2_web_acl" "waf_acl" {
       }
 
       dynamic "visibility_config" {
-        for_each = length(lookup(rule.value, "visibility_config")) == 0 ? [] : [lookup(rule.value, "visibility_config", {})]
+        for_each = length(lookup(rule.value, "visibility_config", {})) == 0 ? [] : [lookup(rule.value, "visibility_config", {})]
         content {
           cloudwatch_metrics_enabled = lookup(visibility_config.value, "cloudwatch_metrics_enabled", true)
           metric_name                = lookup(visibility_config.value, "metric_name", "${var.waf_web_acl_name}-default-rule-metric-name")
