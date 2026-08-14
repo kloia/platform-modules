@@ -96,6 +96,64 @@ resource "aws_wafv2_web_acl" "waf_acl" {
             vendor_name = lookup(managed_rule_group_statement.value, "vendor_name", "AWS")
             version     = lookup(managed_rule_group_statement.value, "version", null)
 
+            # Per-rule action overrides for rules inside this managed rule group
+            # (e.g. forcing AWSManagedRulesAntiDDoSRuleSet's ChallengeAllDuringEvent/
+            # ChallengeDDoSRequests/DDoSRequests to Count during initial rollout).
+            # Shape: [{ name = "RuleName", action_to_use = "count" }, ...]
+            dynamic "rule_action_override" {
+              for_each = lookup(managed_rule_group_statement.value, "rule_action_override", [])
+              content {
+                name = lookup(rule_action_override.value, "name")
+
+                action_to_use {
+                  dynamic "allow" {
+                    for_each = lookup(rule_action_override.value, "action_to_use", null) == "allow" ? [1] : []
+                    content {}
+                  }
+                  dynamic "block" {
+                    for_each = lookup(rule_action_override.value, "action_to_use", null) == "block" ? [1] : []
+                    content {}
+                  }
+                  dynamic "count" {
+                    for_each = lookup(rule_action_override.value, "action_to_use", null) == "count" ? [1] : []
+                    content {}
+                  }
+                  dynamic "captcha" {
+                    for_each = lookup(rule_action_override.value, "action_to_use", null) == "captcha" ? [1] : []
+                    content {}
+                  }
+                  dynamic "challenge" {
+                    for_each = lookup(rule_action_override.value, "action_to_use", null) == "challenge" ? [1] : []
+                    content {}
+                  }
+                }
+              }
+            }
+
+            # Rule-group-specific configuration. Currently only the Anti-DDoS
+            # rule set's tuning knobs are wired up (sensitivity_to_block,
+            # client_side_action_config). Shape:
+            # { aws_managed_rules_anti_ddos_rule_set = { sensitivity_to_block = "LOW",
+            #     client_side_action_config = { usage_of_action = "ENABLED", sensitivity = "HIGH" } } }
+            dynamic "managed_rule_group_configs" {
+              for_each = length(lookup(managed_rule_group_statement.value, "managed_rule_group_configs", {})) == 0 ? [] : [lookup(managed_rule_group_statement.value, "managed_rule_group_configs", {})]
+              content {
+                dynamic "aws_managed_rules_anti_ddos_rule_set" {
+                  for_each = length(lookup(managed_rule_group_configs.value, "aws_managed_rules_anti_ddos_rule_set", {})) == 0 ? [] : [lookup(managed_rule_group_configs.value, "aws_managed_rules_anti_ddos_rule_set", {})]
+                  content {
+                    sensitivity_to_block = lookup(aws_managed_rules_anti_ddos_rule_set.value, "sensitivity_to_block", "LOW")
+
+                    client_side_action_config {
+                      challenge {
+                        usage_of_action = lookup(lookup(aws_managed_rules_anti_ddos_rule_set.value, "client_side_action_config", {}), "usage_of_action", "ENABLED")
+                        sensitivity     = lookup(lookup(aws_managed_rules_anti_ddos_rule_set.value, "client_side_action_config", {}), "sensitivity", "HIGH")
+                      }
+                    }
+                  }
+                }
+              }
+            }
+
             dynamic "scope_down_statement" {
               for_each = length(lookup(managed_rule_group_statement.value, "scope_down_statement", {})) == 0 ? [] : [lookup(managed_rule_group_statement.value, "scope_down_statement", {})]
               content {
@@ -2072,7 +2130,7 @@ resource "aws_wafv2_web_acl" "waf_acl" {
       }
 
       dynamic "visibility_config" {
-        for_each = length(lookup(rule.value, "visibility_config")) == 0 ? [] : [lookup(rule.value, "visibility_config", {})]
+        for_each = length(lookup(rule.value, "visibility_config", {})) == 0 ? [] : [lookup(rule.value, "visibility_config", {})]
         content {
           cloudwatch_metrics_enabled = lookup(visibility_config.value, "cloudwatch_metrics_enabled", true)
           metric_name                = lookup(visibility_config.value, "metric_name", "${var.waf_web_acl_name}-default-rule-metric-name")

@@ -1,3 +1,9 @@
+variable "enable_subscription" {
+  type        = bool
+  description = "Whether to enable this account's AWS Shield Advanced subscription (1-year commitment, billed monthly). Leave false until commercial sign-off for this account is confirmed."
+  default     = false
+}
+
 variable "name_resource_arn_map" {
   type        = any
   description = "A map of names and ARNs of resources to be protected. The name will be used as the name of the resource in the AWS console."
