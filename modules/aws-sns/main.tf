@@ -141,21 +141,46 @@ resource "aws_sns_topic_policy" "this" {
 # Subscription(s)
 ################################################################################
 
+locals {
+  # Subscriptions that opt in to building their endpoint from an SSM
+  # SecureString instead of a plain literal (e.g. an endpoint that embeds an
+  # API key, like Opsgenie's SNS integration). Everything else is unaffected.
+  secret_backed_subscriptions = {
+    for k, v in var.subscriptions : k => v
+    if try(v.endpoint_secret_ssm_path, null) != null
+  }
+}
+
+data "aws_ssm_parameter" "endpoint_secret" {
+  for_each = local.secret_backed_subscriptions
+
+  name            = each.value.endpoint_secret_ssm_path
+  with_decryption = true
+}
+
 resource "aws_sns_topic_subscription" "this" {
   for_each = { for k, v in var.subscriptions : k => v if var.create && var.create_subscription }
 
   confirmation_timeout_in_minutes = try(each.value.confirmation_timeout_in_minutes, null)
   delivery_policy                 = try(each.value.delivery_policy, null)
-  endpoint                        = each.value.endpoint
-  endpoint_auto_confirms          = try(each.value.endpoint_auto_confirms, null)
-  filter_policy                   = try(each.value.filter_policy, null)
-  filter_policy_scope             = try(each.value.filter_policy_scope, null)
-  protocol                        = each.value.protocol
-  raw_message_delivery            = try(each.value.raw_message_delivery, null)
-  redrive_policy                  = try(each.value.redrive_policy, null)
-  replay_policy                   = try(each.value.replay_policy, null)
-  subscription_role_arn           = try(each.value.subscription_role_arn, null)
-  topic_arn                       = aws_sns_topic.this[0].arn
+
+  # If endpoint_secret_ssm_path is set, build the endpoint from the SSM value
+  # via endpoint_template (a format() string with a single %s placeholder).
+  # Otherwise, use the literal endpoint as before.
+  endpoint = try(each.value.endpoint_secret_ssm_path, null) != null ? format(
+    each.value.endpoint_template,
+    data.aws_ssm_parameter.endpoint_secret[each.key].value
+  ) : each.value.endpoint
+
+  endpoint_auto_confirms = try(each.value.endpoint_auto_confirms, null)
+  filter_policy          = try(each.value.filter_policy, null)
+  filter_policy_scope    = try(each.value.filter_policy_scope, null)
+  protocol               = each.value.protocol
+  raw_message_delivery   = try(each.value.raw_message_delivery, null)
+  redrive_policy         = try(each.value.redrive_policy, null)
+  replay_policy          = try(each.value.replay_policy, null)
+  subscription_role_arn  = try(each.value.subscription_role_arn, null)
+  topic_arn              = aws_sns_topic.this[0].arn
 }
 
 ################################################################################
