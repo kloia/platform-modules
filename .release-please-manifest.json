@@ -48,7 +48,7 @@
   "modules/aws-key-pair": "0.1.0",
   "modules/aws-sns-master": "0.1.0",
   "modules/aws-cognito-user-pool": "0.1.0",
-  "modules/aws-sns": "0.1.0",
+  "modules/aws-sns": "0.2.0",
   "modules/terraform-aws-sqs": "0.1.0",
   "modules/aws-s3": "0.1.0",
   "modules/aws-lambda": "0.2.0",
