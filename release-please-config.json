@@ -620,6 +620,15 @@
       "bump-patch-for-minor-pre-major": false,
       "draft": false,
       "prerelease": false
+    },
+    "modules/aws-eks-access-entry": {
+      "component": "aws-eks-access-entry",
+      "changelog-path": "CHANGELOG.md",
+      "release-type": "terraform-module",
+      "bump-minor-pre-major": true,
+      "bump-patch-for-minor-pre-major": false,
+      "draft": false,
+      "prerelease": false
     }
   },
   "separate-pull-requests": true,
