@@ -6,7 +6,12 @@ locals {
   # the same Name on every component. Verified against a live argo-cd 8.1.3 /
   # external-secrets 0.16.2 install; the section keys are unchanged in argo-cd
   # 9.5.11.
-  argocd_component_workload_names = {
+  #
+  # These are DEFAULTS, not a fixed list. The matching variable is merged over
+  # the map, so a caller can add a component the chart gained later (argo-cd's
+  # commitServer, say) or correct a name if a release is renamed, without a
+  # module release. See argocd_component_workload_names in variables.tf.
+  argocd_component_workload_names = merge({
     controller     = "argocd-application-controller"
     server         = "argocd-server"
     repoServer     = "argocd-repo-server"
@@ -14,12 +19,12 @@ locals {
     dex            = "argocd-dex-server"
     applicationSet = "argocd-applicationset-controller"
     notifications  = "argocd-notifications-controller"
-  }
+  }, var.argocd_component_workload_names)
 
-  external_secrets_component_workload_names = {
+  external_secrets_component_workload_names = merge({
     webhook        = "external-secrets-webhook"
     certController = "external-secrets-cert-controller"
-  }
+  }, var.external_secrets_component_workload_names)
 
   can_connect_alb_to_nginx    = var.deploy_aws_loadbalancer && (length(var.connect_hostnames_from_alb_to_nginx) > 0)
   can_connect_alb_to_istio    = var.deploy_aws_loadbalancer && var.deploy_rancher_istio && (length(var.connect_hostnames_from_alb_to_istio) > 0)

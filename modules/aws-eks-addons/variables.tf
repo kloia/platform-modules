@@ -681,3 +681,50 @@ variable "rancher_logging_pod_labels" {
   type        = map(string)
   default     = {}
 }
+
+variable "argocd_component_workload_names" {
+  description = <<-EOT
+    Overrides and additions to the argo-cd chart-section -> workload-name map used
+    to stamp the per-component `Name` label. Merged OVER the module's defaults, so
+    `{}` (the default) keeps current behaviour.
+
+    Module defaults, for the release name "argocd":
+      controller     = "argocd-application-controller"
+      server         = "argocd-server"
+      repoServer     = "argocd-repo-server"
+      redis          = "argocd-redis"
+      dex            = "argocd-dex-server"
+      applicationSet = "argocd-applicationset-controller"
+      notifications  = "argocd-notifications-controller"
+
+    Use this when the chart gains a component the defaults do not cover, or when a
+    release name makes the rendered workload name differ. Example - label the
+    commit-server the chart added in a later version, and nothing else:
+
+      argocd_component_workload_names = {
+        commitServer = "argocd-commit-server"
+      }
+
+    A key here must be a real argo-cd values section that supports `podLabels`, or
+    the value is silently ignored by Helm.
+  EOT
+  type        = map(string)
+  default     = {}
+}
+
+variable "external_secrets_component_workload_names" {
+  description = <<-EOT
+    Overrides and additions to the external-secrets chart-section -> workload-name
+    map used to stamp the per-component `Name` label. Merged OVER the module's
+    defaults, so `{}` (the default) keeps current behaviour.
+
+    Module defaults, for the release name "external-secrets":
+      webhook        = "external-secrets-webhook"
+      certController = "external-secrets-cert-controller"
+
+    The chart's root `podLabels` (the main controller Deployment) is always set and
+    is not part of this map.
+  EOT
+  type        = map(string)
+  default     = {}
+}
