@@ -581,3 +581,103 @@ variable "nginx_controller_pod_labels" {
   type        = map(string)
   default     = {}
 }
+# ---------------------------------------------------------------------------
+# Cost-allocation pod labels for the remaining platform workloads.
+#
+# Same shape and default as nginx_controller_pod_labels above: an empty map
+# means "set nothing", so every existing caller is unaffected. Each variable
+# maps onto a value key that was verified against the chart version this module
+# pins (see the comment on each one).
+# ---------------------------------------------------------------------------
+
+variable "aws_lb_controller_pod_labels" {
+  description = "Extra pod labels applied to the aws-load-balancer-controller pods (set as podLabels in the aws-load-balancer-controller Helm release). Empty by default (no extra labels)."
+  type        = map(string)
+  default     = {}
+}
+
+variable "argocd_pod_labels" {
+  description = <<-EOT
+    Extra pod labels applied to every Argo CD component pod, set per component
+    (controller.podLabels, server.podLabels, repoServer.podLabels,
+    redis.podLabels, dex.podLabels, applicationSet.podLabels,
+    notifications.podLabels). Empty by default (no extra labels).
+
+    DO NOT pass `Name` here: the module stamps a per-component Name so each
+    label set carries the name of the workload it lands on, which is what a
+    cost-allocation Name has to be. Anything passed as Name is overwritten with:
+      controller     -> argocd-application-controller
+      server         -> argocd-server
+      repoServer     -> argocd-repo-server
+      redis          -> argocd-redis
+      dex            -> argocd-dex-server
+      applicationSet -> argocd-applicationset-controller
+      notifications  -> argocd-notifications-controller
+
+    global.podLabels is deliberately NOT used - it would put one Name on all
+    seven components.
+  EOT
+  type        = map(string)
+  default     = {}
+}
+
+variable "external_secrets_pod_labels" {
+  description = <<-EOT
+    Extra pod labels applied to the external-secrets controller, webhook and
+    cert-controller pods (podLabels, webhook.podLabels and
+    certController.podLabels). Empty by default (no extra labels).
+
+    DO NOT pass `Name` here - as with argocd_pod_labels the module stamps a
+    per-component Name and overwrites anything passed:
+      (root)         -> external-secrets
+      webhook        -> external-secrets-webhook
+      certController -> external-secrets-cert-controller
+  EOT
+  type        = map(string)
+  default     = {}
+}
+
+variable "karpenter_pod_labels" {
+  description = "Extra pod labels applied to the Karpenter controller pods (set as podLabels in the karpenter Helm release). Only takes effect when deploy_karpenter is true. Empty by default (no extra labels)."
+  type        = map(string)
+  default     = {}
+}
+
+variable "metrics_server_values" {
+  description = <<-EOT
+    Free-form Helm values forwarded to the metrics-server Application that the
+    ArgoCD bootstrapper renders (metricsServer.values in the argo-bootstrapper
+    Helm values). Empty by default, which keeps the bootstrapper's own defaults.
+
+    This is a REPLACEMENT, not a merge: whatever is passed here becomes the
+    Application's entire values block. If the cluster already relies on values
+    that were set outside Terraform (hostNetwork.enabled=true is a common one),
+    those MUST be repeated here or they will be dropped on the next sync. Read
+    the live values first:
+      kubectl -n argocd get application metrics-server \
+        -o jsonpath='{.spec.source.helm.values}'
+
+    Example:
+      metrics_server_values = {
+        hostNetwork = { enabled = true }
+        podLabels   = { Environment = "prod" }
+      }
+  EOT
+  type        = any
+  default     = {}
+}
+
+variable "rancher_logging_pod_labels" {
+  description = <<-EOT
+    Extra pod labels applied to the rancher-logging OPERATOR pods (set as
+    podLabels in the rancher-logging chart values forwarded through the ArgoCD
+    bootstrapper). Empty by default (no extra labels).
+
+    This does NOT reach the fluentbit DaemonSet or the fluentd StatefulSet:
+    those pods are created by the Logging operator from the Logging custom
+    resource, and their labels live in spec.fluentbit.labels /
+    spec.fluentd.labels on that CR, not in the chart values.
+  EOT
+  type        = map(string)
+  default     = {}
+}
