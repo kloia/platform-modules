@@ -1,5 +1,12 @@
 # Changelog
 
+## [0.4.1](https://github.com/kloia/platform-modules/compare/aws-waf-v0.4.0...aws-waf-v0.4.1) (2026-09-02)
+
+
+### Bug Fixes
+
+* **aws-waf:** trigger release-please for [#343](https://github.com/kloia/platform-modules/issues/343) ([#348](https://github.com/kloia/platform-modules/issues/348)) ([92f4254](https://github.com/kloia/platform-modules/commit/92f4254676eca4b1ccaec196d984e602249aa661))
+
 ## [0.4.0](https://github.com/kloia/platform-modules/compare/aws-waf-v0.3.0...aws-waf-v0.4.0) (2026-09-02)
 
 
