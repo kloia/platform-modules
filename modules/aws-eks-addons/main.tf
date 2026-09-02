@@ -1,4 +1,31 @@
 locals {
+  # Chart value section -> the name of the workload that section produces, given
+  # the release names this module pins ("argocd", "external-secrets"). Used to
+  # stamp a per-workload `Name` label, because a cost-allocation Name must be
+  # the Deployment/StatefulSet/DaemonSet name and `global.podLabels` would put
+  # the same Name on every component. Verified against a live argo-cd 8.1.3 /
+  # external-secrets 0.16.2 install; the section keys are unchanged in argo-cd
+  # 9.5.11.
+  #
+  # These are DEFAULTS, not a fixed list. The matching variable is merged over
+  # the map, so a caller can add a component the chart gained later (argo-cd's
+  # commitServer, say) or correct a name if a release is renamed, without a
+  # module release. See argocd_component_workload_names in variables.tf.
+  argocd_component_workload_names = merge({
+    controller     = "argocd-application-controller"
+    server         = "argocd-server"
+    repoServer     = "argocd-repo-server"
+    redis          = "argocd-redis"
+    dex            = "argocd-dex-server"
+    applicationSet = "argocd-applicationset-controller"
+    notifications  = "argocd-notifications-controller"
+  }, var.argocd_component_workload_names)
+
+  external_secrets_component_workload_names = merge({
+    webhook        = "external-secrets-webhook"
+    certController = "external-secrets-cert-controller"
+  }, var.external_secrets_component_workload_names)
+
   can_connect_alb_to_nginx    = var.deploy_aws_loadbalancer && (length(var.connect_hostnames_from_alb_to_nginx) > 0)
   can_connect_alb_to_istio    = var.deploy_aws_loadbalancer && var.deploy_rancher_istio && (length(var.connect_hostnames_from_alb_to_istio) > 0)
   can_connect_nginx_to_argocd = var.deploy_aws_loadbalancer && var.deploy_argocd
@@ -73,6 +100,10 @@ resource "helm_release" "aws_lb_controller" {
     name  = "clusterName"
     value = var.cluster_name
   }
+
+  values = length(var.aws_lb_controller_pod_labels) > 0 ? [yamlencode({
+    podLabels = var.aws_lb_controller_pod_labels
+  })] : []
 }
 
 resource "helm_release" "ingress_nginx" {
@@ -217,7 +248,7 @@ resource "kubernetes_ingress_v1" "alb_ingress_connect_nginx_internal" {
 }
 
 resource "kubernetes_annotations" "alb_ingress_connect_internal_nginx_annotation" {
-  count = var.enable_internal_alb ? 1 : 0
+  count       = var.enable_internal_alb ? 1 : 0
   api_version = "networking.k8s.io/v1"
   kind        = "Ingress"
   force       = true
@@ -434,16 +465,24 @@ resource "helm_release" "argocd" {
     value = ""
   }
 
-  values = var.enable_sso || var.enable_template_file ? [templatefile("${path.module}/values.yaml.tpl", {
-    caData             = local.caData,
-    ssoURL             = local.ssoURL,
-    redirectURI        = "${var.sso_callback_url}",
-    entityIssuer       = "${var.sso_callback_url}",
-    currentEnvironment = "${var.current_environment}",
-    slackToken         = local.slackToken,
-    argocdUrl          = var.argocd_ingress_host
-    })
-  ] : []
+  # Helm merges the elements of `values` left-to-right, so the pod-label
+  # document is appended last and cannot be clobbered by the SSO template.
+  values = concat(
+    var.enable_sso || var.enable_template_file ? [templatefile("${path.module}/values.yaml.tpl", {
+      caData             = local.caData,
+      ssoURL             = local.ssoURL,
+      redirectURI        = "${var.sso_callback_url}",
+      entityIssuer       = "${var.sso_callback_url}",
+      currentEnvironment = "${var.current_environment}",
+      slackToken         = local.slackToken,
+      argocdUrl          = var.argocd_ingress_host
+      })
+    ] : [],
+    length(var.argocd_pod_labels) > 0 ? [yamlencode({
+      for component, workload in local.argocd_component_workload_names :
+      component => { podLabels = merge(var.argocd_pod_labels, { Name = workload }) }
+    })] : [],
+  )
 
   // SSO Values
   // configmap url
@@ -535,6 +574,19 @@ resource "helm_release" "external-secrets" {
     name  = "serviceAccount.annotations.eks\\.amazonaws\\.com/role-arn"
     value = var.eso_iam_role_arn
   }
+
+  # The chart keeps a separate podLabels key per Deployment, so all three are set
+  # to cover external-secrets, -webhook and -cert-controller - each with its own
+  # workload name stamped into Name.
+  values = length(var.external_secrets_pod_labels) > 0 ? [yamlencode(merge(
+    {
+      podLabels = merge(var.external_secrets_pod_labels, { Name = "external-secrets" })
+    },
+    {
+      for component, workload in local.external_secrets_component_workload_names :
+      component => { podLabels = merge(var.external_secrets_pod_labels, { Name = workload }) }
+    },
+  ))] : []
 }
 
 
@@ -563,17 +615,19 @@ resource "kubectl_manifest" "argocd_bootstrapper_application" {
           values : yamlencode({
             certManager : merge({
               enable : var.deploy_cert_manager
-            }, var.cert_manager_version == null ? {} : {
+              }, var.cert_manager_version == null ? {} : {
               targetRevision : var.cert_manager_version
             })
             metricsServer : merge({
               enable : var.deploy_metrics_server
-            }, var.metrics_server_version == null ? {} : {
+              }, var.metrics_server_version == null ? {} : {
               targetRevision : var.metrics_server_version
+              }, length(keys(var.metrics_server_values)) == 0 ? {} : {
+              values : var.metrics_server_values
             })
             trivy : merge({
               enable : var.deploy_trivy
-            }, var.trivy_version == null ? {} : {
+              }, var.trivy_version == null ? {} : {
               targetRevision : var.trivy_version
             })
             rancher : merge({
@@ -581,22 +635,22 @@ resource "kubectl_manifest" "argocd_bootstrapper_application" {
               values : {
                 hostname : var.rancher_hostname
               }
-            }, var.rancher_version == null ? {} : {
+              }, var.rancher_version == null ? {} : {
               targetRevision : var.rancher_version
             })
             rancherMonitoringCrd : merge({
               enable : local.deploy_rancher_monitoring
-            }, var.rancher_monitoring_crd_version == null ? {} : {
+              }, var.rancher_monitoring_crd_version == null ? {} : {
               targetRevision : var.rancher_monitoring_crd_version
             })
             rancherMonitoring : merge({
               enable : local.deploy_rancher_monitoring
-            }, var.rancher_monitoring_version == null ? {} : {
+              }, var.rancher_monitoring_version == null ? {} : {
               targetRevision : var.rancher_monitoring_version
             })
             rancherIstio : merge({
               enable : local.deploy_rancher_istio
-            }, var.rancher_istio_version == null ? {} : {
+              }, var.rancher_istio_version == null ? {} : {
               targetRevision : var.rancher_istio_version
             })
             argoWorkflow : merge({
@@ -610,12 +664,12 @@ resource "kubectl_manifest" "argocd_bootstrapper_application" {
                   extraArgs : var.argo_workflow_extra_args
                 }
               }
-            }, var.argo_workflow_version == null ? {} : {
+              }, var.argo_workflow_version == null ? {} : {
               targetRevision : var.argo_workflow_version
             })
             rancherLogging : merge({
               enable : var.deploy_rancher_logging
-              values : {
+              values : merge({
                 fluentd : {
                   resources : {
                     limits : {
@@ -629,8 +683,13 @@ resource "kubectl_manifest" "argocd_bootstrapper_application" {
                   }
 
                 }
-              }
-            }, var.rancher_logging_version == null ? {} : {
+                }, length(var.rancher_logging_pod_labels) == 0 ? {} : {
+                # Reaches the rancher-logging operator Deployment only. The
+                # fluentbit DaemonSet and fluentd StatefulSet are made by the
+                # operator from the Logging CR - label them there.
+                podLabels : var.rancher_logging_pod_labels
+              })
+              }, var.rancher_logging_version == null ? {} : {
               targetRevision : var.rancher_logging_version
             })
           })
@@ -748,6 +807,10 @@ resource "helm_release" "karpenter" {
     name  = "hostNetwork"
     value = true
   }
+
+  values = length(var.karpenter_pod_labels) > 0 ? [yamlencode({
+    podLabels = var.karpenter_pod_labels
+  })] : []
 
 }
 
