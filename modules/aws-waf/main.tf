@@ -2308,3 +2308,7 @@ resource "aws_wafv2_web_acl_association" "this" {
   resource_arn = each.value
   web_acl_arn  = aws_wafv2_web_acl.waf_acl[0].arn
 }
+
+# no-op: nudges release-please after #343's squash-merge commit body
+# (nested parentheses in an embedded code snippet) broke its footer parser,
+# so no release PR was cut for this path — see PR #343's merge commit.
