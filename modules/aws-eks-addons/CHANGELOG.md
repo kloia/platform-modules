@@ -1,5 +1,12 @@
 # Changelog
 
+## [0.8.0](https://github.com/kloia/platform-modules/compare/aws-eks-addons-v0.7.1...aws-eks-addons-v0.8.0) (2026-09-02)
+
+
+### Features
+
+* update aws eks-addons modules for tagging standard ([#346](https://github.com/kloia/platform-modules/issues/346)) ([66ac2b5](https://github.com/kloia/platform-modules/commit/66ac2b524d4799247d5d52e389c2be0cb215b6b8))
+
 ## [0.7.1](https://github.com/kloia/platform-modules/compare/aws-eks-addons-v0.7.0...aws-eks-addons-v0.7.1) (2026-07-13)
 
 
