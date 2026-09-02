@@ -820,6 +820,48 @@ resource "aws_wafv2_web_acl" "waf_acl" {
           }
         }
 
+        dynamic "regex_match_statement" {
+          for_each = length(lookup(rule.value, "regex_match_statement", {})) == 0 ? [] : [lookup(rule.value, "regex_match_statement", {})]
+          content {
+            regex_string = lookup(regex_match_statement.value, "regex_string")
+            dynamic "field_to_match" {
+              for_each = length(lookup(regex_match_statement.value, "field_to_match", {})) == 0 ? [] : [lookup(regex_match_statement.value, "field_to_match", {})]
+              content {
+                dynamic "uri_path" {
+                  for_each = length(lookup(field_to_match.value, "uri_path", {})) == 0 ? [] : [lookup(field_to_match.value, "uri_path")]
+                  content {}
+                }
+                dynamic "all_query_arguments" {
+                  for_each = length(lookup(field_to_match.value, "all_query_arguments", {})) == 0 ? [] : [lookup(field_to_match.value, "all_query_arguments")]
+                  content {}
+                }
+                dynamic "body" {
+                  for_each = length(lookup(field_to_match.value, "body", {})) == 0 ? [] : [lookup(field_to_match.value, "body")]
+                  content {}
+                }
+                dynamic "method" {
+                  for_each = length(lookup(field_to_match.value, "method", {})) == 0 ? [] : [lookup(field_to_match.value, "method")]
+                  content {}
+                }
+                dynamic "query_string" {
+                  for_each = length(lookup(field_to_match.value, "query_string", {})) == 0 ? [] : [lookup(field_to_match.value, "query_string")]
+                  content {}
+                }
+                dynamic "single_header" {
+                  for_each = length(lookup(field_to_match.value, "single_header", {})) == 0 ? [] : [lookup(field_to_match.value, "single_header")]
+                  content {
+                    name = lower(lookup(single_header.value, "name"))
+                  }
+                }
+              }
+            }
+            text_transformation {
+              priority = lookup(regex_match_statement.value, "priority")
+              type     = lookup(regex_match_statement.value, "type")
+            }
+          }
+        }
+
         dynamic "ip_set_reference_statement" {
           for_each = length(lookup(rule.value, "ip_set_reference_statement", {})) == 0 ? [] : [lookup(rule.value, "ip_set_reference_statement", {})]
           content {
@@ -1535,6 +1577,49 @@ resource "aws_wafv2_web_acl" "waf_acl" {
                       fallback_behavior = lookup(forwarded_ip_config.value, "fallback_behavior")
                       header_name       = lookup(forwarded_ip_config.value, "header_name")
                     }
+                  }
+                }
+              }
+
+              # NOT regex_match_statement
+              dynamic "regex_match_statement" {
+                for_each = length(lookup(not_statement.value, "regex_match_statement", {})) == 0 ? [] : [lookup(not_statement.value, "regex_match_statement", {})]
+                content {
+                  regex_string = lookup(regex_match_statement.value, "regex_string")
+                  dynamic "field_to_match" {
+                    for_each = length(lookup(regex_match_statement.value, "field_to_match", {})) == 0 ? [] : [lookup(regex_match_statement.value, "field_to_match", {})]
+                    content {
+                      dynamic "uri_path" {
+                        for_each = length(lookup(field_to_match.value, "uri_path", {})) == 0 ? [] : [lookup(field_to_match.value, "uri_path")]
+                        content {}
+                      }
+                      dynamic "all_query_arguments" {
+                        for_each = length(lookup(field_to_match.value, "all_query_arguments", {})) == 0 ? [] : [lookup(field_to_match.value, "all_query_arguments")]
+                        content {}
+                      }
+                      dynamic "body" {
+                        for_each = length(lookup(field_to_match.value, "body", {})) == 0 ? [] : [lookup(field_to_match.value, "body")]
+                        content {}
+                      }
+                      dynamic "method" {
+                        for_each = length(lookup(field_to_match.value, "method", {})) == 0 ? [] : [lookup(field_to_match.value, "method")]
+                        content {}
+                      }
+                      dynamic "query_string" {
+                        for_each = length(lookup(field_to_match.value, "query_string", {})) == 0 ? [] : [lookup(field_to_match.value, "query_string")]
+                        content {}
+                      }
+                      dynamic "single_header" {
+                        for_each = length(lookup(field_to_match.value, "single_header", {})) == 0 ? [] : [lookup(field_to_match.value, "single_header")]
+                        content {
+                          name = lower(lookup(single_header.value, "name"))
+                        }
+                      }
+                    }
+                  }
+                  text_transformation {
+                    priority = lookup(regex_match_statement.value, "priority")
+                    type     = lookup(regex_match_statement.value, "type")
                   }
                 }
               }
