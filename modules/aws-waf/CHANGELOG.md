@@ -1,5 +1,12 @@
 # Changelog
 
+## [0.4.0](https://github.com/kloia/platform-modules/compare/aws-waf-v0.3.0...aws-waf-v0.4.0) (2026-09-02)
+
+
+### Features
+
+* **aws-waf,aws-shield:** add Anti-DDoS rule overrides + Shield subscription ([#338](https://github.com/kloia/platform-modules/issues/338)) ([d8a23b2](https://github.com/kloia/platform-modules/commit/d8a23b26493e9b8575274678feaa5b0af1c398f8))
+
 ## [0.3.0](https://github.com/kloia/platform-modules/compare/aws-waf-v0.2.0...aws-waf-v0.3.0) (2026-06-18)
 
 
