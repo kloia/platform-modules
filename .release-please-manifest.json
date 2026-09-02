@@ -44,7 +44,7 @@
   "modules/aws-transit-gateway": "0.1.0",
   "modules/aws-cloudfront": "1.2.0",
   "modules/aws-apigateway-v2-master": "0.1.0",
-  "modules/aws-shield": "0.1.0",
+  "modules/aws-shield": "0.2.0",
   "modules/aws-key-pair": "0.1.0",
   "modules/aws-sns-master": "0.1.0",
   "modules/aws-cognito-user-pool": "0.1.0",
