@@ -188,6 +188,20 @@ resource "aws_iam_role" "execution_role" {
   assume_role_policy = data.aws_iam_policy_document.execution_role_assume[0].json
 
   tags = var.tags
+
+  lifecycle {
+    # The connector does not exist when the role is created, so the trust
+    # policy binds aws:SourceArn to its predetermined name. Reject a name that
+    # matches no connector at plan time rather than create an unusable role.
+    # Lifecycle preconditions may reference multiple input variables on the
+    # module's Terraform 1.5.7 compatibility floor.
+    precondition {
+      condition = length(var.connectors) == 0 || anytrue([
+        for connector in var.connectors : connector.name == var.execution_role.connector_name
+      ])
+      error_message = "execution_role.connector_name must equal the name of at least one entry in connectors when execution_role.create=true."
+    }
+  }
 }
 
 resource "aws_iam_role_policy" "execution_role" {

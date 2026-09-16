@@ -199,15 +199,9 @@ variable "execution_role" {
     error_message = "execution_role.cluster_arn must be an MSK cluster ARN of the form arn:aws:kafka:<region>:<account-id>:cluster/<name>/<uuid>."
   }
 
-  # The connector does not exist when the role is created, so the trust policy
-  # binds aws:SourceArn to the connector *name*. A connector_name that matches
-  # no connectors entry would produce a role MSK Connect can never assume.
-  validation {
-    condition = !var.execution_role.create || length(var.connectors) == 0 || anytrue([
-      for connector in var.connectors : connector.name == var.execution_role.connector_name
-    ])
-    error_message = "execution_role.connector_name must equal the name of at least one entry in connectors when execution_role.create=true."
-  }
+  # The connector-name cross-check is a lifecycle precondition on the managed
+  # role. Terraform 1.5 permits preconditions to reference multiple inputs,
+  # whereas variable validation may only reference its own variable until 1.9.
 }
 
 ################################################################################
