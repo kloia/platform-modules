@@ -1,5 +1,12 @@
 # Changelog
 
+## [0.2.1](https://github.com/kloia/platform-modules/compare/aws-msk-connect-v0.2.0...aws-msk-connect-v0.2.1) (2026-09-16)
+
+
+### Bug Fixes
+
+* **aws-msk-connect:** support Terraform 1.5 ([#354](https://github.com/kloia/platform-modules/issues/354)) ([e945156](https://github.com/kloia/platform-modules/commit/e94515678201f65aa3c31c7b216df7758dc26299))
+
 ## [0.2.0](https://github.com/kloia/platform-modules/compare/aws-msk-connect-v0.1.0...aws-msk-connect-v0.2.0) (2026-09-16)
 
 
