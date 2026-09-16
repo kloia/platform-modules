@@ -101,7 +101,9 @@ variable "connectors" {
       encryption_type = string
     })
 
-    service_execution_role_arn = string
+    # Required unless execution_role.create=true, in which case the module
+    # injects the ARN of the role it creates and ignores any value set here.
+    service_execution_role_arn = optional(string)
 
     log_delivery = optional(object({
       worker_log_delivery = object({
@@ -147,6 +149,64 @@ variable "connectors" {
       contains(["TLS", "PLAINTEXT"], connector.kafka_cluster_encryption_in_transit.encryption_type)
     ])
     error_message = "connectors[*].kafka_cluster_encryption_in_transit.encryption_type must be one of \"TLS\" or \"PLAINTEXT\"."
+  }
+
+  # The guard that every connector carries a role ARN when this module does not
+  # create one lives as a lifecycle precondition on aws_mskconnect_connector:
+  # referencing var.execution_role here and var.connectors from that variable's
+  # validation would form a dependency cycle between the two validation rules.
+}
+
+################################################################################
+# Service execution role (opt-in)
+################################################################################
+
+variable "execution_role" {
+  description = "Opt-in: create the MSK Connect service execution role and inject its ARN into every connector. When create=false (default), every connectors entry must supply its own service_execution_role_arn, as in 0.1.0."
+  type = object({
+    create             = optional(bool, false)
+    name               = optional(string)
+    description        = optional(string)
+    connector_name     = optional(string)       # binds the trust policy; must match a connectors entry name
+    cluster_arn        = optional(string)       # MSK cluster ARN; region/account/name/uuid derived from it
+    target_topic_name  = optional(string)       # topic the connector produces to
+    ssm_parameter_arns = optional(list(string)) # credential parameters for the SSM config provider
+    kms_key_arn        = optional(string)       # key encrypting those parameters
+    plugin_bucket_arn  = optional(string)       # bucket holding the custom plugin artifact
+  })
+  default = {}
+
+  validation {
+    condition = !var.execution_role.create || alltrue([
+      var.execution_role.name != null,
+      var.execution_role.connector_name != null,
+      var.execution_role.cluster_arn != null,
+      var.execution_role.target_topic_name != null,
+      var.execution_role.ssm_parameter_arns != null,
+      var.execution_role.kms_key_arn != null,
+      var.execution_role.plugin_bucket_arn != null,
+    ])
+    error_message = "execution_role.create=true requires name, connector_name, cluster_arn, target_topic_name, ssm_parameter_arns, kms_key_arn and plugin_bucket_arn."
+  }
+
+  validation {
+    condition     = !var.execution_role.create || length(coalesce(var.execution_role.ssm_parameter_arns, [])) > 0
+    error_message = "execution_role.ssm_parameter_arns must list at least one SSM parameter ARN when execution_role.create=true; an empty list would grant ssm:GetParameter on no resource while still requiring the statement."
+  }
+
+  validation {
+    condition     = !var.execution_role.create || can(regex("^arn:aws:kafka:[^:]+:[0-9]{12}:cluster/[^/]+/.+$", var.execution_role.cluster_arn))
+    error_message = "execution_role.cluster_arn must be an MSK cluster ARN of the form arn:aws:kafka:<region>:<account-id>:cluster/<name>/<uuid>."
+  }
+
+  # The connector does not exist when the role is created, so the trust policy
+  # binds aws:SourceArn to the connector *name*. A connector_name that matches
+  # no connectors entry would produce a role MSK Connect can never assume.
+  validation {
+    condition = !var.execution_role.create || length(var.connectors) == 0 || anytrue([
+      for connector in var.connectors : connector.name == var.execution_role.connector_name
+    ])
+    error_message = "execution_role.connector_name must equal the name of at least one entry in connectors when execution_role.create=true."
   }
 }
 

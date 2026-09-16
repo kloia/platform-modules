@@ -35,6 +35,170 @@ resource "aws_mskconnect_worker_configuration" "this" {
 }
 
 ################################################################################
+# Service execution role (opt-in)
+#
+# MSK Connect requires a service execution role that MSK Connect itself assumes
+# (the service-linked role is not accepted). The confused-deputy conditions on
+# its trust policy need the connector ARN, which does not exist yet when the
+# role is created, so the trust policy binds the predetermined connector name
+# instead. See
+# https://docs.aws.amazon.com/msk/latest/developerguide/msk-connect-service-execution-role.html
+################################################################################
+
+locals {
+  create_execution_role = var.create && var.execution_role.create
+
+  # Parse the cluster ARN once so the trust policy and the IAM-auth permission
+  # policy cannot drift apart:
+  # arn:aws:kafka:<region>:<account>:cluster/<name>/<uuid>
+  execution_role_cluster_arn = try(
+    regex(
+      "^arn:aws:kafka:(?P<region>[^:]+):(?P<account_id>[0-9]{12}):cluster/(?P<name>[^/]+)/(?P<uuid>.+)$",
+      var.execution_role.cluster_arn
+    ),
+    null
+  )
+
+  execution_role_region     = try(local.execution_role_cluster_arn["region"], null)
+  execution_role_account_id = try(local.execution_role_cluster_arn["account_id"], null)
+  execution_role_topic_base = local.execution_role_cluster_arn == null ? null : format(
+    "arn:aws:kafka:%s:%s:topic/%s/%s",
+    local.execution_role_region,
+    local.execution_role_account_id,
+    local.execution_role_cluster_arn["name"],
+    local.execution_role_cluster_arn["uuid"],
+  )
+  execution_role_group_base = local.execution_role_cluster_arn == null ? null : format(
+    "arn:aws:kafka:%s:%s:group/%s/%s",
+    local.execution_role_region,
+    local.execution_role_account_id,
+    local.execution_role_cluster_arn["name"],
+    local.execution_role_cluster_arn["uuid"],
+  )
+}
+
+data "aws_iam_policy_document" "execution_role_assume" {
+  count = local.create_execution_role ? 1 : 0
+
+  statement {
+    sid     = "MskConnectAssumeRole"
+    effect  = "Allow"
+    actions = ["sts:AssumeRole"]
+
+    principals {
+      type        = "Service"
+      identifiers = ["kafkaconnect.amazonaws.com"]
+    }
+
+    condition {
+      test     = "StringEquals"
+      variable = "aws:SourceAccount"
+      values   = [local.execution_role_account_id]
+    }
+
+    # The connector ARN embeds a generated UUID that is unknown until the
+    # connector is created, so bind on the predetermined connector name.
+    condition {
+      test     = "ArnLike"
+      variable = "aws:SourceArn"
+      values = [
+        "arn:aws:kafkaconnect:${local.execution_role_region}:${local.execution_role_account_id}:connector/${var.execution_role.connector_name}/*",
+      ]
+    }
+  }
+}
+
+# AWS reference policy for an IAM-auth cluster, plus the SSM/KMS reads the SSM
+# config provider needs and the S3 reads MSK Connect performs for the custom
+# plugin artifact at connector creation, restart and failover.
+#
+# No CloudWatch Logs permissions: worker log delivery is a vended log delivered
+# by delivery.logs.amazonaws.com through the destination log group's resource
+# policy, and does not use the execution role.
+data "aws_iam_policy_document" "execution_role" {
+  count = local.create_execution_role ? 1 : 0
+
+  statement {
+    sid       = "ClusterConnect"
+    effect    = "Allow"
+    actions   = ["kafka-cluster:Connect", "kafka-cluster:DescribeCluster"]
+    resources = [var.execution_role.cluster_arn]
+  }
+
+  statement {
+    sid       = "InternalTopics"
+    effect    = "Allow"
+    actions   = ["kafka-cluster:CreateTopic", "kafka-cluster:WriteData", "kafka-cluster:ReadData", "kafka-cluster:DescribeTopic"]
+    resources = ["${local.execution_role_topic_base}/__amazon_msk_connect_*"]
+  }
+
+  # Source connectors only produce to the target topic.
+  statement {
+    sid       = "TargetTopic"
+    effect    = "Allow"
+    actions   = ["kafka-cluster:WriteData", "kafka-cluster:DescribeTopic"]
+    resources = ["${local.execution_role_topic_base}/${var.execution_role.target_topic_name}"]
+  }
+
+  statement {
+    sid     = "ConsumerGroups"
+    effect  = "Allow"
+    actions = ["kafka-cluster:AlterGroup", "kafka-cluster:DescribeGroup"]
+    resources = [
+      "${local.execution_role_group_base}/__amazon_msk_connect_*",
+      "${local.execution_role_group_base}/connect-*",
+    ]
+  }
+
+  statement {
+    sid       = "SsmConfigProvider"
+    effect    = "Allow"
+    actions   = ["ssm:GetParameter"]
+    resources = var.execution_role.ssm_parameter_arns
+  }
+
+  statement {
+    sid       = "SsmParameterDecrypt"
+    effect    = "Allow"
+    actions   = ["kms:Decrypt"]
+    resources = [var.execution_role.kms_key_arn]
+  }
+
+  statement {
+    sid       = "PluginArtifactListBucket"
+    effect    = "Allow"
+    actions   = ["s3:ListBucket"]
+    resources = [var.execution_role.plugin_bucket_arn]
+  }
+
+  statement {
+    sid       = "PluginArtifactGetObject"
+    effect    = "Allow"
+    actions   = ["s3:GetObject"]
+    resources = ["${var.execution_role.plugin_bucket_arn}/*"]
+  }
+}
+
+resource "aws_iam_role" "execution_role" {
+  count = local.create_execution_role ? 1 : 0
+
+  name        = var.execution_role.name
+  description = var.execution_role.description
+
+  assume_role_policy = data.aws_iam_policy_document.execution_role_assume[0].json
+
+  tags = var.tags
+}
+
+resource "aws_iam_role_policy" "execution_role" {
+  count = local.create_execution_role ? 1 : 0
+
+  name   = "${var.execution_role.name}-policy"
+  role   = aws_iam_role.execution_role[0].id
+  policy = data.aws_iam_policy_document.execution_role[0].json
+}
+
+################################################################################
 # Connector configuration drift guard
 #
 # aws provider 6.x can report an in-place connector_configuration update as
@@ -132,7 +296,10 @@ resource "aws_mskconnect_connector" "this" {
     }
   }
 
-  service_execution_role_arn = each.value.service_execution_role_arn
+  # When the module owns the execution role, every connector gets its ARN
+  # (overriding any per-connector value). Otherwise the caller's value is
+  # passed through unchanged, as in 0.1.0.
+  service_execution_role_arn = local.create_execution_role ? aws_iam_role.execution_role[0].arn : each.value.service_execution_role_arn
 
   dynamic "log_delivery" {
     for_each = try(each.value.log_delivery, null) != null ? [each.value.log_delivery] : []
@@ -172,5 +339,13 @@ resource "aws_mskconnect_connector" "this" {
     replace_triggered_by = [
       terraform_data.connector_configuration[each.key]
     ]
+
+    # Preserves 0.1.0 behaviour: unless the module creates the execution role,
+    # every connector must carry a caller-supplied ARN. Fail at plan time with
+    # an actionable message instead of letting AWS reject the connector.
+    precondition {
+      condition     = local.create_execution_role || each.value.service_execution_role_arn != null
+      error_message = "connectors[${each.key}].service_execution_role_arn is required unless execution_role.create=true (the module then injects the role it creates)."
+    }
   }
 }
