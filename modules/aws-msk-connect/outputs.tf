@@ -28,3 +28,13 @@ output "connectors" {
     }
   }
 }
+
+output "execution_role_arn" {
+  description = "ARN of the MSK Connect service execution role created by this module, or null when execution_role.create is false."
+  value       = try(aws_iam_role.execution_role[0].arn, null)
+}
+
+output "execution_role_name" {
+  description = "Name of the MSK Connect service execution role created by this module, or null when execution_role.create is false."
+  value       = try(aws_iam_role.execution_role[0].name, null)
+}

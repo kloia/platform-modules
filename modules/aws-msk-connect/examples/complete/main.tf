@@ -33,6 +33,24 @@ module "msk_connect" {
     }
   }
 
+  # The module creates the MSK Connect service execution role and injects its
+  # ARN into every connector, so the connectors entries below omit
+  # service_execution_role_arn.
+  execution_role = {
+    create            = true
+    name              = "msk-connect-couchbase-source-exec"
+    description       = "MSK Connect service execution role for the Couchbase CDC source connector"
+    connector_name    = "couchbase-source"
+    cluster_arn       = "arn:aws:kafka:eu-west-1:123456789012:cluster/example-msk-cluster/300d0000-0000-0005-000f-00000000000b-1"
+    target_topic_name = "example-bucket.example.collection"
+    ssm_parameter_arns = [
+      "arn:aws:ssm:eu-west-1:123456789012:parameter/msk-connect/couchbase/username",
+      "arn:aws:ssm:eu-west-1:123456789012:parameter/msk-connect/couchbase/password",
+    ]
+    kms_key_arn       = "arn:aws:kms:eu-west-1:123456789012:key/1234abcd-12ab-34cd-56ef-1234567890ab"
+    plugin_bucket_arn = "arn:aws:s3:::msk-connect-plugins"
+  }
+
   connectors = {
     couchbase_source = {
       name                     = "couchbase-source"
@@ -79,8 +97,6 @@ module "msk_connect" {
       kafka_cluster_encryption_in_transit = {
         encryption_type = "TLS"
       }
-
-      service_execution_role_arn = "arn:aws:iam::123456789012:role/msk-connect-exec"
 
       log_delivery = {
         worker_log_delivery = {
