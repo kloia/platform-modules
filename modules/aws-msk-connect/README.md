@@ -23,7 +23,7 @@ is the SHA-256 of the plugin ZIP, recorded in the committed artifact manifest.
 
 ```hcl
 module "msk_connect" {
-  source = "git::https://github.com/kloia/platform-modules.git?ref=module/aws-msk-connect/v0.2.0"
+  source = "git::https://github.com/kloia/platform-modules.git?ref=module/aws-msk-connect/v0.2.1"
 
   custom_plugins = {
     couchbase = {
@@ -136,7 +136,7 @@ band. `connectors` then omits `service_execution_role_arn`.
 
 ```hcl
 module "msk_connect" {
-  source = "git::https://github.com/kloia/platform-modules.git?ref=module/aws-msk-connect/v0.2.0"
+  source = "git::https://github.com/kloia/platform-modules.git?ref=module/aws-msk-connect/v0.2.1"
 
   execution_role = {
     create            = true
@@ -347,7 +347,9 @@ the role is created, so the trust policy binds `aws:SourceArn` to the
 
 `execution_role.connector_name` must therefore equal the `name` of at least one
 entry in `connectors`. A mismatch produces a role MSK Connect can never assume,
-so the module fails at plan time instead of at connector creation.
+so the module fails at plan time instead of at connector creation. This contract
+is enforced by an IAM-role lifecycle precondition, which is compatible with the
+module's Terraform 1.5.7 minimum version.
 
 **Permission policy.** The AWS reference policy for an IAM-auth cluster, plus
 the reads the SSM config provider and the custom plugin artifact need. Topic and
