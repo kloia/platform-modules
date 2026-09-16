@@ -132,11 +132,13 @@ data "aws_iam_policy_document" "execution_role" {
     resources = ["${local.execution_role_topic_base}/__amazon_msk_connect_*"]
   }
 
-  # Source connectors only produce to the target topic.
+  # Source connectors only produce to the target topic. CreateTopic is granted
+  # on that single topic so the connector can create it when it does not exist
+  # yet; it does not allow creating arbitrary topics.
   statement {
     sid       = "TargetTopic"
     effect    = "Allow"
-    actions   = ["kafka-cluster:WriteData", "kafka-cluster:DescribeTopic"]
+    actions   = ["kafka-cluster:CreateTopic", "kafka-cluster:WriteData", "kafka-cluster:DescribeTopic"]
     resources = ["${local.execution_role_topic_base}/${var.execution_role.target_topic_name}"]
   }
 
