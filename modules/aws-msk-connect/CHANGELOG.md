@@ -1,5 +1,12 @@
 # Changelog
 
+## [0.3.0](https://github.com/kloia/platform-modules/compare/aws-msk-connect-v0.2.1...aws-msk-connect-v0.3.0) (2026-09-16)
+
+
+### Features
+
+* **aws-msk-connect:** allow the execution role to create the target topic ([#357](https://github.com/kloia/platform-modules/issues/357)) ([5b64d7b](https://github.com/kloia/platform-modules/commit/5b64d7b7a85f3564573a36e52ba72e8ba8b84e8c))
+
 ## [0.2.1](https://github.com/kloia/platform-modules/compare/aws-msk-connect-v0.2.0...aws-msk-connect-v0.2.1) (2026-09-16)
 
 
