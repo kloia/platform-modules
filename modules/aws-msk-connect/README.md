@@ -361,7 +361,7 @@ drift apart from the cluster the connector actually targets:
 |---------|----------|
 | `kafka-cluster:Connect`, `kafka-cluster:DescribeCluster` | `cluster_arn` |
 | `kafka-cluster:CreateTopic`, `kafka-cluster:WriteData`, `kafka-cluster:ReadData`, `kafka-cluster:DescribeTopic` | `<topic-base>/__amazon_msk_connect_*` |
-| `kafka-cluster:WriteData`, `kafka-cluster:DescribeTopic` | `<topic-base>/<target_topic_name>` (source connectors only produce) |
+| `kafka-cluster:CreateTopic`, `kafka-cluster:WriteData`, `kafka-cluster:DescribeTopic` | `<topic-base>/<target_topic_name>` (source connectors produce to it; `CreateTopic` lets the connector create that one topic when it does not exist) |
 | `kafka-cluster:AlterGroup`, `kafka-cluster:DescribeGroup` | `<group-base>/__amazon_msk_connect_*` and `<group-base>/connect-*` |
 | `ssm:GetParameter` | exactly `ssm_parameter_arns` |
 | `kms:Decrypt` | exactly `kms_key_arn` |
