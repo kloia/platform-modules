@@ -303,7 +303,16 @@ resource "aws_cloudfront_distribution" "this" {
     iterator = i
 
     content {
-      target_origin_id       = var.cloudfront_elb ? lookup(i.value, "domain_name", "") : (var.s3_bucket_name != "" && var.create_s3_bucket == false ? data.aws_s3_bucket.existing_bucket[0].id : aws_s3_bucket.this[0].id)
+      # Explicit "target_origin_id" in default_cache_behavior wins over the
+      # computed default below. The computed default assumes the origin is
+      # either an ELB or an S3 bucket this module knows the name of (created
+      # by it, or passed via var.s3_bucket_name) - it has no way to target a
+      # custom_origin_config (e.g. an S3 website-hosting endpoint or any
+      # non-S3 origin), and no way to target an existing S3 bucket whose
+      # origin_id in `var.origin` isn't literally the bucket name. Callers
+      # in that situation could not previously produce a working
+      # distribution at all.
+      target_origin_id       = lookup(i.value, "target_origin_id", var.cloudfront_elb ? lookup(i.value, "domain_name", "") : (var.s3_bucket_name != "" && var.create_s3_bucket == false ? data.aws_s3_bucket.existing_bucket[0].id : aws_s3_bucket.this[0].id))
       viewer_protocol_policy = i.value["viewer_protocol_policy"]
 
       allowed_methods           = lookup(i.value, "allowed_methods", ["GET", "HEAD", "OPTIONS"])
