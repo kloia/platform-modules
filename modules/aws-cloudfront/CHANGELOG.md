@@ -1,5 +1,12 @@
 # Changelog
 
+## [1.2.1](https://github.com/kloia/platform-modules/compare/aws-cloudfront-v1.2.0...aws-cloudfront-v1.2.1) (2026-09-17)
+
+
+### Bug Fixes
+
+* **aws-cloudfront:** allow target_origin_id override ([#359](https://github.com/kloia/platform-modules/issues/359)) ([2832c39](https://github.com/kloia/platform-modules/commit/2832c3919cd3bb67524a2cfeaba236279f1ae766))
+
 ## [1.2.0](https://github.com/kloia/platform-modules/compare/aws-cloudfront-v1.1.0...aws-cloudfront-v1.2.0) (2026-08-11)
 
 
