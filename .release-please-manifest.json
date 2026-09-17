@@ -11,7 +11,7 @@
   "modules/aws-rds-global-cluster": "0.1.0",
   "modules/aws-dax": "0.1.0",
   "modules/aws-mongodbatlas-database-user": "0.1.0",
-  "modules/aws-waf-ip-set": "0.1.0",
+  "modules/aws-waf-ip-set": "0.1.1",
   "modules/aws-ecs-task-definition": "0.1.0",
   "modules/aws-kms": "0.1.1",
   "modules/aws-alb-master": "0.1.1",
