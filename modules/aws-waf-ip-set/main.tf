@@ -1,4 +1,5 @@
 resource "aws_wafv2_ip_set" "blacklist_ip_set" {
+  count = var.create_blacklist ? 1 : 0
 
   ip_address_version = "IPV4"
   scope              = var.blacklist_scope
@@ -10,6 +11,8 @@ resource "aws_wafv2_ip_set" "blacklist_ip_set" {
 }
 
 resource "aws_wafv2_ip_set" "whitelist_ip_set" {
+  count = var.create_whitelist ? 1 : 0
+
   ip_address_version = "IPV4"
   scope              = var.whitelist_scope
   description        = var.ip_set_description

@@ -45,6 +45,18 @@ variable "blacklist_scope" {
 
 
 
+variable "create_blacklist" {
+  description = "Whether to create the blacklist_ip_set resource. Default true keeps existing callers unchanged; set false for a caller that only needs ip_address_groups."
+  type        = bool
+  default     = true
+}
+
+variable "create_whitelist" {
+  description = "Whether to create the whitelist_ip_set resource. Default true keeps existing callers unchanged; set false for a caller that only needs ip_address_groups."
+  type        = bool
+  default     = true
+}
+
 variable "ip_address_groups" {
   description = "Map of IP address groups for creating multiple AWS WAFv2 IP Sets"
   type = map(object({
