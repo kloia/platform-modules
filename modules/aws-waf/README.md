@@ -270,6 +270,83 @@ module "waf" {
         priority  = 0
         type      = "LOWERCASE" # The text transformation type
       }
+    },
+    ### Rule Group Reference Rule example
+    # A rule group owned elsewhere, for example shared from another account.
+    # override_action = "count" runs the whole group in Count mode ("none" keeps the
+    # actions of its rules); rule_action_override pins single rules of the group.
+    # Top-level rules only, a reference cannot sit inside and/or/not.
+    {
+      name     = "SharedRuleGroup"
+      priority = "5"
+
+      override_action = "count"
+
+      visibility_config = {
+        cloudwatch_metrics_enabled = true
+        metric_name                = "SharedRuleGroup"
+        sampled_requests_enabled   = true
+      }
+
+      rule_group_reference_statement = {
+        arn = "arn:aws:wafv2:eu-west-1:111111111111:regional/rulegroup/shared-rule-group/EXAMPLE-ID"
+        rule_action_override = [
+          { name = "a-rule-of-the-group", action_to_use = "count" },
+        ]
+      }
+    },
+    ### OR inside AND Rule example
+    # An or_statement can sit inside a top-level and_statement, one level deep, with
+    # byte_match_statement leaves only (other leaf types are dropped, not rejected).
+    {
+      name     = "AndOrRule"
+      priority = "6"
+
+      action = "block"
+
+      visibility_config = {
+        cloudwatch_metrics_enabled = true
+        metric_name                = "AndOrRule"
+        sampled_requests_enabled   = true
+      }
+
+      and_statement = {
+        statements = [
+          {
+            byte_match_statement = {
+              field_to_match        = { single_header = { name = "content-type" } }
+              positional_constraint = "CONTAINS"
+              search_string         = "text/x-component"
+              priority              = 0
+              type                  = "LOWERCASE"
+            }
+          },
+          {
+            or_statement = {
+              statements = [
+                {
+                  byte_match_statement = {
+                    field_to_match        = { body = { oversize_handling = "CONTINUE" } }
+                    positional_constraint = "CONTAINS"
+                    search_string         = "first"
+                    priority              = 0
+                    type                  = "LOWERCASE"
+                  }
+                },
+                {
+                  byte_match_statement = {
+                    field_to_match        = { body = { oversize_handling = "CONTINUE" } }
+                    positional_constraint = "CONTAINS"
+                    search_string         = "second"
+                    priority              = 0
+                    type                  = "LOWERCASE"
+                  }
+                },
+              ]
+            }
+          },
+        ]
+      }
     }
   ]
 
