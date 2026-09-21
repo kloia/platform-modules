@@ -761,6 +761,47 @@ resource "aws_wafv2_web_acl" "waf_acl" {
           }
         }
 
+        # Reference to a rule group owned elsewhere (e.g. shared from another account).
+        # override_action on the rule picks the group-level mode (none|count);
+        # rule_action_override pins single rules of the group in this web ACL.
+        # Shape: { arn = "...", rule_action_override = [{ name = "rule", action_to_use = "count" }] }
+        dynamic "rule_group_reference_statement" {
+          for_each = length(lookup(rule.value, "rule_group_reference_statement", {})) == 0 ? [] : [lookup(rule.value, "rule_group_reference_statement", {})]
+          content {
+            arn = lookup(rule_group_reference_statement.value, "arn")
+
+            dynamic "rule_action_override" {
+              for_each = lookup(rule_group_reference_statement.value, "rule_action_override", [])
+              content {
+                name = lookup(rule_action_override.value, "name")
+
+                action_to_use {
+                  dynamic "allow" {
+                    for_each = lookup(rule_action_override.value, "action_to_use", null) == "allow" ? [1] : []
+                    content {}
+                  }
+                  dynamic "block" {
+                    for_each = lookup(rule_action_override.value, "action_to_use", null) == "block" ? [1] : []
+                    content {}
+                  }
+                  dynamic "count" {
+                    for_each = lookup(rule_action_override.value, "action_to_use", null) == "count" ? [1] : []
+                    content {}
+                  }
+                  dynamic "captcha" {
+                    for_each = lookup(rule_action_override.value, "action_to_use", null) == "captcha" ? [1] : []
+                    content {}
+                  }
+                  dynamic "challenge" {
+                    for_each = lookup(rule_action_override.value, "action_to_use", null) == "challenge" ? [1] : []
+                    content {}
+                  }
+                }
+              }
+            }
+          }
+        }
+
         dynamic "byte_match_statement" {
           for_each = length(lookup(rule.value, "byte_match_statement", {})) == 0 ? [] : [lookup(rule.value, "byte_match_statement", {})]
           content {
@@ -1945,6 +1986,61 @@ resource "aws_wafv2_web_acl" "waf_acl" {
                     text_transformation {
                       priority = lookup(size_constraint_statement.value, "priority")
                       type     = lookup(size_constraint_statement.value, "type")
+                    }
+                  }
+                }
+
+                # AND -> OR, one level (provider limit: root -> and -> or -> leaf). Needed for
+                # rules shaped content-type AND (body contains a OR b OR c).
+                dynamic "or_statement" {
+                  for_each = length(lookup(statement.value, "or_statement", {})) == 0 ? [] : [lookup(statement.value, "or_statement", {})]
+                  content {
+                    dynamic "statement" {
+                      for_each = lookup(or_statement.value, "statements", {})
+                      content {
+                        dynamic "byte_match_statement" {
+                          for_each = length(lookup(statement.value, "byte_match_statement", {})) == 0 ? [] : [lookup(statement.value, "byte_match_statement", {})]
+                          content {
+                            dynamic "field_to_match" {
+                              for_each = length(lookup(byte_match_statement.value, "field_to_match", {})) == 0 ? [] : [lookup(byte_match_statement.value, "field_to_match", {})]
+                              content {
+                                dynamic "uri_path" {
+                                  for_each = length(lookup(field_to_match.value, "uri_path", {})) == 0 ? [] : [lookup(field_to_match.value, "uri_path")]
+                                  content {}
+                                }
+                                dynamic "all_query_arguments" {
+                                  for_each = length(lookup(field_to_match.value, "all_query_arguments", {})) == 0 ? [] : [lookup(field_to_match.value, "all_query_arguments")]
+                                  content {}
+                                }
+                                dynamic "body" {
+                                  for_each = length(lookup(field_to_match.value, "body", {})) == 0 ? [] : [lookup(field_to_match.value, "body")]
+                                  content {}
+                                }
+                                dynamic "method" {
+                                  for_each = length(lookup(field_to_match.value, "method", {})) == 0 ? [] : [lookup(field_to_match.value, "method")]
+                                  content {}
+                                }
+                                dynamic "query_string" {
+                                  for_each = length(lookup(field_to_match.value, "query_string", {})) == 0 ? [] : [lookup(field_to_match.value, "query_string")]
+                                  content {}
+                                }
+                                dynamic "single_header" {
+                                  for_each = length(lookup(field_to_match.value, "single_header", {})) == 0 ? [] : [lookup(field_to_match.value, "single_header")]
+                                  content {
+                                    name = lower(lookup(single_header.value, "name"))
+                                  }
+                                }
+                              }
+                            }
+                            positional_constraint = lookup(byte_match_statement.value, "positional_constraint")
+                            search_string         = lookup(byte_match_statement.value, "search_string")
+                            text_transformation {
+                              priority = lookup(byte_match_statement.value, "priority")
+                              type     = lookup(byte_match_statement.value, "type")
+                            }
+                          }
+                        }
+                      }
                     }
                   }
                 }
