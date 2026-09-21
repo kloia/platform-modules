@@ -1990,8 +1990,9 @@ resource "aws_wafv2_web_acl" "waf_acl" {
                   }
                 }
 
-                # AND -> OR, one level (provider limit: root -> and -> or -> leaf). Needed for
-                # rules shaped content-type AND (body contains a OR b OR c).
+                # AND -> OR, one level (provider limit: root -> and -> or -> leaf). Only
+                # byte_match_statement leaves are rendered; any other leaf type is dropped
+                # silently, which makes the OR match less.
                 dynamic "or_statement" {
                   for_each = length(lookup(statement.value, "or_statement", {})) == 0 ? [] : [lookup(statement.value, "or_statement", {})]
                   content {

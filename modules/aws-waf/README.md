@@ -275,6 +275,7 @@ module "waf" {
     # A rule group owned elsewhere, for example shared from another account.
     # override_action = "count" runs the whole group in Count mode ("none" keeps the
     # actions of its rules); rule_action_override pins single rules of the group.
+    # Top-level rules only, a reference cannot sit inside and/or/not.
     {
       name     = "SharedRuleGroup"
       priority = "5"
@@ -295,7 +296,8 @@ module "waf" {
       }
     },
     ### OR inside AND Rule example
-    # An or_statement can sit inside a top-level and_statement, one level deep.
+    # An or_statement can sit inside a top-level and_statement, one level deep, with
+    # byte_match_statement leaves only (other leaf types are dropped, not rejected).
     {
       name     = "AndOrRule"
       priority = "6"
