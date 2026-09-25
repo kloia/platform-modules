@@ -70,5 +70,6 @@
   "modules/aws-glue": "0.2.1",
   "modules/aws-athena": "0.2.0",
   "modules/aws-eks-access-entry": "0.1.0",
-  "modules/aws-msk-connect": "0.3.0"
+  "modules/aws-msk-connect": "0.3.0",
+  "modules/aws-site-to-site-vpn": "0.0.0"
 }
