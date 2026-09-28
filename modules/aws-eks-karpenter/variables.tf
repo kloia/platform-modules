@@ -29,5 +29,11 @@ variable "enable_karpenter_v1_permissions" {
   description = "Enable Karpenter v1 permissions"
   type        = bool
   default     = false
-  
+
+}
+
+variable "karpenter_controller_iam_policy_statements" {
+  description = "Extra IAM policy statements for the Karpenter controller role, e.g. iam:ListInstanceProfiles for Karpenter 1.7+"
+  type        = any
+  default     = []
 }
