@@ -22,6 +22,9 @@ module "karpenter" {
 
   enable_v1_permissions = var.enable_karpenter_v1_permissions
 
+  # Extra controller permissions; newer Karpenter releases need some the v20 policy lacks
+  iam_policy_statements = var.karpenter_controller_iam_policy_statements
+
   node_iam_role_additional_policies = {
     AmazonEBSCSIDriverPolicy = "arn:aws:iam::aws:policy/service-role/AmazonEBSCSIDriverPolicy"
   }
