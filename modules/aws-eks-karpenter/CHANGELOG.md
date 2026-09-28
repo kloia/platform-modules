@@ -1,5 +1,12 @@
 # Changelog
 
+## [0.2.0](https://github.com/kloia/platform-modules/compare/aws-eks-karpenter-v0.1.0...aws-eks-karpenter-v0.2.0) (2026-09-28)
+
+
+### Features
+
+* **aws-eks-karpenter:** allow extra controller IAM policy statements ([#365](https://github.com/kloia/platform-modules/issues/365)) ([2b55129](https://github.com/kloia/platform-modules/commit/2b55129fec6c68b362538226940911694b727096))
+
 ## 0.1.0 (2025-10-27)
 
 
