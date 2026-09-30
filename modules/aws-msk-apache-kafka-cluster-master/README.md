@@ -212,6 +212,7 @@ module "kafka" {
 | <a name="output_current_version"></a> [current\_version](#output\_current\_version) | Current version of the MSK Cluster used for updates |
 | <a name="output_hostname"></a> [hostname](#output\_hostname) | Comma separated list of one or more MSK Cluster Broker DNS hostname |
 | <a name="output_latest_revision"></a> [latest\_revision](#output\_latest\_revision) | Latest revision of the configuration |
+| <a name="output_password"></a> [password](#output\_password) | Generated SCRAM password of the module-managed user. Marked `sensitive`, so it is redacted in plan and apply output; a caller that re-exports it must mark its own output `sensitive` too. |
 | <a name="output_security_group_id"></a> [security\_group\_id](#output\_security\_group\_id) | The ID of the security group rule |
 | <a name="output_security_group_name"></a> [security\_group\_name](#output\_security\_group\_name) | The name of the security group rule |
 | <a name="output_zookeeper_connect_string"></a> [zookeeper\_connect\_string](#output\_zookeeper\_connect\_string) | A comma separated list of one or more hostname:port pairs to use to connect to the Apache Zookeeper cluster |
