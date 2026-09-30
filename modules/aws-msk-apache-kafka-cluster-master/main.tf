@@ -240,11 +240,12 @@ resource "aws_msk_cluster" "default" {
   tags = var.tags
 }
 
+# Extra ARNs come from per-user SCRAM secrets managed out-of-band; listing them here stops apply from disassociating them
 resource "aws_msk_scram_secret_association" "default" {
   count = local.enabled && var.client_sasl_scram_enabled ? 1 : 0
 
   cluster_arn     = aws_msk_cluster.default[0].arn
-  secret_arn_list = [aws_secretsmanager_secret.sm[0].arn]
+  secret_arn_list = compact(concat([aws_secretsmanager_secret.sm[0].arn], var.extra_scram_secret_arns))
 }
 
 resource "aws_appautoscaling_target" "default" {

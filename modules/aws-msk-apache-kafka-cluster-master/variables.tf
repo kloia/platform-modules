@@ -119,6 +119,12 @@ variable "client_sasl_scram_secret_association_arns" {
   description = "List of AWS Secrets Manager secret ARNs for scram authentication (cannot be set to `true` at the same time as `client_tls_auth_enabled`)."
 }
 
+variable "extra_scram_secret_arns" {
+  type        = list(string)
+  default     = []
+  description = "Additional AWS Secrets Manager secret ARNs of per-user SCRAM credentials to associate with the cluster alongside the module-managed secret. The secrets and their values are managed out-of-band; pass ARNs only. MSK rejects secrets encrypted with the Secrets Manager default key, so each secret must use the cluster's KMS key (`encryption_at_rest_kms_key_arn`)."
+}
+
 variable "client_sasl_iam_enabled" {
   type        = bool
   default     = false
