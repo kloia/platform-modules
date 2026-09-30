@@ -298,6 +298,8 @@ module "waf" {
     ### OR inside AND Rule example
     # An or_statement can sit inside a top-level and_statement, one level deep, with
     # byte_match_statement leaves only (other leaf types are dropped, not rejected).
+    # body.oversize_handling (CONTINUE | MATCH | NO_MATCH) is applied on these leaves;
+    # AWS inspects only the first part of the body, so MATCH suits a blocking rule.
     {
       name     = "AndOrRule"
       priority = "6"

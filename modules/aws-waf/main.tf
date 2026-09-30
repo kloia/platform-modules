@@ -2013,9 +2013,13 @@ resource "aws_wafv2_web_acl" "waf_acl" {
                                   for_each = length(lookup(field_to_match.value, "all_query_arguments", {})) == 0 ? [] : [lookup(field_to_match.value, "all_query_arguments")]
                                   content {}
                                 }
+                                # Unlike the other body blocks in this file, oversize_handling is
+                                # passed through (CONTINUE | MATCH | NO_MATCH); left out, AWS uses CONTINUE.
                                 dynamic "body" {
                                   for_each = length(lookup(field_to_match.value, "body", {})) == 0 ? [] : [lookup(field_to_match.value, "body")]
-                                  content {}
+                                  content {
+                                    oversize_handling = lookup(body.value, "oversize_handling", null)
+                                  }
                                 }
                                 dynamic "method" {
                                   for_each = length(lookup(field_to_match.value, "method", {})) == 0 ? [] : [lookup(field_to_match.value, "method")]
