@@ -66,7 +66,8 @@ output "username" {
 
 output "password" {
   value       =  var.client_sasl_scram_enabled ? random_password.password[0].result : null
-  description = ""
+  description = "Generated SCRAM password of the module-managed user"
+  sensitive   = true
 }
 
 output "cluster_uuid" {
