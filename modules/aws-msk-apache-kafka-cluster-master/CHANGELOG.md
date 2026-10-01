@@ -1,5 +1,17 @@
 # Changelog
 
+## [0.3.0](https://github.com/kloia/platform-modules/compare/aws-msk-apache-kafka-cluster-master-v0.2.2...aws-msk-apache-kafka-cluster-master-v0.3.0) (2026-10-01)
+
+
+### Features
+
+* **aws-msk-apache-kafka-cluster-master:** allow extra SCRAM secret ARNs in the cluster association ([ec7bada](https://github.com/kloia/platform-modules/commit/ec7bada82a7982d3278ab217a6f30757b5c1ab3e))
+
+
+### Bug Fixes
+
+* **aws-msk-apache-kafka-cluster-master:** mark the password output sensitive ([ec7bada](https://github.com/kloia/platform-modules/commit/ec7bada82a7982d3278ab217a6f30757b5c1ab3e))
+
 ## [0.2.2](https://github.com/kloia/platform-modules/compare/aws-msk-apache-kafka-cluster-master-v0.2.1...aws-msk-apache-kafka-cluster-master-v0.2.2) (2025-02-11)
 
 
