@@ -1,5 +1,12 @@
 # Changelog
 
+## [0.5.0](https://github.com/kloia/platform-modules/compare/aws-waf-v0.4.1...aws-waf-v0.5.0) (2026-10-02)
+
+
+### Features
+
+* **aws-waf:** rule_group_reference_statement and OR nested in AND ([#362](https://github.com/kloia/platform-modules/issues/362)) ([657cafc](https://github.com/kloia/platform-modules/commit/657cafcc8e24cde4eb83abf2a06ffc3dd2926916))
+
 ## [0.4.1](https://github.com/kloia/platform-modules/compare/aws-waf-v0.4.0...aws-waf-v0.4.1) (2026-09-02)
 
 
