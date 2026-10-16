@@ -1,5 +1,12 @@
 # Changelog
 
+## [0.7.0](https://github.com/kloia/platform-modules/compare/aws-rds-aurora-v0.6.0...aws-rds-aurora-v0.7.0) (2026-10-16)
+
+
+### Features
+
+* **aws-rds-aurora:** make cluster-level Performance Insights configurable ([#373](https://github.com/kloia/platform-modules/issues/373)) ([b502293](https://github.com/kloia/platform-modules/commit/b5022935857262d0ac159877f4ec2198f21d2b5c))
+
 ## [0.6.0](https://github.com/kloia/platform-modules/compare/aws-rds-aurora-v0.5.0...aws-rds-aurora-v0.6.0) (2026-04-02)
 
 
