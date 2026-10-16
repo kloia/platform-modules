@@ -800,3 +800,9 @@ variable "kms_multi_region" {
   type        = bool
   default     = false
 }
+
+variable "cluster_performance_insights_enabled" {
+  type        = bool
+  default     = null
+  description = "Cluster-level Performance Insights. Set it to the cluster's current value: the provider sends false when this is null and the cluster has it enabled, which turns Performance Insights off."
+}
