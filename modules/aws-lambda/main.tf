@@ -76,9 +76,17 @@ resource "aws_lambda_function" "this" {
   dynamic "environment" {
     for_each = length(keys(var.environment_variables)) == 0 ? [] : [true]
     content {
-      variables = var.environment_variables
+      variables = {
+        for k, v in var.environment_variables :
+        k => (
+          try(type(v) == list(any), false) ? join(",", v) :
+          try(type(v) == map(any), false)  ? jsonencode(v) :
+          tostring(v)
+        )
+      }
     }
   }
+
 
   dynamic "dead_letter_config" {
     for_each = var.dead_letter_target_arn == null ? [] : [true]
