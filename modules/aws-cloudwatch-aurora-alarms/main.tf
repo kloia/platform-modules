@@ -162,3 +162,30 @@ module "pct" {
   ok_actions    = var.ok_actions
   tags          = var.tags
 }
+
+# Published in the secondary region against the secondary cluster, so this belongs on the secondary.
+module "global_lag" {
+  source  = "terraform-aws-modules/cloudwatch/aws//modules/metric-alarm"
+  version = "5.7.3"
+
+  count = var.enable_global_replication_lag_alarm ? 1 : 0
+
+  alarm_name        = "${var.name_prefix}-aurora-${var.name}-global-lag-high"
+  alarm_description = join(" ", compact(["Aurora Global replication to this secondary cluster above ${var.global_replication_lag_threshold_ms / 1000} s for ${local.minutes} minutes. Its readers serve stale data, and a failover now would lose the unreplicated writes. Check the primary's write load.", var.description_suffix]))
+
+  namespace   = "AWS/RDS"
+  metric_name = "AuroraGlobalDBReplicationLag"
+  statistic   = "Maximum"
+  period      = var.period
+  dimensions  = { DBClusterIdentifier = var.cluster_identifier }
+
+  comparison_operator = "GreaterThanThreshold"
+  threshold           = var.global_replication_lag_threshold_ms
+  evaluation_periods  = var.evaluation_periods
+  datapoints_to_alarm = var.datapoints_to_alarm
+  treat_missing_data  = "missing"
+
+  alarm_actions = var.alarm_actions
+  ok_actions    = var.ok_actions
+  tags          = var.tags
+}

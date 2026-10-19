@@ -73,5 +73,8 @@
   "modules/aws-msk-connect": "0.3.0",
   "modules/aws-site-to-site-vpn": "0.1.0",
   "modules/aws-cloudwatch-alb-alarms": "0.1.0",
-  "modules/aws-cloudwatch-aurora-alarms": "0.1.0"
+  "modules/aws-cloudwatch-aurora-alarms": "0.1.0",
+  "modules/aws-cloudwatch-elasticache-alarms": "0.0.0",
+  "modules/aws-cloudwatch-msk-alarms": "0.0.0",
+  "modules/aws-cloudwatch-mq-alarms": "0.0.0"
 }

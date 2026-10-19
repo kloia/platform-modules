@@ -14,6 +14,7 @@ later is covered on the next apply and sizes always match the running class.
 | `deadlocks-high` | above 0.1/s | worst instance |
 | `dbload-high` | active sessions above 3x vCPUs (`enable_dbload_alarm`, needs Performance Insights) | worst instance |
 | `replica-lag-high` | reader lag above 5 s, only when the cluster has a reader | worst reader |
+| `global-lag-high` | Aurora Global replication lag above 30 s (`enable_global_replication_lag_alarm`, set on the secondary cluster in its own region) | cluster |
 
 Taking the worst instance keeps an alarm valid after a writer failover. Percentages per instance
 matter because instances of one cluster can be different classes.

@@ -665,6 +665,33 @@
       "bump-patch-for-minor-pre-major": false,
       "draft": false,
       "prerelease": false
+    },
+    "modules/aws-cloudwatch-elasticache-alarms": {
+      "component": "aws-cloudwatch-elasticache-alarms",
+      "changelog-path": "CHANGELOG.md",
+      "release-type": "terraform-module",
+      "bump-minor-pre-major": true,
+      "bump-patch-for-minor-pre-major": false,
+      "draft": false,
+      "prerelease": false
+    },
+    "modules/aws-cloudwatch-msk-alarms": {
+      "component": "aws-cloudwatch-msk-alarms",
+      "changelog-path": "CHANGELOG.md",
+      "release-type": "terraform-module",
+      "bump-minor-pre-major": true,
+      "bump-patch-for-minor-pre-major": false,
+      "draft": false,
+      "prerelease": false
+    },
+    "modules/aws-cloudwatch-mq-alarms": {
+      "component": "aws-cloudwatch-mq-alarms",
+      "changelog-path": "CHANGELOG.md",
+      "release-type": "terraform-module",
+      "bump-minor-pre-major": true,
+      "bump-patch-for-minor-pre-major": false,
+      "draft": false,
+      "prerelease": false
     }
   },
   "separate-pull-requests": true,

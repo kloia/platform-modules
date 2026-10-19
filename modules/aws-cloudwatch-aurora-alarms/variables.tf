@@ -55,6 +55,18 @@ variable "replica_lag_threshold_ms" {
   default     = 5000
 }
 
+variable "enable_global_replication_lag_alarm" {
+  description = "Alarm on Aurora Global replication lag. Set on the secondary cluster, in the secondary region."
+  type        = bool
+  default     = false
+}
+
+variable "global_replication_lag_threshold_ms" {
+  description = "Aurora Global replication lag in milliseconds above which the alarm fires."
+  type        = number
+  default     = 30000
+}
+
 variable "local_storage_gib" {
   description = "Local storage per instance class in GiB, merged over the built-in Aurora PostgreSQL table."
   type        = map(number)
