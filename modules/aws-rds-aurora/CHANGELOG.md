@@ -1,5 +1,12 @@
 # Changelog
 
+## [0.8.0](https://github.com/kloia/platform-modules/compare/aws-rds-aurora-v0.7.0...aws-rds-aurora-v0.8.0) (2026-10-19)
+
+
+### Features
+
+* **aws-rds-aurora:** support importing an existing cluster ([#376](https://github.com/kloia/platform-modules/issues/376)) ([ead6b0d](https://github.com/kloia/platform-modules/commit/ead6b0d484f03daa82604a7004e5bcac9b8ce939))
+
 ## [0.7.0](https://github.com/kloia/platform-modules/compare/aws-rds-aurora-v0.6.0...aws-rds-aurora-v0.7.0) (2026-10-16)
 
 
