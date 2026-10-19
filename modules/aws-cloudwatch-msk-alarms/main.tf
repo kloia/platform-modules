@@ -16,11 +16,12 @@ locals {
   # Published once per cluster (dimension "Cluster Name" only).
   cluster = {
     offline-partitions = {
-      metric = "OfflinePartitionsCount", op = "GreaterThanThreshold", threshold = 0, datapoints = 1, suffix = "high"
+      metric = "OfflinePartitionsCount", op = "GreaterThanThreshold", threshold = 0, datapoints = 1, suffix = "high", missing = "missing"
       text   = "Kafka has partitions with no leader: producers and consumers of those partitions are failing now. Check broker health and recent restarts."
     }
     active-controller = {
-      metric = "ActiveControllerCount", op = "LessThanThreshold", threshold = 1, datapoints = var.datapoints_to_alarm, suffix = "low"
+      # Missing data counts as breaching: a cluster that stops publishing has no controller either.
+      metric = "ActiveControllerCount", op = "LessThanThreshold", threshold = 1, datapoints = var.datapoints_to_alarm, suffix = "low", missing = "breaching"
       text   = "No active Kafka controller for ${local.minutes} minutes: partition leadership and topic changes are stuck. Check broker health."
     }
   }
@@ -59,7 +60,7 @@ module "cluster" {
   threshold           = each.value.threshold
   evaluation_periods  = var.evaluation_periods
   datapoints_to_alarm = each.value.datapoints
-  treat_missing_data  = "missing"
+  treat_missing_data  = each.value.missing
 
   alarm_actions = var.alarm_actions
   ok_actions    = var.ok_actions
