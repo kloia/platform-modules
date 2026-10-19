@@ -204,6 +204,60 @@ module "cluster" {
 }
 ```
 
+## Importing an Existing Cluster
+
+The module can adopt a cluster that was built outside Terraform without replacing it. Three inputs exist for this:
+
+- `create_kms_key = false` with `kms_key_id` set to the cluster's current key. Otherwise the module creates a new key, and a different `kms_key_id` replaces the cluster.
+- `final_snapshot_identifier`: a fixed name, so no `random_id` resource is added to the plan.
+- `db_parameter_groups` with `db_parameter_group_key` on each instance, when the writer and readers use different parameter groups.
+
+```hcl
+module "cluster" {
+  source = "git::https://github.com/kloia/platform-modules.git?ref=module/aws-rds-aurora/v0.8.0"
+
+  name           = "example-aurora"
+  engine         = "aurora-postgresql"
+  engine_version = "16.4"
+
+  create_kms_key            = false
+  kms_key_id                = "arn:aws:kms:eu-west-1:111122223333:key/00000000-0000-0000-0000-000000000000"
+  final_snapshot_identifier = "example-aurora-final"
+
+  create_db_subnet_group = false
+  db_subnet_group_name   = "example-subnet-group"
+  create_security_group  = false
+  vpc_security_group_ids = ["sg-0123456789abcdef0"]
+  create_monitoring_role = false
+
+  create_db_cluster_parameter_group          = true
+  db_cluster_parameter_group_use_name_prefix = false
+  db_cluster_parameter_group_name            = "example-aurora-cluster-pg"
+  db_cluster_parameter_group_family          = "aurora-postgresql16"
+
+  db_parameter_groups = {
+    writer = { name = "example-aurora-writer-pg", family = "aurora-postgresql16", description = "Writer instance params" }
+    reader = { name = "example-aurora-reader-pg", family = "aurora-postgresql16", description = "Reader instance params" }
+  }
+
+  instances = {
+    "01" = { instance_class = "db.r8g.large", db_parameter_group_key = "writer" }
+    "02" = { instance_class = "db.r8g.large", db_parameter_group_key = "reader" }
+  }
+}
+
+import {
+  to = module.cluster.aws_rds_cluster.this[0]
+  id = "example-aurora"
+}
+# ...one import block per instance and parameter group
+```
+
+Copy every value from the live cluster. On parameter groups, `name`, `family` and `description` force replacement, and `db_cluster_parameter_group_use_name_prefix` defaults to `true`, so set it to `false` to keep the existing name. The account, key, subnet group and security group above are placeholders.
+
+The module never sets `manage_master_user_password`, so an RDS-managed master secret is left as it is. Keep `create_random_password = false` and leave `master_password` unset, or the managed secret is turned off.
+
+
 ## Examples
 
 - [Autoscaling](https://github.com/ToggTrumore/terraform-modules/terraform-aws-rds-aurora/tree/main/examples/autoscaling): A PostgreSQL cluster with enhanced monitoring and autoscaling enabled
@@ -243,6 +297,7 @@ No modules.
 | [aws_appautoscaling_policy.this](https://registry.terraform.io/providers/hashicorp/aws/latest/docs/resources/appautoscaling_policy) | resource |
 | [aws_appautoscaling_target.this](https://registry.terraform.io/providers/hashicorp/aws/latest/docs/resources/appautoscaling_target) | resource |
 | [aws_db_parameter_group.this](https://registry.terraform.io/providers/hashicorp/aws/latest/docs/resources/db_parameter_group) | resource |
+| [aws_db_parameter_group.instance](https://registry.terraform.io/providers/hashicorp/aws/latest/docs/resources/db_parameter_group) | resource |
 | [aws_db_subnet_group.this](https://registry.terraform.io/providers/hashicorp/aws/latest/docs/resources/db_subnet_group) | resource |
 | [aws_iam_role.rds_enhanced_monitoring](https://registry.terraform.io/providers/hashicorp/aws/latest/docs/resources/iam_role) | resource |
 | [aws_iam_role_policy_attachment.rds_enhanced_monitoring](https://registry.terraform.io/providers/hashicorp/aws/latest/docs/resources/iam_role_policy_attachment) | resource |
@@ -287,6 +342,7 @@ No modules.
 | <a name="input_cluster_timeouts"></a> [cluster\_timeouts](#input\_cluster\_timeouts) | Create, update, and delete timeout configurations for the cluster | `map(string)` | `{}` | no |
 | <a name="input_cluster_use_name_prefix"></a> [cluster\_use\_name\_prefix](#input\_cluster\_use\_name\_prefix) | Whether to use `name` as a prefix for the cluster | `bool` | `false` | no |
 | <a name="input_copy_tags_to_snapshot"></a> [copy\_tags\_to\_snapshot](#input\_copy\_tags\_to\_snapshot) | Copy all Cluster `tags` to snapshots | `bool` | `null` | no |
+| <a name="input_create_kms_key"></a> [create\_kms\_key](#input\_create\_kms\_key) | Determines whether a KMS key is created for the cluster. Set to `false` to encrypt with `kms_key_id` instead, e.g. when importing an existing cluster | `bool` | `true` | no |
 | <a name="input_create_cluster"></a> [create\_cluster](#input\_create\_cluster) | Whether cluster should be created (affects nearly all resources) | `bool` | `true` | no |
 | <a name="input_create_db_cluster_parameter_group"></a> [create\_db\_cluster\_parameter\_group](#input\_create\_db\_cluster\_parameter\_group) | Determines whether a cluster parameter should be created or use existing | `bool` | `false` | no |
 | <a name="input_create_db_parameter_group"></a> [create\_db\_parameter\_group](#input\_create\_db\_parameter\_group) | Determines whether a DB parameter should be created or use existing | `bool` | `false` | no |
@@ -306,6 +362,7 @@ No modules.
 | <a name="input_db_parameter_group_family"></a> [db\_parameter\_group\_family](#input\_db\_parameter\_group\_family) | The family of the DB parameter group | `string` | `""` | no |
 | <a name="input_db_parameter_group_name"></a> [db\_parameter\_group\_name](#input\_db\_parameter\_group\_name) | The name of the DB parameter group | `string` | `null` | no |
 | <a name="input_db_parameter_group_parameters"></a> [db\_parameter\_group\_parameters](#input\_db\_parameter\_group\_parameters) | A list of DB parameters to apply. Note that parameters may differ from a family to an other | `list(map(string))` | `[]` | no |
+| <a name="input_db_parameter_groups"></a> [db\_parameter\_groups](#input\_db\_parameter\_groups) | Map of additional DB parameter groups to create, each with `name`, `family` and optional `description` and `parameters`. An instance selects one with `db_parameter_group_key` | `any` | `{}` | no |
 | <a name="input_db_parameter_group_use_name_prefix"></a> [db\_parameter\_group\_use\_name\_prefix](#input\_db\_parameter\_group\_use\_name\_prefix) | Determines whether the DB parameter group name is used as a prefix | `bool` | `true` | no |
 | <a name="input_db_subnet_group_name"></a> [db\_subnet\_group\_name](#input\_db\_subnet\_group\_name) | The name of the subnet group name (existing or created) | `string` | `""` | no |
 | <a name="input_deletion_protection"></a> [deletion\_protection](#input\_deletion\_protection) | If the DB instance should have deletion protection enabled. The database can't be deleted when this value is set to `true`. The default is `false` | `bool` | `null` | no |
@@ -316,6 +373,7 @@ No modules.
 | <a name="input_engine"></a> [engine](#input\_engine) | The name of the database engine to be used for this DB cluster. Defaults to `aurora`. Valid Values: `aurora`, `aurora-mysql`, `aurora-postgresql` | `string` | `null` | no |
 | <a name="input_engine_mode"></a> [engine\_mode](#input\_engine\_mode) | The database engine mode. Valid values: `global`, `multimaster`, `parallelquery`, `provisioned`, `serverless`. Defaults to: `provisioned` | `string` | `null` | no |
 | <a name="input_engine_version"></a> [engine\_version](#input\_engine\_version) | The database engine version. Updating this argument results in an outage | `string` | `null` | no |
+| <a name="input_final_snapshot_identifier"></a> [final\_snapshot\_identifier](#input\_final\_snapshot\_identifier) | The name of the final snapshot taken on cluster destroy. When set, it is used as is and no random suffix is generated | `string` | `null` | no |
 | <a name="input_final_snapshot_identifier_prefix"></a> [final\_snapshot\_identifier\_prefix](#input\_final\_snapshot\_identifier\_prefix) | The prefix name to use when creating a final snapshot on cluster destroy; a 8 random digits are appended to name to ensure it's unique | `string` | `"final"` | no |
 | <a name="input_global_cluster_identifier"></a> [global\_cluster\_identifier](#input\_global\_cluster\_identifier) | The global cluster identifier specified on `aws_rds_global_cluster` | `string` | `null` | no |
 | <a name="input_iam_database_authentication_enabled"></a> [iam\_database\_authentication\_enabled](#input\_iam\_database\_authentication\_enabled) | Specifies whether or mappings of AWS Identity and Access Management (IAM) accounts to database accounts is enabled | `bool` | `null` | no |
@@ -392,6 +450,7 @@ No modules.
 | <a name="output_db_cluster_parameter_group_id"></a> [db\_cluster\_parameter\_group\_id](#output\_db\_cluster\_parameter\_group\_id) | The ID of the DB cluster parameter group created |
 | <a name="output_db_parameter_group_arn"></a> [db\_parameter\_group\_arn](#output\_db\_parameter\_group\_arn) | The ARN of the DB parameter group created |
 | <a name="output_db_parameter_group_id"></a> [db\_parameter\_group\_id](#output\_db\_parameter\_group\_id) | The ID of the DB parameter group created |
+| <a name="output_db_parameter_groups"></a> [db\_parameter\_groups](#output\_db\_parameter\_groups) | Map of the additional DB parameter groups created, keyed as `db_parameter_groups` |
 | <a name="output_db_subnet_group_name"></a> [db\_subnet\_group\_name](#output\_db\_subnet\_group\_name) | The db subnet group name |
 | <a name="output_enhanced_monitoring_iam_role_arn"></a> [enhanced\_monitoring\_iam\_role\_arn](#output\_enhanced\_monitoring\_iam\_role\_arn) | The Amazon Resource Name (ARN) specifying the enhanced monitoring role |
 | <a name="output_enhanced_monitoring_iam_role_name"></a> [enhanced\_monitoring\_iam\_role\_name](#output\_enhanced\_monitoring\_iam\_role\_name) | The name of the enhanced monitoring role |

@@ -190,6 +190,12 @@ variable "engine_version" {
   default     = null
 }
 
+variable "final_snapshot_identifier" {
+  description = "The name of the final snapshot taken on cluster destroy. When set, it is used as is and no random suffix is generated"
+  type        = string
+  default     = null
+}
+
 variable "final_snapshot_identifier_prefix" {
   description = "The prefix name to use when creating a final snapshot on cluster destroy; a 8 random digits are appended to name to ensure it's unique"
   type        = string
@@ -790,9 +796,21 @@ variable "db_parameter_group_parameters" {
 }
 
 
+variable "db_parameter_groups" {
+  description = "Map of additional DB parameter groups to create, each with `name`, `family` and optional `description` and `parameters`. An instance selects one with `db_parameter_group_key`"
+  type        = any
+  default     = {}
+}
+
 variable "kms_key_id" {
   description = "The key ID of the KMS key"
   default     = null
+}
+
+variable "create_kms_key" {
+  description = "Determines whether a KMS key is created for the cluster. Set to `false` to encrypt with `kms_key_id` instead, e.g. when importing an existing cluster"
+  type        = bool
+  default     = true
 }
 
 variable "kms_multi_region" {
