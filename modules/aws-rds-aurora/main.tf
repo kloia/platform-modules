@@ -31,7 +31,7 @@ resource "random_password" "master_password" {
 }
 
 resource "random_id" "snapshot_identifier" {
-  count = local.create_cluster ? 1 : 0
+  count = local.create_cluster && var.final_snapshot_identifier == null ? 1 : 0
 
   keepers = {
     id = var.name
@@ -94,12 +94,12 @@ resource "aws_rds_cluster" "this" {
   engine                              = var.engine
   engine_mode                         = var.engine_mode
   engine_version                      = var.engine_version
-  final_snapshot_identifier           = "${var.final_snapshot_identifier_prefix}-${var.name}-${try(random_id.snapshot_identifier[0].hex, "")}"
+  final_snapshot_identifier           = coalesce(var.final_snapshot_identifier, "${var.final_snapshot_identifier_prefix}-${var.name}-${try(random_id.snapshot_identifier[0].hex, "")}")
   global_cluster_identifier           = var.global_cluster_identifier
   iam_database_authentication_enabled = var.iam_database_authentication_enabled
   # iam_roles has been removed from this resource and instead will be used with aws_rds_cluster_role_association below to avoid conflicts per docs
   iops                          = var.iops
-  kms_key_id                    = var.is_primary_cluster ? aws_kms_key.kms.arn : var.kms_key_id
+  kms_key_id                    = var.is_primary_cluster && var.create_kms_key ? aws_kms_key.kms[0].arn : var.kms_key_id
   master_password               = var.is_primary_cluster ? local.master_password : null
   master_username               = var.is_primary_cluster ? var.master_username : null
   network_type                  = var.network_type
@@ -191,7 +191,7 @@ resource "aws_rds_cluster_instance" "this" {
   ca_cert_identifier                    = var.ca_cert_identifier
   cluster_identifier                    = aws_rds_cluster.this[0].id
   copy_tags_to_snapshot                 = try(each.value.copy_tags_to_snapshot, var.copy_tags_to_snapshot)
-  db_parameter_group_name               = var.create_db_parameter_group ? aws_db_parameter_group.this[0].id : var.db_parameter_group_name
+  db_parameter_group_name               = try(each.value.db_parameter_group_key, null) != null ? aws_db_parameter_group.instance[each.value.db_parameter_group_key].name : try(each.value.db_parameter_group_name, var.create_db_parameter_group ? aws_db_parameter_group.this[0].id : var.db_parameter_group_name)
   db_subnet_group_name                  = local.db_subnet_group_name
   engine                                = var.engine
   engine_version                        = var.engine_version
@@ -436,6 +436,30 @@ resource "aws_db_parameter_group" "this" {
   tags = var.tags
 }
 
+################################################################################
+# Additional DB Parameter Group(s)
+################################################################################
+
+resource "aws_db_parameter_group" "instance" {
+  for_each = { for k, v in var.db_parameter_groups : k => v if local.create_cluster }
+
+  name        = each.value.name
+  description = try(each.value.description, null)
+  family      = each.value.family
+
+  dynamic "parameter" {
+    for_each = try(each.value.parameters, [])
+
+    content {
+      name         = parameter.value.name
+      value        = parameter.value.value
+      apply_method = try(parameter.value.apply_method, "immediate")
+    }
+  }
+
+  tags = var.tags
+}
+
 data "aws_caller_identity" "current" {}
 data "aws_iam_policy_document" "rds" {
   statement {
@@ -474,6 +498,13 @@ data "aws_iam_policy_document" "rds" {
 }
 
 resource "aws_kms_key" "kms" {
+  count = var.create_kms_key ? 1 : 0
+
   policy       = data.aws_iam_policy_document.rds.json
   multi_region = var.kms_multi_region
+}
+
+moved {
+  from = aws_kms_key.kms
+  to   = aws_kms_key.kms[0]
 }

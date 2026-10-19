@@ -152,11 +152,16 @@ output "db_parameter_group_arn" {
   value       = try(aws_db_parameter_group.this[0].arn, "")
 }
 
+output "db_parameter_groups" {
+  description = "Map of the additional DB parameter groups created, keyed as `db_parameter_groups`"
+  value       = { for k, v in aws_db_parameter_group.instance : k => { arn = v.arn, id = v.id } }
+}
+
 output "db_parameter_group_id" {
   description = "The ID of the DB parameter group created"
   value       = try(aws_db_parameter_group.this[0].id, "")
 }
 
 output "kms_key_arn" {
-  value = aws_kms_key.kms.arn
+  value = try(aws_kms_key.kms[0].arn, var.kms_key_id)
 }
