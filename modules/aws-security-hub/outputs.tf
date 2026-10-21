@@ -7,8 +7,8 @@ output "securityhub_account" {
 }
 
 output "finding_aggregator" {
-  description = "Security Hub finding aggregator configuration."
-  value       = aws_securityhub_finding_aggregator.this
+  description = "Security Hub finding aggregator configuration, or null when create_finding_aggregator is false."
+  value       = one(aws_securityhub_finding_aggregator.this)
 }
 
 ##################################################

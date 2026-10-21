@@ -13,6 +13,12 @@ variable "control_finding_generator" {
   default     = "STANDARD_CONTROL"
 }
 
+variable "create_finding_aggregator" {
+  description = "Whether to create the finding aggregator. An account can have only one, so set this to `false` in every Region but one when the module is used in several Regions of the same account. Defaults to `true`."
+  type        = bool
+  default     = true
+}
+
 variable "linking_mode" {
   description = "Indicates whether to aggregate findings from all of the available Regions or from a specified list. The options are ALL_REGIONS, ALL_REGIONS_EXCEPT_SPECIFIED or SPECIFIED_REGIONS. When ALL_REGIONS or ALL_REGIONS_EXCEPT_SPECIFIED are used, Security Hub will automatically aggregate findings from new Regions as Security Hub supports them and you opt into them."
   type        = string
