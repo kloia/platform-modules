@@ -22,7 +22,7 @@
   "modules/aws-mongodbatlas-cluster": "0.2.1",
   "modules/aws-route53-records": "0.1.0",
   "modules/aws-vpc-peering-accepter": "0.1.0",
-  "modules/aws-security-hub": "0.2.0",
+  "modules/aws-security-hub": "0.2.1",
   "modules/aws-route53-zones": "0.1.0",
   "modules/aws-mongodbatlas-access": "0.1.0",
   "modules/aws-centralized-logging": "0.1.0",

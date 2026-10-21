@@ -1,5 +1,12 @@
 # Changelog
 
+## [0.2.1](https://github.com/kloia/platform-modules/compare/aws-security-hub-v0.2.0...aws-security-hub-v0.2.1) (2026-10-21)
+
+
+### Bug Fixes
+
+* **aws-security-hub:** skip delegated-admin resources when admin_account_id is unset ([#384](https://github.com/kloia/platform-modules/issues/384)) ([3c9bf7b](https://github.com/kloia/platform-modules/commit/3c9bf7bbca182711360bc3cf83dc5c51d6359658))
+
 ## [0.2.0](https://github.com/kloia/platform-modules/compare/aws-security-hub-v0.1.0...aws-security-hub-v0.2.0) (2026-10-21)
 
 
