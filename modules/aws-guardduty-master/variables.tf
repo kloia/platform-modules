@@ -92,3 +92,28 @@ variable "s3_protection_enabled" {
   type        = bool
   default     = false
 }
+
+variable "detector_features" {
+  description = <<-DOC
+  GuardDuty protection plans to manage, keyed by feature name, for example
+  `RDS_LOGIN_EVENTS`, `EKS_AUDIT_LOGS`, `EBS_MALWARE_PROTECTION`,
+  `LAMBDA_NETWORK_LOGS` or `RUNTIME_MONITORING`. `status` is `ENABLED` or
+  `DISABLED`. Leave S3 protection to `s3_protection_enabled`.
+
+  For more information, see:
+  https://registry.terraform.io/providers/hashicorp/aws/latest/docs/resources/guardduty_detector_feature
+  DOC
+  type = map(object({
+    status = string
+    additional_configuration = optional(list(object({
+      name   = string
+      status = string
+    })), [])
+  }))
+  default = {}
+
+  validation {
+    condition     = !contains(keys(var.detector_features), "S3_DATA_EVENTS")
+    error_message = "Manage S3 protection with s3_protection_enabled, not detector_features."
+  }
+}
