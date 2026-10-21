@@ -12,8 +12,3 @@ output "sns_topic_subscriptions" {
   description = "SNS topic subscriptions"
   value       = local.create_sns_topic ? module.sns_topic[0].aws_sns_topic_subscriptions : null
 }
-
-output "detector_features" {
-  description = "GuardDuty protection plans managed through detector_features"
-  value       = aws_guardduty_detector_feature.this
-}

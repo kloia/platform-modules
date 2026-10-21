@@ -12,25 +12,6 @@ resource "aws_guardduty_detector" "guardduty" {
   }
 }
 
-# Protection plans other than S3 (set by `s3_protection_enabled` above). A
-# detector created through the API turns some plans on by default, so declare
-# every plan you care about, including the ones to keep DISABLED.
-resource "aws_guardduty_detector_feature" "this" {
-  for_each = module.this.enabled ? var.detector_features : {}
-
-  detector_id = aws_guardduty_detector.guardduty.id
-  name        = each.key
-  status      = each.value.status
-
-  dynamic "additional_configuration" {
-    for_each = each.value.additional_configuration
-    content {
-      name   = additional_configuration.value.name
-      status = additional_configuration.value.status
-    }
-  }
-}
-
 #-----------------------------------------------------------------------------------------------------------------------
 # Optionally configure Event Bridge Rules and SNS subscriptions
 # https://docs.aws.amazon.com/securityhub/latest/userguide/securityhub-cwe-integration-types.html

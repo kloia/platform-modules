@@ -3,14 +3,14 @@
 
 | Name | Version |
 |------|---------|
-| <a name="requirement_terraform"></a> [terraform](#requirement\_terraform) | >= 1.3.0 |
-| <a name="requirement_aws"></a> [aws](#requirement\_aws) | >= 5.20 |
+| <a name="requirement_terraform"></a> [terraform](#requirement\_terraform) | >= 0.13.0 |
+| <a name="requirement_aws"></a> [aws](#requirement\_aws) | >= 3 |
 
 ## Providers
 
 | Name | Version |
 |------|---------|
-| <a name="provider_aws"></a> [aws](#provider\_aws) | >= 5.20 |
+| <a name="provider_aws"></a> [aws](#provider\_aws) | >= 3 |
 
 ## Modules
 
@@ -27,7 +27,6 @@
 | [aws_cloudwatch_event_rule.findings](https://registry.terraform.io/providers/hashicorp/aws/latest/docs/resources/cloudwatch_event_rule) | resource |
 | [aws_cloudwatch_event_target.imported_findings](https://registry.terraform.io/providers/hashicorp/aws/latest/docs/resources/cloudwatch_event_target) | resource |
 | [aws_guardduty_detector.guardduty](https://registry.terraform.io/providers/hashicorp/aws/latest/docs/resources/guardduty_detector) | resource |
-| [aws_guardduty_detector_feature.this](https://registry.terraform.io/providers/hashicorp/aws/latest/docs/resources/guardduty_detector_feature) | resource |
 | [aws_sns_topic_policy.sns_topic_publish_policy](https://registry.terraform.io/providers/hashicorp/aws/latest/docs/resources/sns_topic_policy) | resource |
 | [aws_iam_policy_document.sns_topic_policy](https://registry.terraform.io/providers/hashicorp/aws/latest/docs/data-sources/iam_policy_document) | data source |
 
@@ -42,7 +41,6 @@
 | <a name="input_create_sns_topic"></a> [create\_sns\_topic](#input\_create\_sns\_topic) | Flag to indicate whether an SNS topic should be created for notifications.<br>If you want to send findings to a new SNS topic, set this to true and provide a valid configuration for subscribers. | `bool` | `false` | no |
 | <a name="input_delimiter"></a> [delimiter](#input\_delimiter) | Delimiter to be used between ID elements.<br>Defaults to `-` (hyphen). Set to `""` to use no delimiter at all. | `string` | `null` | no |
 | <a name="input_descriptor_formats"></a> [descriptor\_formats](#input\_descriptor\_formats) | Describe additional descriptors to be output in the `descriptors` output map.<br>Map of maps. Keys are names of descriptors. Values are maps of the form<br>`{<br>   format = string<br>   labels = list(string)<br>}`<br>(Type is `any` so the map values can later be enhanced to provide additional options.)<br>`format` is a Terraform format string to be passed to the `format()` function.<br>`labels` is a list of labels, in order, to pass to `format()` function.<br>Label values will be normalized before being passed to `format()` so they will be<br>identical to how they appear in `id`.<br>Default is `{}` (`descriptors` output will be empty). | `any` | `{}` | no |
-| <a name="input_detector_features"></a> [detector\_features](#input\_detector\_features) | GuardDuty protection plans to manage, keyed by feature name, for example<br>`RDS_LOGIN_EVENTS`, `EKS_AUDIT_LOGS`, `EBS_MALWARE_PROTECTION`,<br>`LAMBDA_NETWORK_LOGS` or `RUNTIME_MONITORING`. `status` is `ENABLED` or<br>`DISABLED`. Leave S3 protection to `s3_protection_enabled`.<br><br>For more information, see:<br>https://registry.terraform.io/providers/hashicorp/aws/latest/docs/resources/guardduty_detector_feature | <pre>map(object({<br>    status = string<br>    additional_configuration = optional(list(object({<br>      name   = string<br>      status = string<br>    })), [])<br>  }))</pre> | `{}` | no |
 | <a name="input_enable_cloudwatch"></a> [enable\_cloudwatch](#input\_enable\_cloudwatch) | Flag to indicate whether an CloudWatch logging should be enabled for GuardDuty | `bool` | `false` | no |
 | <a name="input_enabled"></a> [enabled](#input\_enabled) | Set to false to prevent the module from creating any resources | `bool` | `null` | no |
 | <a name="input_environment"></a> [environment](#input\_environment) | ID element. Usually used for region e.g. 'uw2', 'us-west-2', OR role 'prod', 'staging', 'dev', 'UAT' | `string` | `null` | no |
@@ -66,7 +64,6 @@
 
 | Name | Description |
 |------|-------------|
-| <a name="output_detector_features"></a> [detector\_features](#output\_detector\_features) | GuardDuty protection plans managed through detector\_features |
 | <a name="output_guardduty_detector"></a> [guardduty\_detector](#output\_guardduty\_detector) | GuardDuty detector |
 | <a name="output_sns_topic"></a> [sns\_topic](#output\_sns\_topic) | SNS topic |
 | <a name="output_sns_topic_subscriptions"></a> [sns\_topic\_subscriptions](#output\_sns\_topic\_subscriptions) | SNS topic subscriptions |
