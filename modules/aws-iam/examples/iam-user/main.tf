@@ -33,3 +33,17 @@ module "iam_user2" {
   create_iam_user_login_profile = false
   create_iam_access_key         = true
 }
+
+#########################################
+# IAM user with a managed policy attached
+#########################################
+module "iam_user3" {
+  source = "../../modules/iam-user"
+
+  name = "vasya.pupkin5"
+
+  create_iam_user_login_profile = false
+  create_iam_access_key         = false
+
+  policy_arns = ["arn:aws:iam::aws:policy/ReadOnlyAccess"]
+}
