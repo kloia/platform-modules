@@ -43,3 +43,10 @@ resource "aws_iam_user_ssh_key" "this" {
   encoding   = var.ssh_key_encoding
   public_key = var.ssh_public_key
 }
+
+resource "aws_iam_user_policy_attachment" "this" {
+  count = var.create_user ? length(var.policy_arns) : 0
+
+  user       = aws_iam_user.this[0].name
+  policy_arn = var.policy_arns[count.index]
+}
