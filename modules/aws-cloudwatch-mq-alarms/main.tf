@@ -133,3 +133,54 @@ module "rabbitmq" {
   ok_actions    = var.ok_actions
   tags          = var.tags
 }
+
+# A broker that is down or unreachable publishes nothing, and every alarm above then sits in
+# INSUFFICIENT_DATA. This one watches a metric that is always published while the broker runs and
+# fires only when it stops: no datapoint can be below 0, so missing data is the only way to breach.
+module "no_data" {
+  source  = "terraform-aws-modules/cloudwatch/aws//modules/metric-alarm"
+  version = "5.7.3"
+
+  alarm_name        = "${var.name_prefix}-mq-${var.name}-no-data"
+  alarm_description = join(" ", compact(["Amazon MQ broker published no metrics for ${local.minutes} minutes: it is down, restarting or unreachable. Check the broker status and recent events in the Amazon MQ console.", var.description_suffix]))
+
+  metric_query = concat(
+    [{
+      id          = "agg"
+      expression  = local.activemq ? "MAX([${join(",", [for i, n in local.instances : "m${i}"])}])" : "m0"
+      label       = local.activemq ? "CPU % (active instance)" : "System CPU %"
+      return_data = true
+    }],
+    local.activemq ? [for i, n in local.instances : {
+      id          = "m${i}"
+      return_data = false
+      metric = [{
+        namespace   = "AWS/AmazonMQ"
+        metric_name = "CpuUtilization"
+        stat        = "Maximum"
+        period      = var.period
+        dimensions  = { Broker = n }
+      }]
+      }] : [{
+      id          = "m0"
+      return_data = false
+      metric = [{
+        namespace   = "AWS/AmazonMQ"
+        metric_name = "SystemCpuUtilization"
+        stat        = "Maximum"
+        period      = var.period
+        dimensions  = { Broker = var.broker_name }
+      }]
+    }]
+  )
+
+  comparison_operator = "LessThanThreshold"
+  threshold           = 0
+  evaluation_periods  = var.evaluation_periods
+  datapoints_to_alarm = var.datapoints_to_alarm
+  treat_missing_data  = "breaching"
+
+  alarm_actions = var.alarm_actions
+  ok_actions    = var.ok_actions
+  tags          = var.tags
+}

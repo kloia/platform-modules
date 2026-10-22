@@ -76,5 +76,9 @@
   "modules/aws-cloudwatch-aurora-alarms": "0.1.0",
   "modules/aws-cloudwatch-elasticache-alarms": "0.0.0",
   "modules/aws-cloudwatch-msk-alarms": "0.0.0",
-  "modules/aws-cloudwatch-mq-alarms": "0.0.0"
+  "modules/aws-cloudwatch-mq-alarms": "0.0.0",
+  "modules/aws-cloudwatch-nat-alarms": "0.0.0",
+  "modules/aws-cloudwatch-vpn-alarms": "0.0.0",
+  "modules/aws-cloudwatch-acm-alarms": "0.0.0",
+  "modules/aws-cloudwatch-ec2-alarms": "0.0.0"
 }

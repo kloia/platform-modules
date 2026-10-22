@@ -31,6 +31,24 @@ variable "evictions_threshold" {
   default     = 0
 }
 
+variable "rejected_connections_threshold" {
+  description = "Rejected connections per period above which the worst node alarms."
+  type        = number
+  default     = 0
+}
+
+variable "replication_lag_threshold_s" {
+  description = "Replica lag in seconds above which the worst replica alarms."
+  type        = number
+  default     = 30
+}
+
+variable "host_cpu_threshold" {
+  description = "Host CPU % above which the worst node alarms. Null turns the alarm off; set it for nodes with 2 vCPUs or fewer, at 90 divided by the vCPU count."
+  type        = number
+  default     = null
+}
+
 variable "period" {
   description = "Metric period in seconds."
   type        = number

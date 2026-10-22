@@ -12,6 +12,7 @@ Per-broker alarms take the worst broker.
 | `active-controller-low` | no active controller |
 | `under-replicated-high` | any under-replicated partition, worst broker |
 | `disk-used-high` | data log disk above 80%, worst broker |
+| `cpu-high` | CPU user + system above 60%, worst broker ([AWS best practice](https://docs.aws.amazon.com/msk/latest/developerguide/bestpractices.html#bestpractices-monitor-cpu)) |
 
 Every threshold, the period and the datapoints are variables. Defaults: 5-minute period, 3 of 3 datapoints.
 

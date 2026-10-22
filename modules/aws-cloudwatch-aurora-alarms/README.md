@@ -14,10 +14,17 @@ later is covered on the next apply and sizes always match the running class.
 | `deadlocks-high` | above 0.1/s | worst instance |
 | `dbload-high` | active sessions above 3x vCPUs (`enable_dbload_alarm`, needs Performance Insights) | worst instance |
 | `replica-lag-high` | reader lag above 5 s, only when the cluster has a reader | worst reader |
+| `transaction-ids-high` | oldest unvacuumed transaction ID above 1 billion (Aurora PostgreSQL) | worst instance |
+| `connections-high` | connections above 80% of `max_connections` | highest instance, each against its own limit |
 | `global-lag-high` | Aurora Global replication lag above 30 s (`enable_global_replication_lag_alarm`, set on the secondary cluster in its own region) | cluster |
 
 Taking the worst instance keeps an alarm valid after a writer failover. Percentages per instance
 matter because instances of one cluster can be different classes.
+
+The transaction ID threshold follows AWS's guidance in
+[Implement an early warning system for transaction ID wraparound](https://aws.amazon.com/blogs/database/implement-an-early-warning-system-for-transaction-id-wraparound-in-amazon-rds-for-postgresql/);
+PostgreSQL stops accepting writes near 2.1 billion. `max_connections` defaults to the Aurora PostgreSQL formula
+`LEAST({DBInstanceClassMemory/9531392},5000)`; pass `max_connections` when the parameter group sets it.
 
 Memory comes from the EC2 instance type. Local storage comes from the Aurora PostgreSQL table in
 [Temporary storage limits for Aurora PostgreSQL](https://docs.aws.amazon.com/AmazonRDS/latest/AuroraUserGuide/AuroraPostgreSQL.Managing.html);

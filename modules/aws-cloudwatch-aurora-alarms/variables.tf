@@ -67,6 +67,24 @@ variable "global_replication_lag_threshold_ms" {
   default     = 30000
 }
 
+variable "transaction_ids_threshold" {
+  description = "Age of the oldest unvacuumed transaction ID above which the alarm fires. Aurora PostgreSQL only."
+  type        = number
+  default     = 1000000000
+}
+
+variable "connections_threshold_pct" {
+  description = "Connections, as % of max_connections, above which the worst instance alarms."
+  type        = number
+  default     = 80
+}
+
+variable "max_connections" {
+  description = "max_connections when the parameter group overrides it. Null uses the Aurora PostgreSQL default per instance class."
+  type        = number
+  default     = null
+}
+
 variable "local_storage_gib" {
   description = "Local storage per instance class in GiB, merged over the built-in Aurora PostgreSQL table."
   type        = map(number)

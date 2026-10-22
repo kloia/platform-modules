@@ -3,6 +3,7 @@ output "alarm_arns" {
   value = merge(
     { for k, m in module.cluster : k => m.cloudwatch_metric_alarm_arn },
     { for k, m in module.broker : k => m.cloudwatch_metric_alarm_arn },
+    { cpu = module.cpu.cloudwatch_metric_alarm_arn },
   )
 }
 

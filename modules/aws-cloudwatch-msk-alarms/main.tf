@@ -106,3 +106,50 @@ module "broker" {
   ok_actions    = var.ok_actions
   tags          = var.tags
 }
+
+# CpuUser + CpuSystem per broker, then the worst broker. AWS recommends keeping it under 60% so the
+# cluster has headroom when a broker is replaced or patched.
+module "cpu" {
+  source  = "terraform-aws-modules/cloudwatch/aws//modules/metric-alarm"
+  version = "5.7.3"
+
+  alarm_name        = "${var.name_prefix}-kafka-${var.name}-cpu-high"
+  alarm_description = join(" ", compact(["Kafka broker CPU (user + system) above ${var.cpu_threshold_pct}% for ${local.minutes} minutes. Above 60% the cluster has no headroom for a broker failure or a rolling update. Check partition balance and client load before scaling up.", var.description_suffix]))
+
+  metric_query = concat(
+    [{
+      id          = "agg"
+      expression  = "MAX([${join(",", [for i, b in local.brokers : "c${i}"])}])"
+      label       = "CPU user + system % (worst broker)"
+      return_data = true
+    }],
+    [for i, b in local.brokers : {
+      id          = "c${i}"
+      expression  = "u${i} + s${i}"
+      return_data = false
+    }],
+    flatten([for i, b in local.brokers : [
+      for k, m in { u = "CpuUser", s = "CpuSystem" } : {
+        id            = "${k}${i}"
+        return_data   = false
+        metric = [{
+          namespace   = "AWS/Kafka"
+          metric_name = m
+          stat        = "Average"
+          period      = var.period
+          dimensions  = { "Cluster Name" = var.cluster_name, "Broker ID" = b }
+        }]
+      }
+    ]])
+  )
+
+  comparison_operator = "GreaterThanThreshold"
+  threshold           = var.cpu_threshold_pct
+  evaluation_periods  = var.evaluation_periods
+  datapoints_to_alarm = var.datapoints_to_alarm
+  treat_missing_data  = "missing"
+
+  alarm_actions = var.alarm_actions
+  ok_actions    = var.ok_actions
+  tags          = var.tags
+}

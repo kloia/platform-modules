@@ -11,6 +11,13 @@ on the next apply. Each alarm takes the worst node, which keeps it valid after a
 | `engine-cpu-high` | engine thread CPU above 80% |
 | `memory-high` | memory above 85% of maxmemory |
 | `evictions-high` | any key evicted, for every evaluated period |
+| `rejected-connections-high` | any connection rejected (maxclients reached), for every evaluated period |
+| `replication-lag-high` | a replica more than 30 s behind the primary |
+| `host-cpu-high` | host CPU above `host_cpu_threshold`; off unless set |
+
+For nodes with 2 vCPUs or fewer AWS recommends watching host CPU at 90% of one core, i.e. 90 divided by the
+vCPU count ([Which metrics should I monitor?](https://docs.aws.amazon.com/AmazonElastiCache/latest/dg/CacheMetrics.WhichShouldIMonitor.html)).
+On burstable (t-family) nodes this also catches CPU credit exhaustion.
 
 Every threshold, the period and the datapoints are variables. Defaults: 5-minute period, 3 of 3 datapoints.
 

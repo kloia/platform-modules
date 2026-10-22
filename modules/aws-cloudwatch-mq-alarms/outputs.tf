@@ -3,6 +3,7 @@ output "alarm_arns" {
   value = merge(
     { for k, m in module.activemq : k => m.cloudwatch_metric_alarm_arn },
     { for k, m in module.rabbitmq : k => m.cloudwatch_metric_alarm_arn },
+    { no-data = module.no_data.cloudwatch_metric_alarm_arn },
   )
 }
 

@@ -13,6 +13,12 @@ variable "cluster_name" {
   type        = string
 }
 
+variable "cpu_threshold_pct" {
+  description = "Broker CPU (CpuUser + CpuSystem) % above which the worst broker alarms."
+  type        = number
+  default     = 60
+}
+
 variable "disk_used_threshold_pct" {
   description = "Data log disk used % above which the worst broker alarms."
   type        = number
