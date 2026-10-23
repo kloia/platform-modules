@@ -5,6 +5,13 @@ data "aws_msk_cluster" "this" {
 
 data "aws_msk_broker_nodes" "this" {
   cluster_arn = data.aws_msk_cluster.this.arn
+
+  lifecycle {
+    postcondition {
+      condition     = length(self.node_info_list) <= 5
+      error_message = "A metric math alarm can include at most 10 metrics, and the CPU alarm reads two per broker; this cluster has more than 5 brokers."
+    }
+  }
 }
 
 locals {

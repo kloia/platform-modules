@@ -11,6 +11,10 @@ data "aws_instances" "this" {
       condition     = length(self.ids) > 0
       error_message = "No running instance has one of the Name tags in instance_names."
     }
+    postcondition {
+      condition     = length(self.ids) <= 10
+      error_message = "A metric math alarm can include at most 10 metrics; more than 10 instances matched. Split them over several units."
+    }
   }
 }
 

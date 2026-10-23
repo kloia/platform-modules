@@ -11,6 +11,10 @@ data "aws_nat_gateways" "this" {
       condition     = length(self.ids) > 0
       error_message = "No available NAT gateway found in this VPC."
     }
+    postcondition {
+      condition     = length(self.ids) <= 10
+      error_message = "A metric math alarm can include at most 10 metrics; more than 10 NAT gateways matched. Split them over several units."
+    }
   }
 }
 

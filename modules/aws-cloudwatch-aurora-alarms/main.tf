@@ -2,6 +2,13 @@
 # next apply, and sizes come from the live instance class, not from code.
 data "aws_rds_cluster" "this" {
   cluster_identifier = var.cluster_identifier
+
+  lifecycle {
+    postcondition {
+      condition     = length(self.cluster_members) <= 10
+      error_message = "A metric math alarm can include at most 10 metrics; this cluster has more than 10 instances."
+    }
+  }
 }
 
 data "aws_db_instance" "this" {

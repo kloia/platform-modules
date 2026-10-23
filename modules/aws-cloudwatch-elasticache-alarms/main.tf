@@ -2,6 +2,13 @@
 # next apply.
 data "aws_elasticache_replication_group" "this" {
   replication_group_id = var.replication_group_id
+
+  lifecycle {
+    postcondition {
+      condition     = length(self.member_clusters) <= 10
+      error_message = "A metric math alarm can include at most 10 metrics; this replication group has more than 10 nodes."
+    }
+  }
 }
 
 locals {
