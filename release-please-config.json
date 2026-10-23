@@ -666,6 +666,24 @@
       "draft": false,
       "prerelease": false
     },
+    "modules/aws-mongodbatlas-maintenance-window": {
+      "component": "aws-mongodbatlas-maintenance-window",
+      "changelog-path": "CHANGELOG.md",
+      "release-type": "terraform-module",
+      "bump-minor-pre-major": true,
+      "bump-patch-for-minor-pre-major": false,
+      "draft": false,
+      "prerelease": false
+    },
+    "modules/aws-guardduty-detector-features": {
+      "component": "aws-guardduty-detector-features",
+      "changelog-path": "CHANGELOG.md",
+      "release-type": "terraform-module",
+      "bump-minor-pre-major": true,
+      "bump-patch-for-minor-pre-major": false,
+      "draft": false,
+      "prerelease": false
+    },
     "modules/aws-cloudwatch-elasticache-alarms": {
       "component": "aws-cloudwatch-elasticache-alarms",
       "changelog-path": "CHANGELOG.md",

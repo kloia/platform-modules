@@ -42,13 +42,23 @@ resource "time_sleep" "wait_securityhub_enable" {
   depends_on = [aws_securityhub_account.this]
 }
 
+# An account can have only one finding aggregator. Callers that enable Security
+# Hub in several Regions of the same account create it from one of them.
 resource "aws_securityhub_finding_aggregator" "this" {
+  count = var.create_finding_aggregator ? 1 : 0
+
   linking_mode      = var.linking_mode
   specified_regions = var.specified_regions
 
   provider = aws.security_account
 
   depends_on = [time_sleep.wait_securityhub_enable]
+}
+
+# Keeps existing aggregators in place now that the resource has a count.
+moved {
+  from = aws_securityhub_finding_aggregator.this
+  to   = aws_securityhub_finding_aggregator.this[0]
 }
 
 ##################################################
