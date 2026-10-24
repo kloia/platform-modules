@@ -32,6 +32,35 @@ locals {
   caData                      = var.enable_sso ? data.aws_ssm_parameter.sso_ca_data_network_account[0].value : ""
   ssoURL                      = var.enable_sso ? data.aws_ssm_parameter.sso_url_network_account[0].value : ""
   slackToken                  = var.enable_notification ? data.aws_ssm_parameter.notification_slack_token[0].value : ""
+
+  # Shared by each connect ingress and its kubernetes_annotations twin, which is kept so an upgrade destroys nothing.
+  alb_connect_nginx_annotations = merge({
+    "alb.ingress.kubernetes.io/load-balancer-name" = var.loadbalancer_name
+    "alb.ingress.kubernetes.io/certificate-arn"    = var.acm_certificate_arn
+    "alb.ingress.kubernetes.io/wafv2-acl-arn"      = var.waf_acl_arn
+    "alb.ingress.kubernetes.io/scheme"             = "internet-facing"
+    "alb.ingress.kubernetes.io/target-type"        = "instance"
+    "alb.ingress.kubernetes.io/group.name"         = "external"
+    "alb.ingress.kubernetes.io/ssl-redirect"       = "443"
+    "alb.ingress.kubernetes.io/listen-ports"       = "[{\"HTTP\": 80}, {\"HTTPS\": 443}]"
+    "alb.ingress.kubernetes.io/healthcheck-path"   = "/healthz"
+    }, length(var.alb_tags) > 0 ? {
+    "alb.ingress.kubernetes.io/tags" = join(",", [for k, v in var.alb_tags : "${k}=${v}"])
+  } : {})
+
+  alb_connect_nginx_internal_annotations = merge({
+    "alb.ingress.kubernetes.io/load-balancer-name" = var.internal_loadbalancer_name
+    "alb.ingress.kubernetes.io/certificate-arn"    = var.acm_certificate_arn
+    "alb.ingress.kubernetes.io/wafv2-acl-arn"      = var.internal_waf_acl_arn
+    "alb.ingress.kubernetes.io/scheme"             = "internal"
+    "alb.ingress.kubernetes.io/target-type"        = "instance"
+    "alb.ingress.kubernetes.io/group.name"         = "internal"
+    "alb.ingress.kubernetes.io/ssl-redirect"       = "443"
+    "alb.ingress.kubernetes.io/listen-ports"       = "[{\"HTTP\": 80}, {\"HTTPS\": 443}]"
+    "alb.ingress.kubernetes.io/healthcheck-path"   = "/healthz"
+    }, length(var.alb_tags) > 0 ? {
+    "alb.ingress.kubernetes.io/tags" = join(",", [for k, v in var.alb_tags : "${k}=${v}"])
+  } : {})
 }
 
 resource "kubernetes_service_account" "service-common-service-account" {
@@ -134,18 +163,12 @@ resource "helm_release" "ingress_nginx" {
 
 resource "kubernetes_ingress_v1" "alb_ingress_connect_nginx" {
   count = local.can_connect_alb_to_nginx ? 1 : 0
-  # Annotations are owned by the paired kubernetes_annotations resource (force=true). Ignore the whole
-  # annotations map so this resource never strips them on update. Otherwise every ingress change wipes the
-  # alb.ingress.* annotations, the AWS LB Controller spawns a new (auto-named) LB, and a 2nd apply is needed
-  # for kubernetes_annotations to re-add them. (Covers the previous metadata["*cattle*"] ignore too.)
-  lifecycle {
-    ignore_changes = [metadata[0].annotations]
-  }
+  # Annotations stay inline and without ignore_changes: the provider updates with a full PUT built from state.
   wait_for_load_balancer = true
   metadata {
-    name      = var.connect_hostnames_from_alb_ing_prefix != "" ? "${var.connect_hostnames_from_alb_ing_prefix}-nginx" : "ing-nginx"
-    namespace = "ingress-nginx"
-
+    name        = var.connect_hostnames_from_alb_ing_prefix != "" ? "${var.connect_hostnames_from_alb_ing_prefix}-nginx" : "ing-nginx"
+    namespace   = "ingress-nginx"
+    annotations = local.alb_connect_nginx_annotations
   }
 
   spec {
@@ -185,19 +208,7 @@ resource "kubernetes_annotations" "alb_ingress_connect_nginx_annotation" {
     name      = var.connect_hostnames_from_alb_ing_prefix != "" ? "${var.connect_hostnames_from_alb_ing_prefix}-nginx" : "ing-nginx"
     namespace = "ingress-nginx"
   }
-  annotations = merge({
-    "alb.ingress.kubernetes.io/load-balancer-name" = var.loadbalancer_name
-    "alb.ingress.kubernetes.io/certificate-arn"    = var.acm_certificate_arn
-    "alb.ingress.kubernetes.io/wafv2-acl-arn"      = var.waf_acl_arn
-    "alb.ingress.kubernetes.io/scheme"             = "internet-facing"
-    "alb.ingress.kubernetes.io/target-type"        = "instance"
-    "alb.ingress.kubernetes.io/group.name"         = "external"
-    "alb.ingress.kubernetes.io/ssl-redirect"       = "443"
-    "alb.ingress.kubernetes.io/listen-ports"       = "[{\"HTTP\": 80}, {\"HTTPS\": 443}]"
-    "alb.ingress.kubernetes.io/healthcheck-path"   = "/healthz"
-    }, length(var.alb_tags) > 0 ? {
-    "alb.ingress.kubernetes.io/tags" = join(",", [for k, v in var.alb_tags : "${k}=${v}"])
-  } : {})
+  annotations = local.alb_connect_nginx_annotations
   depends_on = [
     kubernetes_ingress_v1.alb_ingress_connect_nginx
   ]
@@ -205,18 +216,12 @@ resource "kubernetes_annotations" "alb_ingress_connect_nginx_annotation" {
 
 resource "kubernetes_ingress_v1" "alb_ingress_connect_nginx_internal" {
   count = var.enable_internal_alb ? 1 : 0
-  # Annotations are owned by the paired kubernetes_annotations resource (force=true). Ignore the whole
-  # annotations map so this resource never strips them on update. Otherwise every ingress change wipes the
-  # alb.ingress.* annotations, the AWS LB Controller spawns a new (auto-named) LB, and a 2nd apply is needed
-  # for kubernetes_annotations to re-add them. (Covers the previous metadata["*cattle*"] ignore too.)
-  lifecycle {
-    ignore_changes = [metadata[0].annotations]
-  }
+  # Annotations stay inline and without ignore_changes: the provider updates with a full PUT built from state.
   wait_for_load_balancer = true
   metadata {
-    name      = var.connect_hostnames_from_alb_internal_ing_prefix != "" ? "${var.connect_hostnames_from_alb_internal_ing_prefix}-nginx-internal" : "ing-nginx-internal"
-    namespace = "ingress-nginx"
-
+    name        = var.connect_hostnames_from_alb_internal_ing_prefix != "" ? "${var.connect_hostnames_from_alb_internal_ing_prefix}-nginx-internal" : "ing-nginx-internal"
+    namespace   = "ingress-nginx"
+    annotations = local.alb_connect_nginx_internal_annotations
   }
 
   spec {
@@ -256,19 +261,7 @@ resource "kubernetes_annotations" "alb_ingress_connect_internal_nginx_annotation
     name      = var.connect_hostnames_from_alb_internal_ing_prefix != "" ? "${var.connect_hostnames_from_alb_internal_ing_prefix}-nginx-internal" : "ing-nginx-internal"
     namespace = "ingress-nginx"
   }
-  annotations = merge({
-    "alb.ingress.kubernetes.io/load-balancer-name" = var.internal_loadbalancer_name
-    "alb.ingress.kubernetes.io/certificate-arn"    = var.acm_certificate_arn
-    "alb.ingress.kubernetes.io/wafv2-acl-arn"      = var.internal_waf_acl_arn
-    "alb.ingress.kubernetes.io/scheme"             = "internal"
-    "alb.ingress.kubernetes.io/target-type"        = "instance"
-    "alb.ingress.kubernetes.io/group.name"         = "internal"
-    "alb.ingress.kubernetes.io/ssl-redirect"       = "443"
-    "alb.ingress.kubernetes.io/listen-ports"       = "[{\"HTTP\": 80}, {\"HTTPS\": 443}]"
-    "alb.ingress.kubernetes.io/healthcheck-path"   = "/healthz"
-    }, length(var.alb_tags) > 0 ? {
-    "alb.ingress.kubernetes.io/tags" = join(",", [for k, v in var.alb_tags : "${k}=${v}"])
-  } : {})
+  annotations = local.alb_connect_nginx_internal_annotations
   depends_on = [
     kubernetes_ingress_v1.alb_ingress_connect_nginx_internal
   ]
