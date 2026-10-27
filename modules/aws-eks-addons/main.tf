@@ -46,7 +46,7 @@ locals {
     "alb.ingress.kubernetes.io/healthcheck-path"   = "/healthz"
     }, length(var.alb_tags) > 0 ? {
     "alb.ingress.kubernetes.io/tags" = join(",", [for k, v in var.alb_tags : "${k}=${v}"])
-  } : {})
+  } : {}, var.alb_extra_annotations)
 
   alb_connect_nginx_internal_annotations = merge({
     "alb.ingress.kubernetes.io/load-balancer-name" = var.internal_loadbalancer_name
@@ -60,7 +60,7 @@ locals {
     "alb.ingress.kubernetes.io/healthcheck-path"   = "/healthz"
     }, length(var.alb_tags) > 0 ? {
     "alb.ingress.kubernetes.io/tags" = join(",", [for k, v in var.alb_tags : "${k}=${v}"])
-  } : {})
+  } : {}, var.internal_alb_extra_annotations)
 }
 
 resource "kubernetes_service_account" "service-common-service-account" {
@@ -163,7 +163,10 @@ resource "helm_release" "ingress_nginx" {
 
 resource "kubernetes_ingress_v1" "alb_ingress_connect_nginx" {
   count = local.can_connect_alb_to_nginx ? 1 : 0
-  # Annotations stay inline and without ignore_changes: the provider updates with a full PUT built from state.
+  # Annotations stay inline: the provider updates with a full PUT built from state. Rancher rewrites publicEndpoints.
+  lifecycle {
+    ignore_changes = [metadata[0].annotations["field.cattle.io/publicEndpoints"]]
+  }
   wait_for_load_balancer = true
   metadata {
     name        = var.connect_hostnames_from_alb_ing_prefix != "" ? "${var.connect_hostnames_from_alb_ing_prefix}-nginx" : "ing-nginx"
@@ -216,7 +219,10 @@ resource "kubernetes_annotations" "alb_ingress_connect_nginx_annotation" {
 
 resource "kubernetes_ingress_v1" "alb_ingress_connect_nginx_internal" {
   count = var.enable_internal_alb ? 1 : 0
-  # Annotations stay inline and without ignore_changes: the provider updates with a full PUT built from state.
+  # Annotations stay inline: the provider updates with a full PUT built from state. Rancher rewrites publicEndpoints.
+  lifecycle {
+    ignore_changes = [metadata[0].annotations["field.cattle.io/publicEndpoints"]]
+  }
   wait_for_load_balancer = true
   metadata {
     name        = var.connect_hostnames_from_alb_internal_ing_prefix != "" ? "${var.connect_hostnames_from_alb_internal_ing_prefix}-nginx-internal" : "ing-nginx-internal"
