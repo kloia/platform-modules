@@ -502,6 +502,8 @@ resource "aws_kms_key" "kms" {
 
   policy       = data.aws_iam_policy_document.rds.json
   multi_region = var.kms_multi_region
+
+  tags = merge(var.tags, var.kms_key_tags)
 }
 
 moved {
