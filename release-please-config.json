@@ -683,6 +683,15 @@
       "bump-patch-for-minor-pre-major": false,
       "draft": false,
       "prerelease": false
+    },
+    "modules/aws-organizations-scp": {
+      "component": "aws-organizations-scp",
+      "changelog-path": "CHANGELOG.md",
+      "release-type": "terraform-module",
+      "bump-minor-pre-major": true,
+      "bump-patch-for-minor-pre-major": false,
+      "draft": false,
+      "prerelease": false
     }
   },
   "separate-pull-requests": true,
