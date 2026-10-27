@@ -75,5 +75,6 @@
   "modules/aws-cloudwatch-alb-alarms": "0.1.0",
   "modules/aws-cloudwatch-aurora-alarms": "0.1.0",
   "modules/aws-mongodbatlas-maintenance-window": "0.1.0",
-  "modules/aws-guardduty-detector-features": "0.1.0"
+  "modules/aws-guardduty-detector-features": "0.1.0",
+  "modules/aws-organizations-scp": "0.0.0"
 }
