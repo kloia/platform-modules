@@ -1,5 +1,12 @@
 # Changelog
 
+## [0.3.0](https://github.com/kloia/platform-modules/compare/aws-ecr-v0.2.0...aws-ecr-v0.3.0) (2026-10-28)
+
+
+### Features
+
+* **aws-ecr:** per-repository tags ([#391](https://github.com/kloia/platform-modules/issues/391)) ([c8e5d72](https://github.com/kloia/platform-modules/commit/c8e5d727f2710c2f40abb746818fc4f481287d79))
+
 ## [0.2.0](https://github.com/kloia/platform-modules/compare/aws-ecr-v0.1.0...aws-ecr-v0.2.0) (2026-05-18)
 
 
