@@ -1,5 +1,12 @@
 # Changelog
 
+## [0.9.0](https://github.com/kloia/platform-modules/compare/aws-rds-aurora-v0.8.0...aws-rds-aurora-v0.9.0) (2026-10-28)
+
+
+### Features
+
+* **aws-rds-aurora:** tag the KMS key the module creates ([#392](https://github.com/kloia/platform-modules/issues/392)) ([6d28d76](https://github.com/kloia/platform-modules/commit/6d28d762f760ecb3c0a3d98aa15175d85272f5a0))
+
 ## [0.8.0](https://github.com/kloia/platform-modules/compare/aws-rds-aurora-v0.7.0...aws-rds-aurora-v0.8.0) (2026-10-19)
 
 
