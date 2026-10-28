@@ -576,6 +576,18 @@ variable "alb_tags" {
   default     = {}
 }
 
+variable "alb_extra_annotations" {
+  description = "Extra annotations merged last into the external nginx connector ingress, e.g. alb.ingress.kubernetes.io/ssl-policy or load-balancer-attributes. Any alb.ingress.kubernetes.io/* key on the live ingress that is not set by the module or here is removed on the next update."
+  type        = map(string)
+  default     = {}
+}
+
+variable "internal_alb_extra_annotations" {
+  description = "Extra annotations merged last into the internal nginx connector ingress. Same semantics as alb_extra_annotations."
+  type        = map(string)
+  default     = {}
+}
+
 variable "nginx_controller_pod_labels" {
   description = "Extra pod labels applied to the ingress-nginx controller pods (set as controller.podLabels in the ingress-nginx Helm release). Empty by default (no extra labels)."
   type        = map(string)
