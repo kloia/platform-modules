@@ -45,3 +45,9 @@ variable "cross_account_read" {
   description = "Read parameter from cross account"
   default     = false
 }
+
+variable "tags" {
+  description = "A map of tags to add to every parameter the module writes"
+  type        = map(string)
+  default     = {}
+}
