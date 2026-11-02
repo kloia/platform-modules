@@ -11,7 +11,7 @@ resource "aws_ecr_repository" "this" {
     scan_on_push = var.scan_on_pushing
   }
 
-  tags = var.tags
+  tags = merge(var.tags, lookup(var.repository_tags, each.value, {}))
 }
 
 data "aws_iam_policy_document" "ecs_ecr_read_perms" {

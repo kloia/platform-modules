@@ -52,6 +52,12 @@ variable "tags" {
   default     = {}
 }
 
+variable "repository_tags" {
+  description = "Extra tags per repository, keyed by repository name, merged over `tags`. Use it for tags that differ between repositories, such as Name or an owner."
+  type        = map(map(string))
+  default     = {}
+}
+
 
 variable "secondary_region" {
   description = "Region to Create ECR Registry"

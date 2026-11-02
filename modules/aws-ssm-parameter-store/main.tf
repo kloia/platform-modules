@@ -29,6 +29,7 @@ resource "aws_ssm_parameter" "default" {
   allowed_pattern = each.value.allowed_pattern
   data_type       = each.value.data_type
 
+  tags = var.tags
 }
 
 resource "aws_ssm_parameter" "ignore_value_changes" {
@@ -44,6 +45,7 @@ resource "aws_ssm_parameter" "ignore_value_changes" {
   allowed_pattern = each.value.allowed_pattern
   data_type       = each.value.data_type
 
+  tags = var.tags
 
   lifecycle {
     ignore_changes = [

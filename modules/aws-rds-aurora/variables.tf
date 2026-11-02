@@ -824,3 +824,9 @@ variable "cluster_performance_insights_enabled" {
   default     = null
   description = "Cluster-level Performance Insights. Set it to the cluster's current value: the provider sends false when this is null and the cluster has it enabled, which turns Performance Insights off."
 }
+
+variable "kms_key_tags" {
+  description = "Additional tags for the KMS key the module creates (`create_kms_key`), merged over `tags`"
+  type        = map(string)
+  default     = {}
+}
