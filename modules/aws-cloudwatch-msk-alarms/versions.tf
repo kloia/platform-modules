@@ -1,5 +1,6 @@
 terraform {
-  required_version = ">= 1.3"
+  # check blocks need Terraform 1.5.
+  required_version = ">= 1.5"
 
   required_providers {
     aws = {
