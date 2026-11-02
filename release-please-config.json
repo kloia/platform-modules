@@ -657,6 +657,15 @@
       "draft": false,
       "prerelease": false
     },
+    "modules/aws-cloudwatch-apigateway-alarms": {
+      "component": "aws-cloudwatch-apigateway-alarms",
+      "changelog-path": "CHANGELOG.md",
+      "release-type": "terraform-module",
+      "bump-minor-pre-major": true,
+      "bump-patch-for-minor-pre-major": false,
+      "draft": false,
+      "prerelease": false
+    },
     "modules/aws-cloudwatch-aurora-alarms": {
       "component": "aws-cloudwatch-aurora-alarms",
       "changelog-path": "CHANGELOG.md",
