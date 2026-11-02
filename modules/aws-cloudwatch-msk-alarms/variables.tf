@@ -66,3 +66,9 @@ variable "tags" {
   type        = map(string)
   default     = {}
 }
+
+variable "active_controller_treat_missing_data" {
+  description = "Missing ActiveControllerCount data counts as no controller by default. Tested on ZooKeeper-mode clusters; check that a KRaft-mode cluster publishes the metric before relying on the default."
+  type        = string
+  default     = "breaching"
+}

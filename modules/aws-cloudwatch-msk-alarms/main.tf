@@ -5,13 +5,6 @@ data "aws_msk_cluster" "this" {
 
 data "aws_msk_broker_nodes" "this" {
   cluster_arn = data.aws_msk_cluster.this.arn
-
-  lifecycle {
-    postcondition {
-      condition     = length(self.node_info_list) <= 5
-      error_message = "A metric math alarm can include at most 10 metrics, and the CPU alarm reads two per broker; this cluster has more than 5 brokers."
-    }
-  }
 }
 
 locals {
@@ -28,12 +21,15 @@ locals {
     }
     active-controller = {
       # Missing data counts as breaching: a cluster that stops publishing has no controller either.
-      metric = "ActiveControllerCount", op = "LessThanThreshold", threshold = 1, datapoints = var.datapoints_to_alarm, suffix = "low", missing = "breaching"
+      metric = "ActiveControllerCount", op = "LessThanThreshold", threshold = 1, datapoints = var.datapoints_to_alarm, suffix = "low", missing = var.active_controller_treat_missing_data
       text   = "No active Kafka controller for ${local.minutes} minutes: partition leadership and topic changes are stuck. Check broker health."
     }
   }
 
-  # Published per broker; MAX over brokers.
+  # Published per broker; MAX over brokers. A metric math alarm holds at most 10 metrics, so these two
+  # are skipped above 10 brokers (the check below warns); the other alarms are not affected.
+  max_over_brokers_fits = length(local.brokers) <= 10
+
   broker = {
     under-replicated = {
       metric = "UnderReplicatedPartitions", threshold = 0
@@ -78,7 +74,7 @@ module "broker" {
   source  = "terraform-aws-modules/cloudwatch/aws//modules/metric-alarm"
   version = "5.7.3"
 
-  for_each = local.broker
+  for_each = local.max_over_brokers_fits ? local.broker : {}
 
   alarm_name        = "${var.name_prefix}-kafka-${var.name}-${each.key}-high"
   alarm_description = join(" ", compact([each.value.text, var.description_suffix]))
@@ -114,41 +110,54 @@ module "broker" {
   tags          = var.tags
 }
 
-# CpuUser + CpuSystem per broker, then the worst broker. AWS recommends keeping it under 60% so the
-# cluster has headroom when a broker is replaced or patched.
+check "brokers_fit_max_alarms" {
+  assert {
+    condition     = local.max_over_brokers_fits
+    error_message = "${var.cluster_name} has ${length(local.brokers)} brokers; a metric math alarm holds at most 10 metrics, so the under-replicated and disk-used alarms are not created."
+  }
+}
+
+# CpuUser + CpuSystem, one alarm per broker. AWS recommends keeping it under 60% so the cluster has
+# headroom when a broker is replaced or patched.
 module "cpu" {
   source  = "terraform-aws-modules/cloudwatch/aws//modules/metric-alarm"
   version = "5.7.3"
 
-  alarm_name        = "${var.name_prefix}-kafka-${var.name}-cpu-high"
-  alarm_description = join(" ", compact(["Kafka broker CPU (user + system) above ${var.cpu_threshold_pct}% for ${local.minutes} minutes. Above 60% the cluster has no headroom for a broker failure or a rolling update. Check partition balance and client load before scaling up.", var.description_suffix]))
+  for_each = toset(local.brokers)
 
-  metric_query = concat(
-    [{
-      id          = "agg"
-      expression  = "MAX([${join(",", [for i, b in local.brokers : "c${i}"])}])"
-      label       = "CPU user + system % (worst broker)"
+  alarm_name        = "${var.name_prefix}-kafka-${var.name}-cpu-high-broker-${each.key}"
+  alarm_description = join(" ", compact(["Kafka broker ${each.key} CPU (user + system) above ${var.cpu_threshold_pct}% for ${local.minutes} minutes. Above 60% the cluster has no headroom for a broker failure or a rolling update. Check partition balance and client load before scaling up.", var.description_suffix]))
+
+  metric_query = [
+    {
+      id          = "cpu"
+      expression  = "user + system"
+      label       = "CPU user + system % (broker ${each.key})"
       return_data = true
-    }],
-    [for i, b in local.brokers : {
-      id          = "c${i}"
-      expression  = "u${i} + s${i}"
+    },
+    {
+      id          = "user"
       return_data = false
-    }],
-    flatten([for i, b in local.brokers : [
-      for k, m in { u = "CpuUser", s = "CpuSystem" } : {
-        id            = "${k}${i}"
-        return_data   = false
-        metric = [{
-          namespace   = "AWS/Kafka"
-          metric_name = m
-          stat        = "Average"
-          period      = var.period
-          dimensions  = { "Cluster Name" = var.cluster_name, "Broker ID" = b }
-        }]
-      }
-    ]])
-  )
+      metric = [{
+        namespace   = "AWS/Kafka"
+        metric_name = "CpuUser"
+        stat        = "Average"
+        period      = var.period
+        dimensions  = { "Cluster Name" = var.cluster_name, "Broker ID" = each.key }
+      }]
+    },
+    {
+      id          = "system"
+      return_data = false
+      metric = [{
+        namespace   = "AWS/Kafka"
+        metric_name = "CpuSystem"
+        stat        = "Average"
+        period      = var.period
+        dimensions  = { "Cluster Name" = var.cluster_name, "Broker ID" = each.key }
+      }]
+    },
+  ]
 
   comparison_operator = "GreaterThanThreshold"
   threshold           = var.cpu_threshold_pct

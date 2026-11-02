@@ -5,6 +5,7 @@ Alarms for one ElastiCache (Redis OSS / Valkey) replication group, built on
 
 The group's member nodes are read from AWS on every plan, so a replica or shard added later is covered
 on the next apply. Each alarm takes the worst node, which keeps it valid after a primary failover.
+A metric math alarm holds at most 10 metrics, so a replication group with more than 10 nodes fails the plan.
 
 | Alarm | Default |
 |---|---|
