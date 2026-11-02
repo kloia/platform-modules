@@ -12,7 +12,7 @@ broker-level series, which carries the same values as each node and does not cha
 | `heap-high` | ActiveMQ: JVM heap above 90% |
 | `store-high` | ActiveMQ: persistent store above 80% |
 | `memory-high` | RabbitMQ: memory above 80% of the high watermark |
-| `disk-free-low` | RabbitMQ: free disk below 2x the disk alarm limit |
+| `disk-free-low` | RabbitMQ: lowest free disk in the period below 2x the highest disk alarm limit. `enable_disk_free_alarm = false` skips it when the broker already has a disk alarm |
 | `no-data` | the broker published no CPU metric for the whole evaluation window (down or unreachable) |
 
 Every threshold, the period and the datapoints are variables. Defaults: 5-minute period, 3 of 3 datapoints.

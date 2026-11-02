@@ -26,17 +26,18 @@ locals {
   }
 
   # RabbitMQ: the broker-level series carries the same values as the nodes, so node names (which change
-  # on replacement) are not needed. Each alarm is a ratio of a metric to its limit.
+  # on replacement) are not needed. Each alarm is a ratio of a metric to its limit, using the worst value
+  # of each in the period: highest memory against lowest limit, lowest free disk against highest limit.
   rabbitmq_alarms = {
     memory = {
       used       = "RabbitMQMemUsed", limit = "RabbitMQMemLimit", op = "GreaterThanThreshold", threshold = var.memory_threshold_pct
-      expression = "100 * used / limit", suffix = "high"
+      expression = "100 * used / limit", suffix = "high", used_stat = "Maximum", limit_stat = "Minimum"
       label      = "Memory used % of the high watermark"
       text       = "RabbitMQ memory above ${var.memory_threshold_pct}% of its high watermark for ${local.minutes} minutes. At 100% publishers are blocked. Check queue depth and unacked messages."
     }
     disk-free = {
       used       = "RabbitMQDiskFree", limit = "RabbitMQDiskFreeLimit", op = "LessThanThreshold", threshold = var.disk_free_limit_multiple
-      expression = "used / limit", suffix = "low"
+      expression = "used / limit", suffix = "low", used_stat = "Minimum", limit_stat = "Maximum"
       label      = "Free disk as a multiple of the disk alarm limit"
       text       = "RabbitMQ free disk below ${var.disk_free_limit_multiple}x its disk alarm limit for ${local.minutes} minutes. At the limit publishers are blocked. Check queue depth."
     }
@@ -87,7 +88,7 @@ module "rabbitmq" {
   source  = "terraform-aws-modules/cloudwatch/aws//modules/metric-alarm"
   version = "5.7.3"
 
-  for_each = local.activemq ? {} : local.rabbitmq_alarms
+  for_each = local.activemq ? {} : { for k, v in local.rabbitmq_alarms : k => v if k != "disk-free" || var.enable_disk_free_alarm }
 
   alarm_name        = "${var.name_prefix}-mq-${var.name}-${each.key}-${each.value.suffix}"
   alarm_description = join(" ", compact([each.value.text, var.description_suffix]))
@@ -105,7 +106,7 @@ module "rabbitmq" {
       metric = [{
         namespace   = "AWS/AmazonMQ"
         metric_name = each.value.used
-        stat        = "Maximum"
+        stat        = each.value.used_stat
         period      = var.period
         dimensions  = { Broker = var.broker_name }
       }]
@@ -116,7 +117,7 @@ module "rabbitmq" {
       metric = [{
         namespace   = "AWS/AmazonMQ"
         metric_name = each.value.limit
-        stat        = "Minimum"
+        stat        = each.value.limit_stat
         period      = var.period
         dimensions  = { Broker = var.broker_name }
       }]

@@ -78,3 +78,9 @@ variable "tags" {
   type        = map(string)
   default     = {}
 }
+
+variable "enable_disk_free_alarm" {
+  description = "RabbitMQ only. Set false when the broker already has its own disk alarm, so the same event does not alert twice."
+  type        = bool
+  default     = true
+}
