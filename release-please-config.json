@@ -234,6 +234,15 @@
       "draft": false,
       "prerelease": false
     },
+    "modules/aws-cloudwatch-stepfunctions-alarms": {
+      "component": "aws-cloudwatch-stepfunctions-alarms",
+      "changelog-path": "CHANGELOG.md",
+      "release-type": "terraform-module",
+      "bump-minor-pre-major": true,
+      "bump-patch-for-minor-pre-major": false,
+      "draft": false,
+      "prerelease": false
+    },
     "modules/aws-eks-rancher-joiner": {
       "component": "aws-eks-rancher-joiner",
       "changelog-path": "CHANGELOG.md",
@@ -639,6 +648,15 @@
       "draft": false,
       "prerelease": false
     },
+    "modules/aws-cloudwatch-nat-gateway-alarms": {
+      "component": "aws-cloudwatch-nat-gateway-alarms",
+      "changelog-path": "CHANGELOG.md",
+      "release-type": "terraform-module",
+      "bump-minor-pre-major": true,
+      "bump-patch-for-minor-pre-major": false,
+      "draft": false,
+      "prerelease": false
+    },
     "modules/aws-site-to-site-vpn": {
       "component": "aws-site-to-site-vpn",
       "release-type": "terraform-module",
@@ -648,8 +666,26 @@
       "draft": false,
       "prerelease": false
     },
+    "modules/aws-cloudwatch-sqs-alarms": {
+      "component": "aws-cloudwatch-sqs-alarms",
+      "changelog-path": "CHANGELOG.md",
+      "release-type": "terraform-module",
+      "bump-minor-pre-major": true,
+      "bump-patch-for-minor-pre-major": false,
+      "draft": false,
+      "prerelease": false
+    },
     "modules/aws-cloudwatch-alb-alarms": {
       "component": "aws-cloudwatch-alb-alarms",
+      "changelog-path": "CHANGELOG.md",
+      "release-type": "terraform-module",
+      "bump-minor-pre-major": true,
+      "bump-patch-for-minor-pre-major": false,
+      "draft": false,
+      "prerelease": false
+    },
+    "modules/aws-cloudwatch-apigateway-alarms": {
+      "component": "aws-cloudwatch-apigateway-alarms",
       "changelog-path": "CHANGELOG.md",
       "release-type": "terraform-module",
       "bump-minor-pre-major": true,
@@ -668,6 +704,15 @@
     },
     "modules/aws-mongodbatlas-maintenance-window": {
       "component": "aws-mongodbatlas-maintenance-window",
+      "changelog-path": "CHANGELOG.md",
+      "release-type": "terraform-module",
+      "bump-minor-pre-major": true,
+      "bump-patch-for-minor-pre-major": false,
+      "draft": false,
+      "prerelease": false
+    },
+    "modules/aws-cloudwatch-dynamodb-alarms": {
+      "component": "aws-cloudwatch-dynamodb-alarms",
       "changelog-path": "CHANGELOG.md",
       "release-type": "terraform-module",
       "bump-minor-pre-major": true,
@@ -749,6 +794,15 @@
     },
     "modules/aws-organizations-scp": {
       "component": "aws-organizations-scp",
+      "changelog-path": "CHANGELOG.md",
+      "release-type": "terraform-module",
+      "bump-minor-pre-major": true,
+      "bump-patch-for-minor-pre-major": false,
+      "draft": false,
+      "prerelease": false
+    },
+    "modules/aws-cloudwatch-lambda-alarms": {
+      "component": "aws-cloudwatch-lambda-alarms",
       "changelog-path": "CHANGELOG.md",
       "release-type": "terraform-module",
       "bump-minor-pre-major": true,
