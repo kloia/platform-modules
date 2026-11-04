@@ -639,6 +639,15 @@
       "draft": false,
       "prerelease": false
     },
+    "modules/aws-cloudwatch-nat-gateway-alarms": {
+      "component": "aws-cloudwatch-nat-gateway-alarms",
+      "changelog-path": "CHANGELOG.md",
+      "release-type": "terraform-module",
+      "bump-minor-pre-major": true,
+      "bump-patch-for-minor-pre-major": false,
+      "draft": false,
+      "prerelease": false
+    },
     "modules/aws-site-to-site-vpn": {
       "component": "aws-site-to-site-vpn",
       "release-type": "terraform-module",
