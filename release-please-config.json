@@ -234,6 +234,15 @@
       "draft": false,
       "prerelease": false
     },
+    "modules/aws-cloudwatch-stepfunctions-alarms": {
+      "component": "aws-cloudwatch-stepfunctions-alarms",
+      "changelog-path": "CHANGELOG.md",
+      "release-type": "terraform-module",
+      "bump-minor-pre-major": true,
+      "bump-patch-for-minor-pre-major": false,
+      "draft": false,
+      "prerelease": false
+    },
     "modules/aws-eks-rancher-joiner": {
       "component": "aws-eks-rancher-joiner",
       "changelog-path": "CHANGELOG.md",
@@ -639,6 +648,15 @@
       "draft": false,
       "prerelease": false
     },
+    "modules/aws-cloudwatch-nat-gateway-alarms": {
+      "component": "aws-cloudwatch-nat-gateway-alarms",
+      "changelog-path": "CHANGELOG.md",
+      "release-type": "terraform-module",
+      "bump-minor-pre-major": true,
+      "bump-patch-for-minor-pre-major": false,
+      "draft": false,
+      "prerelease": false
+    },
     "modules/aws-site-to-site-vpn": {
       "component": "aws-site-to-site-vpn",
       "release-type": "terraform-module",
@@ -648,8 +666,8 @@
       "draft": false,
       "prerelease": false
     },
-    "modules/aws-cloudwatch-transit-gateway-alarms": {
-      "component": "aws-cloudwatch-transit-gateway-alarms",
+    "modules/aws-cloudwatch-sqs-alarms": {
+      "component": "aws-cloudwatch-sqs-alarms",
       "changelog-path": "CHANGELOG.md",
       "release-type": "terraform-module",
       "bump-minor-pre-major": true,
@@ -659,6 +677,15 @@
     },
     "modules/aws-cloudwatch-alb-alarms": {
       "component": "aws-cloudwatch-alb-alarms",
+      "changelog-path": "CHANGELOG.md",
+      "release-type": "terraform-module",
+      "bump-minor-pre-major": true,
+      "bump-patch-for-minor-pre-major": false,
+      "draft": false,
+      "prerelease": false
+    },
+    "modules/aws-cloudwatch-apigateway-alarms": {
+      "component": "aws-cloudwatch-apigateway-alarms",
       "changelog-path": "CHANGELOG.md",
       "release-type": "terraform-module",
       "bump-minor-pre-major": true,
@@ -684,6 +711,15 @@
       "draft": false,
       "prerelease": false
     },
+    "modules/aws-cloudwatch-dynamodb-alarms": {
+      "component": "aws-cloudwatch-dynamodb-alarms",
+      "changelog-path": "CHANGELOG.md",
+      "release-type": "terraform-module",
+      "bump-minor-pre-major": true,
+      "bump-patch-for-minor-pre-major": false,
+      "draft": false,
+      "prerelease": false
+    },
     "modules/aws-guardduty-detector-features": {
       "component": "aws-guardduty-detector-features",
       "changelog-path": "CHANGELOG.md",
@@ -693,8 +729,89 @@
       "draft": false,
       "prerelease": false
     },
+    "modules/aws-cloudwatch-elasticache-alarms": {
+      "component": "aws-cloudwatch-elasticache-alarms",
+      "changelog-path": "CHANGELOG.md",
+      "release-type": "terraform-module",
+      "bump-minor-pre-major": true,
+      "bump-patch-for-minor-pre-major": false,
+      "draft": false,
+      "prerelease": false
+    },
+    "modules/aws-cloudwatch-msk-alarms": {
+      "component": "aws-cloudwatch-msk-alarms",
+      "changelog-path": "CHANGELOG.md",
+      "release-type": "terraform-module",
+      "bump-minor-pre-major": true,
+      "bump-patch-for-minor-pre-major": false,
+      "draft": false,
+      "prerelease": false
+    },
+    "modules/aws-cloudwatch-mq-alarms": {
+      "component": "aws-cloudwatch-mq-alarms",
+      "changelog-path": "CHANGELOG.md",
+      "release-type": "terraform-module",
+      "bump-minor-pre-major": true,
+      "bump-patch-for-minor-pre-major": false,
+      "draft": false,
+      "prerelease": false
+    },
+    "modules/aws-cloudwatch-nat-alarms": {
+      "component": "aws-cloudwatch-nat-alarms",
+      "changelog-path": "CHANGELOG.md",
+      "release-type": "terraform-module",
+      "bump-minor-pre-major": true,
+      "bump-patch-for-minor-pre-major": false,
+      "draft": false,
+      "prerelease": false
+    },
+    "modules/aws-cloudwatch-vpn-alarms": {
+      "component": "aws-cloudwatch-vpn-alarms",
+      "changelog-path": "CHANGELOG.md",
+      "release-type": "terraform-module",
+      "bump-minor-pre-major": true,
+      "bump-patch-for-minor-pre-major": false,
+      "draft": false,
+      "prerelease": false
+    },
+    "modules/aws-cloudwatch-acm-alarms": {
+      "component": "aws-cloudwatch-acm-alarms",
+      "changelog-path": "CHANGELOG.md",
+      "release-type": "terraform-module",
+      "bump-minor-pre-major": true,
+      "bump-patch-for-minor-pre-major": false,
+      "draft": false,
+      "prerelease": false
+    },
+    "modules/aws-cloudwatch-ec2-alarms": {
+      "component": "aws-cloudwatch-ec2-alarms",
+      "changelog-path": "CHANGELOG.md",
+      "release-type": "terraform-module",
+      "bump-minor-pre-major": true,
+      "bump-patch-for-minor-pre-major": false,
+      "draft": false,
+      "prerelease": false
+    },
     "modules/aws-organizations-scp": {
       "component": "aws-organizations-scp",
+      "changelog-path": "CHANGELOG.md",
+      "release-type": "terraform-module",
+      "bump-minor-pre-major": true,
+      "bump-patch-for-minor-pre-major": false,
+      "draft": false,
+      "prerelease": false
+    },
+    "modules/aws-cloudwatch-lambda-alarms": {
+      "component": "aws-cloudwatch-lambda-alarms",
+      "changelog-path": "CHANGELOG.md",
+      "release-type": "terraform-module",
+      "bump-minor-pre-major": true,
+      "bump-patch-for-minor-pre-major": false,
+      "draft": false,
+      "prerelease": false
+    },
+    "modules/aws-cloudwatch-transit-gateway-alarms": {
+      "component": "aws-cloudwatch-transit-gateway-alarms",
       "changelog-path": "CHANGELOG.md",
       "release-type": "terraform-module",
       "bump-minor-pre-major": true,
