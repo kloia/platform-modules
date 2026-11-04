@@ -73,9 +73,16 @@
   "modules/aws-msk-connect": "0.3.0",
   "modules/aws-site-to-site-vpn": "0.1.0",
   "modules/aws-cloudwatch-alb-alarms": "0.1.0",
-  "modules/aws-cloudwatch-aurora-alarms": "0.1.0",
+  "modules/aws-cloudwatch-aurora-alarms": "0.2.0",
   "modules/aws-mongodbatlas-maintenance-window": "0.1.0",
   "modules/aws-guardduty-detector-features": "0.1.0",
-  "modules/aws-cloudwatch-dms-alarms": "0.0.0",
-  "modules/aws-organizations-scp": "0.1.0"
+  "modules/aws-cloudwatch-elasticache-alarms": "0.1.0",
+  "modules/aws-cloudwatch-msk-alarms": "0.1.0",
+  "modules/aws-cloudwatch-mq-alarms": "0.1.0",
+  "modules/aws-cloudwatch-nat-alarms": "0.1.0",
+  "modules/aws-cloudwatch-vpn-alarms": "0.1.0",
+  "modules/aws-cloudwatch-acm-alarms": "0.1.0",
+  "modules/aws-cloudwatch-ec2-alarms": "0.1.0",
+  "modules/aws-organizations-scp": "0.1.0",
+  "modules/aws-cloudwatch-dms-alarms": "0.0.0"
 }

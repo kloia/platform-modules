@@ -2,6 +2,13 @@
 # next apply, and sizes come from the live instance class, not from code.
 data "aws_rds_cluster" "this" {
   cluster_identifier = var.cluster_identifier
+
+  lifecycle {
+    postcondition {
+      condition     = length(self.cluster_members) <= 10
+      error_message = "A metric math alarm can include at most 10 metrics; this cluster has more than 10 instances."
+    }
+  }
 }
 
 data "aws_db_instance" "this" {
@@ -26,7 +33,14 @@ locals {
   # A class missing from the table fails the plan with an "Invalid index" naming it; add it to local_storage_gib.
   storage_bytes = { for id in local.instances : id => floor(local.storage_gib[local.class[id]] * 1073741824) }
 
-  minutes = var.period * var.datapoints_to_alarm / 60
+  minutes  = var.period * var.datapoints_to_alarm / 60
+  postgres = data.aws_rds_cluster.this.engine == "aurora-postgresql"
+
+  # Aurora PostgreSQL default: LEAST({DBInstanceClassMemory/9531392},5000). The instance type's memory is a
+  # little above DBInstanceClassMemory, so the computed limit is slightly high and the alarm slightly late.
+  max_connections = {
+    for id in local.instances : id => coalesce(var.max_connections, min(floor(local.memory_bytes[id] / 9531392), 5000))
+  }
 
   # MAX/MIN over every instance keeps the alarm valid after a writer failover.
   worst = {
@@ -50,6 +64,11 @@ locals {
       label  = "Replica lag ms (worst reader)"
       text   = "Aurora reader lag above ${var.replica_lag_threshold_ms / 1000} s for ${local.minutes} minutes; reads from a replica return stale data. Check writer load and long-running transactions."
     }
+    transaction-ids = {
+      metric = "MaximumUsedTransactionIDs", stat = "Maximum", fn = "MAX", op = "GreaterThanThreshold", threshold = var.transaction_ids_threshold, missing = "missing"
+      label  = "Oldest unvacuumed transaction ID age (worst instance)"
+      text   = "Oldest unvacuumed transaction ID above ${var.transaction_ids_threshold}. Near 2.1 billion PostgreSQL stops accepting writes until a single-user vacuum. Find what blocks autovacuum (long transactions, abandoned replication slots, prepared transactions)."
+    }
   }
 
   # Each instance as a percentage of its own size, then the lowest: instances of one cluster can differ in class.
@@ -68,8 +87,11 @@ locals {
 
   worst_enabled = {
     for k, v in local.worst : k => v
-    if !(k == "dbload" && !var.enable_dbload_alarm) && !(k == "replica-lag" && length(local.instances) < 2)
+    if !(k == "dbload" && !var.enable_dbload_alarm) && !(k == "replica-lag" && length(local.instances) < 2) && !(k == "transaction-ids" && !local.postgres)
   }
+
+  # The default limit is the PostgreSQL formula; other engines alarm only with max_connections set.
+  connections_enabled = local.postgres || var.max_connections != null
 
   instance_metrics = [
     for i, id in local.instances : {
@@ -154,6 +176,79 @@ module "pct" {
 
   comparison_operator = "LessThanThreshold"
   threshold           = each.value.threshold
+  evaluation_periods  = var.evaluation_periods
+  datapoints_to_alarm = var.datapoints_to_alarm
+  treat_missing_data  = "missing"
+
+  alarm_actions = var.alarm_actions
+  ok_actions    = var.ok_actions
+  tags          = var.tags
+}
+
+# Each instance against its own limit, then the highest.
+module "connections" {
+  source  = "terraform-aws-modules/cloudwatch/aws//modules/metric-alarm"
+  version = "5.7.3"
+
+  count = local.connections_enabled ? 1 : 0
+
+  alarm_name        = "${var.name_prefix}-aurora-${var.name}-connections-high"
+  alarm_description = join(" ", compact(["Aurora connections above ${var.connections_threshold_pct}% of max_connections for ${local.minutes} minutes on an instance of this cluster. At the limit new connections fail. Look for connection leaks or pool sizes before raising the limit.", var.description_suffix]))
+
+  metric_query = concat(
+    [{
+      id          = "agg"
+      expression  = "MAX([${join(",", [for i, id in local.instances : "p${i}"])}])"
+      label       = "Connections % of max_connections (worst instance)"
+      return_data = true
+    }],
+    [for i, id in local.instances : {
+      id          = "p${i}"
+      expression  = "100 * m${i} / ${local.max_connections[id]}"
+      return_data = false
+    }],
+    [for m in local.instance_metrics : {
+      id          = m.id
+      return_data = false
+      metric = [{
+        namespace   = "AWS/RDS"
+        metric_name = "DatabaseConnections"
+        stat        = "Maximum"
+        period      = var.period
+        dimensions  = m.dimensions
+      }]
+    }]
+  )
+
+  comparison_operator = "GreaterThanThreshold"
+  threshold           = var.connections_threshold_pct
+  evaluation_periods  = var.evaluation_periods
+  datapoints_to_alarm = var.datapoints_to_alarm
+  treat_missing_data  = "missing"
+
+  alarm_actions = var.alarm_actions
+  ok_actions    = var.ok_actions
+  tags          = var.tags
+}
+
+# Published in the secondary region against the secondary cluster, so this belongs on the secondary.
+module "global_lag" {
+  source  = "terraform-aws-modules/cloudwatch/aws//modules/metric-alarm"
+  version = "5.7.3"
+
+  count = var.enable_global_replication_lag_alarm ? 1 : 0
+
+  alarm_name        = "${var.name_prefix}-aurora-${var.name}-global-lag-high"
+  alarm_description = join(" ", compact(["Aurora Global replication to this secondary cluster above ${var.global_replication_lag_threshold_ms / 1000} s for ${local.minutes} minutes. Its readers serve stale data, and a failover now would lose the unreplicated writes. Check the primary's write load.", var.description_suffix]))
+
+  namespace   = "AWS/RDS"
+  metric_name = "AuroraGlobalDBReplicationLag"
+  statistic   = "Maximum"
+  period      = var.period
+  dimensions  = { DBClusterIdentifier = var.cluster_identifier }
+
+  comparison_operator = "GreaterThanThreshold"
+  threshold           = var.global_replication_lag_threshold_ms
   evaluation_periods  = var.evaluation_periods
   datapoints_to_alarm = var.datapoints_to_alarm
   treat_missing_data  = "missing"
