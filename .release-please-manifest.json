@@ -88,8 +88,8 @@
   "modules/aws-cloudwatch-ec2-alarms": "0.1.0",
   "modules/aws-cloudwatch-transit-gateway-alarms": "0.1.0",
   "modules/aws-cloudwatch-dms-alarms": "0.0.0",
-  "modules/aws-cloudwatch-apigateway-alarms": "0.0.0",
-  "modules/aws-cloudwatch-dynamodb-alarms": "0.0.0",
-  "modules/aws-cloudwatch-nat-gateway-alarms": "0.0.0",
-  "modules/aws-cloudwatch-stepfunctions-alarms": "0.0.0"
+  "modules/aws-cloudwatch-apigateway-alarms": "0.1.0",
+  "modules/aws-cloudwatch-dynamodb-alarms": "0.1.0",
+  "modules/aws-cloudwatch-nat-gateway-alarms": "0.1.0",
+  "modules/aws-cloudwatch-stepfunctions-alarms": "0.1.0"
 }
