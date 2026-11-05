@@ -92,5 +92,7 @@
   "modules/aws-cloudwatch-dynamodb-alarms": "0.1.0",
   "modules/aws-cloudwatch-nat-gateway-alarms": "0.1.0",
   "modules/aws-cloudwatch-stepfunctions-alarms": "0.1.0",
-  "modules/aws-access-analyzer": "0.1.0"
+  "modules/aws-access-analyzer": "0.1.0",
+  "modules/aws-cloudwatch-cloudfront-alarms": "0.0.0",
+  "modules/aws-cloudwatch-nlb-alarms": "0.0.0"
 }
