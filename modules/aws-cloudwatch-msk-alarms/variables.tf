@@ -43,6 +43,12 @@ variable "datapoints_to_alarm" {
   default     = 3
 }
 
+variable "under_replicated_datapoints" {
+  description = "Breaching periods that trigger under-replicated-high, and its evaluation window. Null uses datapoints_to_alarm. Raise it above one broker restart (MSK patching rolls each broker for about 15 minutes) to stop maintenance alarms."
+  type        = number
+  default     = null
+}
+
 variable "description_suffix" {
   description = "Appended to every alarm description, e.g. where to look next."
   type        = string
