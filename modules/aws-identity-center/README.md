@@ -66,7 +66,7 @@ administrator).
 | Name | Type | Default | Description |
 |---|---|---|---|
 | `users` | `map(object({ given_name, family_name, display_name = optional(string), email, email_type = optional(string), email_primary = optional(bool, true) }))` | `{}` | Keyed by user name. `display_name` defaults to "given family". Set `email_type` (for example `work`) and `email_primary` to match imported users whose email carries a type or is not marked primary. |
-| `groups` | `map(object({ description = optional(string), members = optional(list(string), []) }))` | `{}` | Keyed by group display name. Members are user names from `users` or `existing_users`. |
+| `groups` | `map(object({ display_name = optional(string), description = optional(string), members = optional(list(string), []) }))` | `{}` | Keyed by a stable name (the resource address). `display_name` defaults to the key and can change in place. Members are user names from `users` or `existing_users`. |
 | `permission_sets` | `map(object({ description, session_duration = "PT1H", relay_state, managed_policy_arns = [], customer_managed_policies = [{ name, path = "/" }], inline_policy, permissions_boundary = { managed_policy_arn or customer_managed_policy = { name, path } }, tags = {} }))` | `{}` | Keyed by permission set name. All fields optional except the key. |
 | `account_assignments` | `list(object({ principal_type, principal_name, permission_set_name, account_ids = list(string) }))` | `[]` | `principal_type` is `GROUP` or `USER`. |
 | `existing_users` | `list(string)` | `[]` | User names to look up. |
@@ -87,6 +87,7 @@ whitespace and key-order differences between what you write and what AWS returns
 ## Resource addresses and import IDs
 
 Every address is keyed by a human name, so `import` blocks and `terraform import` can target them.
+For groups created by this call, `members` and `principal_name` use the map key; for `existing_groups` they use the group's DisplayName.
 Replace `module.identity_center.` with your module address. Import IDs use the provider's formats
 (checked against the AWS provider documentation); `<ps_arn>` is the permission set ARN and `<instance_arn>`
 the Identity Center instance ARN (`output.instance_arn`).
@@ -119,6 +120,20 @@ import {
   id = "d-0123456789/11111111-2222-3333-4444-555555555555"
 }
 ```
+
+## Renames
+
+- **Group**: change `display_name` in the `groups` entry. The map key stays, so the group is updated in
+  place, keeps its group ID, and memberships and assignments are untouched. Without `display_name` the
+  key is the display name, so renaming a key (not `display_name`) replaces the group.
+- **User**: `user_name` is ForceNew in the provider. Renaming the key is a remove plus add, with a new
+  user ID, new memberships and new USER assignments.
+- **Permission set**: `name` is ForceNew. A rename creates a new permission set (new ARN). A provisioned
+  permission set that still has account assignments cannot be deleted until they are removed.
+- Because assignments are destroyed and created around a rename, do it in this order: add the new
+  object, move assignments to it, then remove the old one.
+- `moved` blocks only help when a key changes for the same object (a pure address rename). They cannot
+  carry an object across a ForceNew attribute change.
 
 ## Requirements
 

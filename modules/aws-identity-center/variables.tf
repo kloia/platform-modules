@@ -13,10 +13,11 @@ variable "users" {
 }
 
 variable "groups" {
-  description = "Identity Center groups to create, keyed by group display name. members lists user names, which may be users created by this call (users) or looked up (existing_users)."
+  description = "Identity Center groups to create, keyed by a stable name that is also the resource address. display_name defaults to the key and can be changed in place. members lists user names, which may be users created by this call (users) or looked up (existing_users)."
   type = map(object({
-    description = optional(string)
-    members     = optional(list(string), [])
+    display_name = optional(string)
+    description  = optional(string)
+    members      = optional(list(string), [])
   }))
   default = {}
 }
@@ -56,7 +57,7 @@ variable "permission_sets" {
 }
 
 variable "account_assignments" {
-  description = "Account assignments. principal_name is a group display name (GROUP) or a user name (USER); permission_set_name and the principal may come from this call or from the existing_* lookups. One assignment is created per entry of account_ids."
+  description = "Account assignments. principal_name is a group key from groups, or the DisplayName of a group in existing_groups (GROUP) or a user name (USER); permission_set_name and the principal may come from this call or from the existing_* lookups. One assignment is created per entry of account_ids."
   type = list(object({
     principal_type      = string
     principal_name      = string

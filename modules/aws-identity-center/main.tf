@@ -107,7 +107,7 @@ resource "aws_identitystore_group" "this" {
   for_each          = var.groups
   identity_store_id = local.identity_store_id
 
-  display_name = each.key
+  display_name = coalesce(each.value.display_name, each.key)
   description  = each.value.description
 }
 
