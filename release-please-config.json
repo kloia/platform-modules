@@ -836,6 +836,15 @@
       "bump-patch-for-minor-pre-major": false,
       "draft": false,
       "prerelease": false
+    },
+    "modules/aws-identity-center": {
+      "component": "aws-identity-center",
+      "changelog-path": "CHANGELOG.md",
+      "release-type": "terraform-module",
+      "bump-minor-pre-major": true,
+      "bump-patch-for-minor-pre-major": false,
+      "draft": false,
+      "prerelease": false
     }
   },
   "separate-pull-requests": true,
