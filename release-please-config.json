@@ -243,6 +243,24 @@
       "draft": false,
       "prerelease": false
     },
+    "modules/aws-cloudwatch-cloudfront-alarms": {
+      "component": "aws-cloudwatch-cloudfront-alarms",
+      "changelog-path": "CHANGELOG.md",
+      "release-type": "terraform-module",
+      "bump-minor-pre-major": true,
+      "bump-patch-for-minor-pre-major": false,
+      "draft": false,
+      "prerelease": false
+    },
+    "modules/aws-cloudwatch-nlb-alarms": {
+      "component": "aws-cloudwatch-nlb-alarms",
+      "changelog-path": "CHANGELOG.md",
+      "release-type": "terraform-module",
+      "bump-minor-pre-major": true,
+      "bump-patch-for-minor-pre-major": false,
+      "draft": false,
+      "prerelease": false
+    },
     "modules/aws-eks-rancher-joiner": {
       "component": "aws-eks-rancher-joiner",
       "changelog-path": "CHANGELOG.md",
