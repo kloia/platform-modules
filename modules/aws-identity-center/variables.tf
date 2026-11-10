@@ -1,0 +1,101 @@
+variable "users" {
+  description = "Identity Center users to create, keyed by user name (for example jane.doe). display_name defaults to \"<given_name> <family_name>\"."
+  type = map(object({
+    given_name   = string
+    family_name  = string
+    display_name = optional(string)
+    email        = string
+    # Optional email attributes, so an imported user whose email has a type or is not primary matches live.
+    email_type    = optional(string)
+    email_primary = optional(bool, true)
+  }))
+  default = {}
+}
+
+variable "groups" {
+  description = "Identity Center groups to create, keyed by a stable name that is also the resource address. display_name defaults to the key and can be changed in place. members lists user names, which may be users created by this call (users) or looked up (existing_users)."
+  type = map(object({
+    display_name = optional(string)
+    description  = optional(string)
+    members      = optional(list(string), [])
+  }))
+  default = {}
+}
+
+variable "permission_sets" {
+  description = "Permission sets to create, keyed by permission set name. inline_policy is a JSON string and is normalised with jsonencode(jsondecode()). permissions_boundary takes either managed_policy_arn or customer_managed_policy."
+  type = map(object({
+    description         = optional(string)
+    session_duration    = optional(string, "PT1H")
+    relay_state         = optional(string)
+    managed_policy_arns = optional(list(string), [])
+    customer_managed_policies = optional(list(object({
+      name = string
+      path = optional(string, "/")
+    })), [])
+    inline_policy = optional(string)
+    permissions_boundary = optional(object({
+      managed_policy_arn = optional(string)
+      customer_managed_policy = optional(object({
+        name = string
+        path = optional(string, "/")
+      }))
+    }))
+    tags = optional(map(string), {})
+  }))
+  default = {}
+
+  # PT<h>H or PT<h>H<m>M (PT<m>M parses but is always under 1 hour), minutes 0-59, total 1 to 12 hours. PT90M, PT0H and PT13H are rejected by the API at apply time.
+  validation {
+    condition = alltrue([
+      for k, v in var.permission_sets : try(
+        can(regex("^PT([0-9]+H)?([0-9]+M)?$", v.session_duration)) &&
+        v.session_duration != "PT" &&
+        tonumber(coalesce(try(regex("([0-9]+)M$", v.session_duration)[0], null), "0")) <= 59 &&
+        (tonumber(coalesce(try(regex("([0-9]+)H", v.session_duration)[0], null), "0")) * 60 + tonumber(coalesce(try(regex("([0-9]+)M$", v.session_duration)[0], null), "0"))) >= 60 &&
+        (tonumber(coalesce(try(regex("([0-9]+)H", v.session_duration)[0], null), "0")) * 60 + tonumber(coalesce(try(regex("([0-9]+)M$", v.session_duration)[0], null), "0"))) <= 720,
+        false
+      )
+    ])
+    error_message = "session_duration must be an ISO-8601 duration PT<h>H or PT<h>H<m>M with minutes 0-59 and a total between PT1H and PT12H inclusive, for example PT1H, PT8H30M or PT12H. PT0H, PT90M and PT13H are not accepted."
+  }
+
+  validation {
+    condition     = alltrue([for k, v in var.permission_sets : v.inline_policy == null || can(jsondecode(v.inline_policy))])
+    error_message = "inline_policy must be a valid JSON string."
+  }
+}
+
+variable "account_assignments" {
+  description = "Account assignments. principal_name is a group key (GROUP) or a user name (USER). A group key is a key of groups (owned by this call) or a key of existing_groups (looked up), never the DisplayName unless the key equals it. permission_set_name may come from this call or from existing_permission_sets. One assignment is created per entry of account_ids."
+  type = list(object({
+    principal_type      = string
+    principal_name      = string
+    permission_set_name = string
+    account_ids         = list(string)
+  }))
+  default = []
+
+  validation {
+    condition     = alltrue([for a in var.account_assignments : contains(["GROUP", "USER"], a.principal_type)])
+    error_message = "principal_type must be GROUP or USER."
+  }
+}
+
+variable "existing_users" {
+  description = "User names to look up in the identity store (users owned by another unit, an external IdP or AWS Control Tower)."
+  type        = list(string)
+  default     = []
+}
+
+variable "existing_groups" {
+  description = "Groups to look up in the identity store (owned by another unit, an external IdP or AWS Control Tower), as a map of stable key => DisplayName. The key is what account_assignments and the resolved_group_ids output use, so a DisplayName change is a one-line value edit that leaves every resource address untouched. Keys must not also appear in groups."
+  type        = map(string)
+  default     = {}
+}
+
+variable "existing_permission_sets" {
+  description = "Permission set names to look up (permission sets owned by another unit or by AWS Control Tower)."
+  type        = list(string)
+  default     = []
+}
