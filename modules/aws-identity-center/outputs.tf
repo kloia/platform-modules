@@ -14,7 +14,7 @@ output "user_ids" {
 }
 
 output "group_ids" {
-  description = "Map of group display name to group ID, for groups created by this call."
+  description = "Map of group key to group ID, for groups created by this call."
   value       = { for k, v in aws_identitystore_group.this : k => v.group_id }
 }
 
@@ -49,7 +49,7 @@ output "permissions_boundary_attachment_ids" {
 }
 
 output "account_assignment_ids" {
-  description = "Map of \"PRINCIPAL_TYPE:principal/permission_set/account_id\" to account assignment ID."
+  description = "Map of \"PRINCIPAL_TYPE:principal_key/permission_set/account_id\" to account assignment ID."
   value       = { for k, v in aws_ssoadmin_account_assignment.this : k => v.id }
 }
 
@@ -59,7 +59,7 @@ output "resolved_user_ids" {
 }
 
 output "resolved_group_ids" {
-  description = "Map of group name to group ID for created and looked-up (existing_groups) groups."
+  description = "Map of group key to group ID for created (groups) and looked-up (existing_groups) groups."
   value       = local.group_ids
 }
 

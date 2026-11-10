@@ -45,9 +45,19 @@ variable "permission_sets" {
   }))
   default = {}
 
+  # PT<h>H or PT<h>H<m>M (PT<m>M parses but is always under 1 hour), minutes 0-59, total 1 to 12 hours. PT90M, PT0H and PT13H are rejected by the API at apply time.
   validation {
-    condition     = alltrue([for k, v in var.permission_sets : can(regex("^PT([0-9]+H)?([0-9]+M)?$", v.session_duration)) && v.session_duration != "PT"])
-    error_message = "session_duration must be an ISO-8601 duration of hours and minutes, for example PT1H or PT8H30M."
+    condition = alltrue([
+      for k, v in var.permission_sets : try(
+        can(regex("^PT([0-9]+H)?([0-9]+M)?$", v.session_duration)) &&
+        v.session_duration != "PT" &&
+        tonumber(coalesce(try(regex("([0-9]+)M$", v.session_duration)[0], null), "0")) <= 59 &&
+        (tonumber(coalesce(try(regex("([0-9]+)H", v.session_duration)[0], null), "0")) * 60 + tonumber(coalesce(try(regex("([0-9]+)M$", v.session_duration)[0], null), "0"))) >= 60 &&
+        (tonumber(coalesce(try(regex("([0-9]+)H", v.session_duration)[0], null), "0")) * 60 + tonumber(coalesce(try(regex("([0-9]+)M$", v.session_duration)[0], null), "0"))) <= 720,
+        false
+      )
+    ])
+    error_message = "session_duration must be an ISO-8601 duration PT<h>H or PT<h>H<m>M with minutes 0-59 and a total between PT1H and PT12H inclusive, for example PT1H, PT8H30M or PT12H. PT0H, PT90M and PT13H are not accepted."
   }
 
   validation {
@@ -57,7 +67,7 @@ variable "permission_sets" {
 }
 
 variable "account_assignments" {
-  description = "Account assignments. principal_name is a group key from groups, or the DisplayName of a group in existing_groups (GROUP) or a user name (USER); permission_set_name and the principal may come from this call or from the existing_* lookups. One assignment is created per entry of account_ids."
+  description = "Account assignments. principal_name is a group key (GROUP) or a user name (USER). A group key is a key of groups (owned by this call) or a key of existing_groups (looked up), never the DisplayName unless the key equals it. permission_set_name may come from this call or from existing_permission_sets. One assignment is created per entry of account_ids."
   type = list(object({
     principal_type      = string
     principal_name      = string
@@ -79,9 +89,9 @@ variable "existing_users" {
 }
 
 variable "existing_groups" {
-  description = "Group display names to look up in the identity store (groups owned by another unit, an external IdP or AWS Control Tower)."
-  type        = list(string)
-  default     = []
+  description = "Groups to look up in the identity store (owned by another unit, an external IdP or AWS Control Tower), as a map of stable key => DisplayName. The key is what account_assignments and the resolved_group_ids output use, so a DisplayName change is a one-line value edit that leaves every resource address untouched. Keys must not also appear in groups."
+  type        = map(string)
+  default     = {}
 }
 
 variable "existing_permission_sets" {

@@ -4,7 +4,7 @@ locals {
   instance_arn      = tolist(data.aws_ssoadmin_instances.this.arns)[0]
   identity_store_id = tolist(data.aws_ssoadmin_instances.this.identity_store_ids)[0]
 
-  # Lookups by human name, merged with what this call creates.
+  # Keyed by user name, group key and permission set name, merged with what this call creates.
   user_ids = merge(
     { for k, v in data.aws_identitystore_user.existing : k => v.user_id },
     { for k, v in aws_identitystore_user.this : k => v.user_id },
@@ -65,13 +65,20 @@ data "aws_identitystore_user" "existing" {
 }
 
 data "aws_identitystore_group" "existing" {
-  for_each          = toset(var.existing_groups)
+  for_each          = var.existing_groups
   identity_store_id = local.identity_store_id
 
   alternate_identifier {
     unique_attribute {
       attribute_path  = "DisplayName"
-      attribute_value = each.key
+      attribute_value = each.value
+    }
+  }
+
+  lifecycle {
+    precondition {
+      condition     = !contains(keys(var.groups), each.key)
+      error_message = "Group key '${each.key}' is in both var.groups and var.existing_groups. Keys must be unique across the two."
     }
   }
 }
@@ -207,7 +214,7 @@ resource "aws_ssoadmin_account_assignment" "this" {
     }
     precondition {
       condition     = contains(keys(each.value.principal_type == "GROUP" ? local.group_ids : local.user_ids), each.value.principal_name)
-      error_message = "Principal '${each.value.principal_name}' is not defined or looked up as a ${each.value.principal_type}."
+      error_message = "Principal '${each.value.principal_name}' is not a key of ${each.value.principal_type == "GROUP" ? "var.groups or var.existing_groups" : "var.users or var.existing_users"}."
     }
   }
 }

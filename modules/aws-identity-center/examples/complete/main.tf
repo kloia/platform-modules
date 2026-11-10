@@ -82,14 +82,14 @@ module "identity_center" {
     },
     {
       principal_type      = "GROUP"
-      principal_name      = "Example Control Tower Group"
+      principal_name      = "control-tower-admins"
       permission_set_name = "AWSAdministratorAccess"
       account_ids         = ["222222222222"]
     },
   ]
 
   existing_users           = ["sam.existing"]
-  existing_groups          = ["Example Control Tower Group"]
+  existing_groups          = { control-tower-admins = "Example Control Tower Group" }
   existing_permission_sets = ["AWSAdministratorAccess"]
 }
 
