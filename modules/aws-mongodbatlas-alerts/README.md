@@ -31,7 +31,7 @@ needs no dependency on the stack that created it.
 | `replication_lag` | `OPLOG_SLAVE_LAG_MASTER_TIME` | > 300 s | 5 | warning |
 | `oplog_window` | `REPLICATION_OPLOG_WINDOW_RUNNING_OUT` | < 1 h | 0 | warning |
 | `backup_snapshot_failed` | `CPS_SNAPSHOT_FAILED` | snapshot failed | 0 | warning |
-| `backup_snapshot_behind` | `CPS_SNAPSHOT_BEHIND` | scheduled snapshot late | 0 | warning |
+| `backup_snapshot_behind` | `CPS_SNAPSHOT_BEHIND` | no snapshot for > 12 h | 0 | warning |
 | `disk_autoscale_failed` | `DISK_AUTO_SCALE_MAX_DISK_SIZE_FAIL` | storage autoscale at max size | 0 | warning |
 
 - Disk pages at 95 %, not 90 %: storage autoscaling starts at about 90 %, so a 90 % alert

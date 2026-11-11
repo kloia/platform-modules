@@ -92,7 +92,13 @@ locals {
     backup_snapshot_behind = {
       event_type  = "CPS_SNAPSHOT_BEHIND"
       tier        = "warning"
-      description = "A scheduled cloud backup snapshot is late."
+      description = "No cloud backup snapshot for over 12 hours (two missed 6-hourly snapshots)."
+      # Atlas rejects this event type without a threshold (MISSING_THRESHOLD).
+      threshold = {
+        operator  = "GREATER_THAN"
+        threshold = 12
+        units     = "HOURS"
+      }
     }
     disk_autoscale_failed = {
       event_type  = "DISK_AUTO_SCALE_MAX_DISK_SIZE_FAIL"
