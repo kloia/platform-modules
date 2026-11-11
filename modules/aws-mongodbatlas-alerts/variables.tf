@@ -58,14 +58,21 @@ variable "opsgenie" {
 variable "webhook" {
   type = object({
     url_ssm_path             = optional(string)
+    format                   = optional(string)
+    body_template            = optional(string)
     use_existing_integration = optional(bool, false)
   })
   default     = null
-  description = "The project's webhook integration, used by every WEBHOOK target. By default the module manages it with the URL from the SSM SecureString url_ssm_path. use_existing_integration = true references the project's existing integration instead and sends no URL."
+  description = "The project's webhook integration, used by every WEBHOOK target. By default the module manages it with the URL from the SSM SecureString url_ssm_path. use_existing_integration = true references the project's existing integration instead and sends no URL. format = \"SLACK\" sends a Slack incoming-webhook message; body_template, if set, replaces it with a custom JSON body using $${field} placeholders. With neither, Atlas sends its own payload, which a Slack incoming webhook rejects."
 
   validation {
     condition     = var.webhook == null || try(var.webhook.use_existing_integration, false) || try(var.webhook.url_ssm_path, null) != null
     error_message = "webhook.url_ssm_path is required unless use_existing_integration is true."
+  }
+
+  validation {
+    condition     = try(var.webhook.format, null) == null || try(var.webhook.format, null) == "SLACK"
+    error_message = "webhook.format must be SLACK or unset."
   }
 }
 
@@ -79,6 +86,7 @@ variable "alerts" {
   type = map(object({
     event_type  = string
     tier        = string
+    title       = optional(string)
     description = optional(string)
     enabled     = optional(bool, true)
     delay_min   = optional(number, 0)

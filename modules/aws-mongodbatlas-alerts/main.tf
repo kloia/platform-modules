@@ -3,12 +3,14 @@
 locals {
   default_alerts = {
     no_primary = {
+      title       = "No Primary"
       event_type  = "NO_PRIMARY"
       tier        = "critical"
       delay_min   = 5
       description = "Replica set has no primary: writes fail."
     }
     cpu_normalized = {
+      title       = "CPU Usage"
       event_type  = "OUTSIDE_METRIC_THRESHOLD"
       tier        = "critical"
       delay_min   = 10
@@ -20,6 +22,7 @@ locals {
       }
     }
     connections_percent = {
+      title       = "Connection Usage"
       event_type  = "OUTSIDE_METRIC_THRESHOLD"
       tier        = "critical"
       delay_min   = 5
@@ -31,6 +34,7 @@ locals {
       }
     }
     disk_space_used = {
+      title       = "Disk Usage"
       event_type  = "OUTSIDE_METRIC_THRESHOLD"
       tier        = "critical"
       delay_min   = 5
@@ -42,6 +46,7 @@ locals {
       }
     }
     unhealthy_members = {
+      title       = "Unhealthy Replica Set Member"
       event_type  = "TOO_MANY_UNHEALTHY_MEMBERS"
       tier        = "warning"
       delay_min   = 15
@@ -52,6 +57,7 @@ locals {
       }
     }
     connections_percent_warn = {
+      title       = "Connection Usage"
       event_type  = "OUTSIDE_METRIC_THRESHOLD"
       tier        = "warning"
       delay_min   = 5
@@ -63,6 +69,7 @@ locals {
       }
     }
     replication_lag = {
+      title       = "Replication Lag"
       event_type  = "OUTSIDE_METRIC_THRESHOLD"
       tier        = "warning"
       delay_min   = 5
@@ -75,6 +82,7 @@ locals {
       }
     }
     oplog_window = {
+      title       = "Oplog Window"
       event_type  = "REPLICATION_OPLOG_WINDOW_RUNNING_OUT"
       tier        = "warning"
       description = "Oplog window under 1 hour: a lagging secondary may need a full resync."
@@ -85,11 +93,13 @@ locals {
       }
     }
     backup_snapshot_failed = {
+      title       = "Backup Snapshot Failed"
       event_type  = "CPS_SNAPSHOT_FAILED"
       tier        = "warning"
       description = "A cloud backup snapshot failed."
     }
     backup_snapshot_behind = {
+      title       = "Backup Snapshot Behind"
       event_type  = "CPS_SNAPSHOT_BEHIND"
       tier        = "warning"
       description = "No cloud backup snapshot for over 12 hours (two missed 6-hourly snapshots)."
@@ -101,6 +111,7 @@ locals {
       }
     }
     disk_autoscale_failed = {
+      title       = "Disk Autoscale Failed"
       event_type  = "DISK_AUTO_SCALE_MAX_DISK_SIZE_FAIL"
       tier        = "warning"
       description = "Storage autoscaling could not grow the disk: the cluster is at its maximum disk size."
@@ -112,6 +123,7 @@ locals {
     for k, a in local.default_alerts : k => {
       event_type  = a.event_type
       tier        = a.tier
+      title       = a.title
       description = a.description
       enabled     = true
       delay_min   = try(a.delay_min, 0)
@@ -146,6 +158,45 @@ locals {
   ))
 
   manage_webhook = local.uses_webhook && !try(var.webhook.use_existing_integration, false)
+
+  # Atlas renders this with FreeMarker and test-renders it against sample data on save.
+  # Use eventType, not event: templates reading event were rejected. projectName arrives
+  # empty, so the project name comes from var.project_name.
+  slack_project       = trim(jsonencode(var.project_name), "\"")
+  slack_body_template = <<-EOT
+    {"text": "*MongoDB Atlas* $${eventType?replace('alert.open', 'ALARM')?replace('alert.close', 'OK')?replace('alert.cancel', 'CANCELLED')?replace('alert.update', 'STILL FIRING')}: __TITLE__ · ${local.slack_project} / $${(clusterName!'-')?json_string}",
+     "attachments": [{"color": "$${eventType?replace('alert.open', '#d40e0d')?replace('alert.close', '#2eb886')?replace('alert.cancel', '#cccccc')?replace('alert.update', '#d40e0d')?replace('alert.acknowledge', '#daa038')?replace('alert.inform', '#daa038')}", "blocks": [
+       {"type": "section", "text": {"type": "mrkdwn", "text": "$${eventType?replace('alert.open', ':rotating_light:')?replace('alert.close', ':white_check_mark:')?replace('alert.cancel', ':heavy_minus_sign:')?replace('alert.update', ':rotating_light:')?replace('alert.acknowledge', ':bell:')?replace('alert.inform', ':bell:')} *MongoDB Atlas · __TITLE__*\n${local.slack_project} / $${(clusterName!'-')?json_string}"}},
+       {"type": "section", "fields": [
+         {"type": "mrkdwn", "text": "*Current value*\n*$${((currentValue.number?is_number)?then(currentValue.number?string('0.#'), currentValue.number) + '__UNIT__')!'-'}*"},
+         {"type": "mrkdwn", "text": "*__TIER__ threshold*\n*__THRESHOLD__*"},
+         {"type": "mrkdwn", "text": "*State*\n$${eventType?replace('alert.open', 'ALARM')?replace('alert.close', 'OK')?replace('alert.cancel', 'CANCELLED')?replace('alert.update', 'STILL FIRING')}"}
+       ]},
+       {"type": "actions", "elements": [{"type": "button", "text": {"type": "plain_text", "text": "Open in Atlas"}, "url": "https://cloud.mongodb.com/v2/$${groupId}#/alerts"}]}
+     ]}]}
+  EOT
+  webhook_body_template = try(coalesce(
+    try(var.webhook.body_template, null),
+    try(var.webhook.format, null) == "SLACK" ? local.slack_body_template : null,
+  ), null)
+  # Per-alert text the module writes into the template: __TITLE__, __THRESHOLD__, __UNIT__, __TIER__.
+  percent_metrics = ["CONNECTIONS_PERCENT", "NORMALIZED_SYSTEM_CPU_USER", "DISK_PARTITION_SPACE_USED_DATA"]
+  unit_suffix     = { RAW = "", SECONDS = " s", MINUTES = " min", HOURS = " h", BYTES = " B", MEGABYTES = " MB", GIGABYTES = " GB" }
+  operator_word   = { GREATER_THAN = "above", LESS_THAN = "below" }
+  alert_display = {
+    for k, a in local.alerts : k => {
+      title = coalesce(a.title, k)
+      unit = a.metric_threshold == null ? "" : (
+        contains(local.percent_metrics, a.metric_threshold.metric_name) ? "%" : lookup(local.unit_suffix, a.metric_threshold.units, "")
+      )
+      threshold = (
+        a.metric_threshold != null ? format("%s %s%s", lookup(local.operator_word, a.metric_threshold.operator, a.metric_threshold.operator), a.metric_threshold.threshold,
+        contains(local.percent_metrics, a.metric_threshold.metric_name) ? "%" : lookup(local.unit_suffix, a.metric_threshold.units, "")) :
+        a.threshold != null ? format("%s %s%s", lookup(local.operator_word, a.threshold.operator, a.threshold.operator), a.threshold.threshold, lookup(local.unit_suffix, coalesce(a.threshold.units, "RAW"), "")) :
+        "-"
+      )
+    }
+  }
   webhook_integration_id = one(concat(
     mongodbatlas_third_party_integration.webhook[*].id,
     data.mongodbatlas_third_party_integration.webhook[*].id,
@@ -237,10 +288,21 @@ resource "mongodbatlas_alert_configuration" "this" {
       ops_genie_api_key = notification.value.type == "OPS_GENIE" && local.manage_opsgenie ? data.aws_ssm_parameter.opsgenie[0].value : null
       ops_genie_region  = notification.value.type == "OPS_GENIE" ? var.opsgenie.region : null
       webhook_url       = notification.value.type == "WEBHOOK" && local.manage_webhook ? data.aws_ssm_parameter.webhook[0].value : null
-      channel_name      = notification.value.type == "SLACK" ? notification.value.channel_name : null
+      # Placeholders become the alert's own text, escaped for a JSON string.
+      webhook_body_template = notification.value.type == "WEBHOOK" && local.webhook_body_template != null ? replace(replace(replace(replace(replace(
+        local.webhook_body_template,
+        "__ALERT_DESCRIPTION__", trim(jsonencode(coalesce(each.value.description, each.key)), "\"")),
+        "__TITLE__", trim(jsonencode(local.alert_display[each.key].title), "\"")),
+        "__THRESHOLD__", trim(jsonencode(local.alert_display[each.key].threshold), "\"")),
+        "__UNIT__", local.alert_display[each.key].unit),
+        "__TIER__", title(each.value.tier)
+      ) : null
+      # Atlas rejects a WEBHOOK notification without a re-notify interval of at least 5 minutes.
+      interval_min = notification.value.type == "WEBHOOK" ? 60 : null
+      channel_name = notification.value.type == "SLACK" ? notification.value.channel_name : null
       integration_id = (
         notification.value.type == "OPS_GENIE" ? local.opsgenie_integration_id :
-        notification.value.type == "WEBHOOK" ? local.webhook_integration_id :
+        notification.value.type == "WEBHOOK" ? (local.manage_webhook ? null : local.webhook_integration_id) :
         notification.value.type == "SLACK" ? data.mongodbatlas_third_party_integration.slack[0].id : null
       )
       email_address = notification.value.type == "EMAIL" ? notification.value.email_address : null
