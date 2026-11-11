@@ -14,6 +14,7 @@ variable "functions" {
     min_invocations             = optional(number)
     throttle_threshold          = optional(number)
     duration_percent_of_timeout = optional(number)
+    priority                    = optional(string)
   }))
 
   validation {
@@ -22,6 +23,14 @@ variable "functions" {
       f.error_rate_threshold == null ? true : (f.error_rate_threshold >= 0 && f.error_rate_threshold <= 100)
     ])
     error_message = "error_rate_threshold must be between 0 and 100 (a percentage)."
+  }
+
+  validation {
+    condition = alltrue([
+      for f in var.functions :
+      f.priority == null ? true : contains(["P1", "P2", "P3", "P4", "P5"], f.priority)
+    ])
+    error_message = "priority must be one of P1, P2, P3, P4, P5."
   }
 
   validation {
@@ -55,6 +64,33 @@ variable "duration_percent_of_timeout" {
   description = "Alarm when p99 duration exceeds this percentage of the function's configured timeout, read from the function itself."
   type        = number
   default     = 80
+}
+
+variable "enable_throttle_alarm" {
+  description = "Create the throttle alarm for every function."
+  type        = bool
+  default     = true
+}
+
+variable "enable_duration_alarm" {
+  description = "Create the duration alarm for every function."
+  type        = bool
+  default     = true
+}
+
+variable "priority" {
+  description = <<-EOT
+    Opsgenie priority, P1 to P5, written at the start of every alarm description as `[P2]`. An Opsgenie
+    CloudWatch integration can read it from the description; leave it null when the integration has no such
+    rule, and the description stays unchanged. A function may override it.
+  EOT
+  type        = string
+  default     = null
+
+  validation {
+    condition     = var.priority == null ? true : contains(["P1", "P2", "P3", "P4", "P5"], var.priority)
+    error_message = "priority must be one of P1, P2, P3, P4, P5."
+  }
 }
 
 variable "period" {
