@@ -38,3 +38,9 @@ module "kafka_alarms" {
 ```
 
 Alarm names: `<name_prefix>-kafka-<name>-<alarm>`.
+
+## Opsgenie priority
+
+`priority` (`P1` to `P5`, default none) is written at the start of every alarm description as `[P2]`. An Opsgenie
+CloudWatch integration with a rule that matches `"AlarmDescription":"[P2]` sets the alert priority from it;
+without such a rule the prefix does nothing. With `priority` unset the descriptions are unchanged.

@@ -34,3 +34,9 @@ module "nlb_alarms" {
 Names: `<name_prefix>-nlb-<load balancer>-<unhealthy-hosts|no-healthy-hosts>[-2]` and `<name_prefix>-nlb-<load balancer>-port-allocation-errors`.
 
 Sources: Network Load Balancer user guide, "CloudWatch metrics for your Network Load Balancer", keywords *"It's recommended to monitor maximum `HealthyHostCount`"*, *"It's also recommended to monitor minimum `UnHealthyHostCount`"* and, for `PortAllocationErrorCount`, *"A non-zero value indicates dropped client connections."* The 10-metric limit: `aws cloudwatch put-metric-alarm help`, *"as many as 10 structures that contain a MetricStat parameter"*.
+
+## Opsgenie priority
+
+`priority` (`P1` to `P5`, default none) is written at the start of every alarm description as `[P2]`. An Opsgenie
+CloudWatch integration with a rule that matches `"AlarmDescription":"[P2]` sets the alert priority from it;
+without such a rule the prefix does nothing. With `priority` unset the descriptions are unchanged.

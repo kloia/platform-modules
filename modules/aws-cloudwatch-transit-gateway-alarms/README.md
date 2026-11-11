@@ -33,3 +33,9 @@ module "alarms" {
 ```
 
 Missing data counts as not breaching. Names: `<name_prefix>-tgw-<label>-<blackhole|no-route>`. Source: VPC Transit Gateways guide, "CloudWatch metrics in AWS Transit Gateway".
+
+## Opsgenie priority
+
+`priority` (`P1` to `P5`, default none) is written at the start of every alarm description as `[P2]`. An Opsgenie
+CloudWatch integration with a rule that matches `"AlarmDescription":"[P2]` sets the alert priority from it;
+without such a rule the prefix does nothing. With `priority` unset the descriptions are unchanged.

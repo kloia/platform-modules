@@ -62,6 +62,7 @@ module "health" {
 
   alarm_name = "${var.name_prefix}-nlb-${each.value.lb}-${each.value.kind}${each.value.group.suffix}"
   alarm_description = join(" ", compact([
+    var.priority == null ? "" : "[${var.priority}]",
     format(each.value.text, each.value.lb),
     var.description_suffix,
   ]))
@@ -109,6 +110,7 @@ module "port_allocation" {
 
   alarm_name = "${var.name_prefix}-nlb-${each.key}-port-allocation-errors"
   alarm_description = join(" ", compact([
+    var.priority == null ? "" : "[${var.priority}]",
     "The Network Load Balancer ${each.key} had at least ${var.port_allocation_errors_threshold} ephemeral port allocation errors in ${var.period / 60} minutes: client connections are being dropped because a target has too many connections.",
     var.description_suffix,
   ]))

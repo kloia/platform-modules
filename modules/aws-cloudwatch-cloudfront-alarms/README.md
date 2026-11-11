@@ -37,3 +37,9 @@ module "cloudfront_alarms" {
 Missing data counts as not breaching. Names: `<name_prefix>-cloudfront-<label>-5xx-rate`.
 
 Sources: CloudFront developer guide, "View CloudFront and edge function metrics", keywords *"The percentage of all viewer requests for which the response's HTTP status code is `5xx`"* and *"You must use the US East (N. Virginia) Region to view the graphs in the CloudWatch console"*. The `Region = Global` dimension was checked against live metrics, not against the documentation.
+
+## Opsgenie priority
+
+`priority` (`P1` to `P5`, default none) is written at the start of every alarm description as `[P2]`. An Opsgenie
+CloudWatch integration with a rule that matches `"AlarmDescription":"[P2]` sets the alert priority from it;
+without such a rule the prefix does nothing. With `priority` unset the descriptions are unchanged.

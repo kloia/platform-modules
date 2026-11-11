@@ -28,6 +28,7 @@ module "alarm" {
 
   alarm_name = "${var.name_prefix}-sqs-${each.key}-messages"
   alarm_description = join(" ", compact([
+    var.priority == null ? "" : "[${var.priority}]",
     "At least ${each.value.threshold} messages ${each.value.metric.what} ${each.key} in ${var.period / 60} minutes.",
     var.description_suffix,
   ]))

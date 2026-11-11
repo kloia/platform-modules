@@ -34,3 +34,9 @@ module "dlq_alarms" {
 Queues are resolved by name on every plan: a name that matches nothing fails the plan. Alarm names:
 `<name_prefix>-sqs-<queue>-messages`. Missing data counts as not breaching, since SQS publishes these metrics
 only while the queue is active. Sources: the SQS developer guide, "Available CloudWatch metrics for Amazon SQS".
+
+## Opsgenie priority
+
+`priority` (`P1` to `P5`, default none) is written at the start of every alarm description as `[P2]`. An Opsgenie
+CloudWatch integration with a rule that matches `"AlarmDescription":"[P2]` sets the alert priority from it;
+without such a rule the prefix does nothing. With `priority` unset the descriptions are unchanged.
