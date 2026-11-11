@@ -135,6 +135,7 @@ locals {
 
   targets       = flatten([for t in values(var.tiers) : t.targets])
   uses_opsgenie = anytrue([for x in local.targets : x.type == "OPS_GENIE"])
+  uses_webhook  = anytrue([for x in local.targets : x.type == "WEBHOOK"])
   uses_slack    = anytrue([for x in local.targets : x.type == "SLACK"])
   unknown_tiers = setsubtract(toset([for a in values(local.alerts) : a.tier]), toset(keys(var.tiers)))
 
@@ -142,6 +143,12 @@ locals {
   opsgenie_integration_id = one(concat(
     mongodbatlas_third_party_integration.opsgenie[*].id,
     data.mongodbatlas_third_party_integration.opsgenie[*].id,
+  ))
+
+  manage_webhook = local.uses_webhook && !try(var.webhook.use_existing_integration, false)
+  webhook_integration_id = one(concat(
+    mongodbatlas_third_party_integration.webhook[*].id,
+    data.mongodbatlas_third_party_integration.webhook[*].id,
   ))
 }
 
@@ -182,6 +189,29 @@ data "mongodbatlas_third_party_integration" "opsgenie" {
   type       = "OPS_GENIE"
 }
 
+data "aws_ssm_parameter" "webhook" {
+  count = local.manage_webhook ? 1 : 0
+
+  name            = var.webhook.url_ssm_path
+  with_decryption = true
+}
+
+# Same as Opsgenie: one webhook integration per project, owned by the module.
+resource "mongodbatlas_third_party_integration" "webhook" {
+  count = local.manage_webhook ? 1 : 0
+
+  project_id = data.mongodbatlas_project.this.id
+  type       = "WEBHOOK"
+  url        = data.aws_ssm_parameter.webhook[0].value
+}
+
+data "mongodbatlas_third_party_integration" "webhook" {
+  count = local.uses_webhook && !local.manage_webhook ? 1 : 0
+
+  project_id = data.mongodbatlas_project.this.id
+  type       = "WEBHOOK"
+}
+
 # Atlas allows one Slack integration per project. It is connected once in the Atlas UI
 # (Project Settings > Integrations > Slack); this fails the plan if it is missing.
 data "mongodbatlas_third_party_integration" "slack" {
@@ -206,9 +236,11 @@ resource "mongodbatlas_alert_configuration" "this" {
       delay_min         = each.value.delay_min
       ops_genie_api_key = notification.value.type == "OPS_GENIE" && local.manage_opsgenie ? data.aws_ssm_parameter.opsgenie[0].value : null
       ops_genie_region  = notification.value.type == "OPS_GENIE" ? var.opsgenie.region : null
+      webhook_url       = notification.value.type == "WEBHOOK" && local.manage_webhook ? data.aws_ssm_parameter.webhook[0].value : null
       channel_name      = notification.value.type == "SLACK" ? notification.value.channel_name : null
       integration_id = (
         notification.value.type == "OPS_GENIE" ? local.opsgenie_integration_id :
+        notification.value.type == "WEBHOOK" ? local.webhook_integration_id :
         notification.value.type == "SLACK" ? data.mongodbatlas_third_party_integration.slack[0].id : null
       )
       email_address = notification.value.type == "EMAIL" ? notification.value.email_address : null

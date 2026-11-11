@@ -13,13 +13,13 @@ variable "tiers" {
       roles         = optional(list(string))
     }))
   }))
-  description = "Where each tier's alerts are sent. severity becomes the alerts' severity_override (INFO, WARNING, ERROR, CRITICAL). Target types: OPS_GENIE (uses var.opsgenie), SLACK (channel_name, uses the project's Slack integration), EMAIL (email_address), GROUP (roles). The default alerts use the tiers critical and warning."
+  description = "Where each tier's alerts are sent. severity becomes the alerts' severity_override (INFO, WARNING, ERROR, CRITICAL). Target types: OPS_GENIE (uses var.opsgenie), WEBHOOK (uses var.webhook), SLACK (channel_name, uses the project's Slack integration), EMAIL (email_address), GROUP (roles). The default alerts use the tiers critical and warning."
 
   validation {
     condition = alltrue(flatten([for t in values(var.tiers) : [
-      for x in t.targets : contains(["OPS_GENIE", "SLACK", "EMAIL", "GROUP"], x.type)
+      for x in t.targets : contains(["OPS_GENIE", "WEBHOOK", "SLACK", "EMAIL", "GROUP"], x.type)
     ]]))
-    error_message = "Target type must be OPS_GENIE, SLACK, EMAIL or GROUP."
+    error_message = "Target type must be OPS_GENIE, WEBHOOK, SLACK, EMAIL or GROUP."
   }
 
   validation {
@@ -52,6 +52,20 @@ variable "opsgenie" {
   validation {
     condition     = var.opsgenie == null || contains(["US", "EU"], try(var.opsgenie.region, "US"))
     error_message = "opsgenie.region must be US or EU."
+  }
+}
+
+variable "webhook" {
+  type = object({
+    url_ssm_path             = optional(string)
+    use_existing_integration = optional(bool, false)
+  })
+  default     = null
+  description = "The project's webhook integration, used by every WEBHOOK target. By default the module manages it with the URL from the SSM SecureString url_ssm_path. use_existing_integration = true references the project's existing integration instead and sends no URL."
+
+  validation {
+    condition     = var.webhook == null || try(var.webhook.use_existing_integration, false) || try(var.webhook.url_ssm_path, null) != null
+    error_message = "webhook.url_ssm_path is required unless use_existing_integration is true."
   }
 }
 
