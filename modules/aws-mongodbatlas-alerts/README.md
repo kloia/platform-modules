@@ -6,15 +6,16 @@ needs no dependency on the stack that created it.
 
 - **Tiers.** Each alert belongs to a tier. A tier lists its targets and an optional
   `severity` (`INFO`, `WARNING`, `ERROR`, `CRITICAL`), set as the alerts' `severity_override`.
-  The default alerts use the tiers `critical` and `warning`.
+  The default alerts use the tiers `critical` and `warning`. Atlas sends the severity to
+  Opsgenie as the priority: `CRITICAL` P1, `ERROR` P2, `WARNING` P4, `INFO` P5
+  ([Atlas severity levels](https://www.mongodb.com/docs/atlas/configure-alerts/#severity-levels)).
 - **Opsgenie.** Atlas holds one Opsgenie integration per project, and every `OPS_GENIE`
   target uses it. By default the module manages that integration with the key from the SSM
   SecureString `opsgenie.api_key_ssm_path`; every alert references it and is created after
   it. A project that already has an Opsgenie integration either imports it into
   `mongodbatlas_third_party_integration.opsgenie[0]` (ID `<project_id>-OPS_GENIE`), which
   replaces its key, or sets `opsgenie.use_existing_integration = true` to keep it as it is.
-  Atlas sends no priority: set it in Opsgenie (on the integration, or with an alert policy on
-  the alert text or severity).
+  The Opsgenie priority follows the alert's severity (see Tiers).
 - **Slack.** A `SLACK` target posts to `channel_name` through the project's Atlas Slack
   integration, connected once per project in the Atlas UI (Project Settings > Integrations >
   Slack). The plan fails if a tier uses Slack and the project has no Slack integration.
@@ -60,11 +61,11 @@ module "atlas_alerts" {
 
   tiers = {
     critical = {
-      severity = "CRITICAL"
+      severity = "ERROR" # Opsgenie P2
       targets  = [{ type = "OPS_GENIE" }]
     }
     warning = {
-      severity = "WARNING"
+      severity = "INFO" # Opsgenie P5
       targets = [
         { type = "OPS_GENIE" },
         { type = "SLACK", channel_name = "#example-db-alerts" },
