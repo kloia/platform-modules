@@ -134,9 +134,15 @@ locals {
   alerts = merge(var.enable_default_alerts ? local.default_alerts_typed : {}, var.alerts)
 
   targets       = flatten([for t in values(var.tiers) : t.targets])
-  ssm_paths     = toset([for x in local.targets : x.api_key_ssm_path if x.type == "OPS_GENIE"])
+  uses_opsgenie = anytrue([for x in local.targets : x.type == "OPS_GENIE"])
   uses_slack    = anytrue([for x in local.targets : x.type == "SLACK"])
   unknown_tiers = setsubtract(toset([for a in values(local.alerts) : a.tier]), toset(keys(var.tiers)))
+
+  manage_opsgenie = local.uses_opsgenie && !try(var.opsgenie.use_existing_integration, false)
+  opsgenie_integration_id = one(concat(
+    mongodbatlas_third_party_integration.opsgenie[*].id,
+    data.mongodbatlas_third_party_integration.opsgenie[*].id,
+  ))
 }
 
 data "mongodbatlas_project" "this" {
@@ -150,11 +156,30 @@ data "mongodbatlas_project" "this" {
   }
 }
 
-data "aws_ssm_parameter" "api_key" {
-  for_each = local.ssm_paths
+data "aws_ssm_parameter" "opsgenie" {
+  count = local.manage_opsgenie ? 1 : 0
 
-  name            = each.value
+  name            = var.opsgenie.api_key_ssm_path
   with_decryption = true
+}
+
+# Atlas holds one Opsgenie integration per project, and an alert notification that carries
+# a key without an integration makes Atlas create one. The module owns that integration, so
+# every alert references it and is created after it.
+resource "mongodbatlas_third_party_integration" "opsgenie" {
+  count = local.manage_opsgenie ? 1 : 0
+
+  project_id = data.mongodbatlas_project.this.id
+  type       = "OPS_GENIE"
+  api_key    = data.aws_ssm_parameter.opsgenie[0].value
+  region     = var.opsgenie.region
+}
+
+data "mongodbatlas_third_party_integration" "opsgenie" {
+  count = local.uses_opsgenie && !local.manage_opsgenie ? 1 : 0
+
+  project_id = data.mongodbatlas_project.this.id
+  type       = "OPS_GENIE"
 }
 
 # Atlas allows one Slack integration per project. It is connected once in the Atlas UI
@@ -174,20 +199,21 @@ resource "mongodbatlas_alert_configuration" "this" {
   enabled           = each.value.enabled
   severity_override = var.tiers[each.value.tier].severity
 
-  # Each Opsgenie notification carries its own key, so the project needs no Opsgenie
-  # integration and existing project integrations are never touched.
   dynamic "notification" {
     for_each = var.tiers[each.value.tier].targets
     content {
       type_name         = notification.value.type
       delay_min         = each.value.delay_min
-      ops_genie_api_key = notification.value.type == "OPS_GENIE" ? data.aws_ssm_parameter.api_key[notification.value.api_key_ssm_path].value : null
-      ops_genie_region  = notification.value.type == "OPS_GENIE" ? notification.value.region : null
+      ops_genie_api_key = notification.value.type == "OPS_GENIE" && local.manage_opsgenie ? data.aws_ssm_parameter.opsgenie[0].value : null
+      ops_genie_region  = notification.value.type == "OPS_GENIE" ? var.opsgenie.region : null
       channel_name      = notification.value.type == "SLACK" ? notification.value.channel_name : null
-      integration_id    = notification.value.type == "SLACK" ? data.mongodbatlas_third_party_integration.slack[0].id : null
-      email_address     = notification.value.type == "EMAIL" ? notification.value.email_address : null
-      roles             = notification.value.type == "GROUP" ? notification.value.roles : null
-      email_enabled     = notification.value.type == "GROUP" ? true : null
+      integration_id = (
+        notification.value.type == "OPS_GENIE" ? local.opsgenie_integration_id :
+        notification.value.type == "SLACK" ? data.mongodbatlas_third_party_integration.slack[0].id : null
+      )
+      email_address = notification.value.type == "EMAIL" ? notification.value.email_address : null
+      roles         = notification.value.type == "GROUP" ? notification.value.roles : null
+      email_enabled = notification.value.type == "GROUP" ? true : null
     }
   }
 

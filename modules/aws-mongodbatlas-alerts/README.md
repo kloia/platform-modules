@@ -7,10 +7,14 @@ needs no dependency on the stack that created it.
 - **Tiers.** Each alert belongs to a tier. A tier lists its targets and an optional
   `severity` (`INFO`, `WARNING`, `ERROR`, `CRITICAL`), set as the alerts' `severity_override`.
   The default alerts use the tiers `critical` and `warning`.
-- **Opsgenie.** Each notification carries the API key itself, read from an SSM
-  SecureString (`api_key_ssm_path`). The project needs no Opsgenie integration, and existing
-  project integrations are not touched. Atlas sends no priority: set it in Opsgenie (on the
-  integration, or with an alert policy on the alert text or severity).
+- **Opsgenie.** Atlas holds one Opsgenie integration per project, and every `OPS_GENIE`
+  target uses it. By default the module manages that integration with the key from the SSM
+  SecureString `opsgenie.api_key_ssm_path`; every alert references it and is created after
+  it. A project that already has an Opsgenie integration either imports it into
+  `mongodbatlas_third_party_integration.opsgenie[0]` (ID `<project_id>-OPS_GENIE`), which
+  replaces its key, or sets `opsgenie.use_existing_integration = true` to keep it as it is.
+  Atlas sends no priority: set it in Opsgenie (on the integration, or with an alert policy on
+  the alert text or severity).
 - **Slack.** A `SLACK` target posts to `channel_name` through the project's Atlas Slack
   integration, connected once per project in the Atlas UI (Project Settings > Integrations >
   Slack). The plan fails if a tier uses Slack and the project has no Slack integration.
@@ -49,15 +53,20 @@ module "atlas_alerts" {
 
   project_name = "example-project"
 
+  opsgenie = {
+    api_key_ssm_path = "/example/alerting/opsgenie_api_key"
+    region           = "EU"
+  }
+
   tiers = {
     critical = {
       severity = "CRITICAL"
-      targets  = [{ type = "OPS_GENIE", api_key_ssm_path = "/example/alerting/opsgenie_api_key", region = "EU" }]
+      targets  = [{ type = "OPS_GENIE" }]
     }
     warning = {
       severity = "WARNING"
       targets = [
-        { type = "OPS_GENIE", api_key_ssm_path = "/example/alerting/opsgenie_api_key", region = "EU" },
+        { type = "OPS_GENIE" },
         { type = "SLACK", channel_name = "#example-db-alerts" },
       ]
     }
@@ -126,8 +135,10 @@ No modules.
 | Name | Type |
 |------|------|
 | [mongodbatlas_alert_configuration.this](https://registry.terraform.io/providers/mongodb/mongodbatlas/latest/docs/resources/alert_configuration) | resource |
-| [aws_ssm_parameter.api_key](https://registry.terraform.io/providers/hashicorp/aws/latest/docs/data-sources/ssm_parameter) | data source |
+| [mongodbatlas_third_party_integration.opsgenie](https://registry.terraform.io/providers/mongodb/mongodbatlas/latest/docs/resources/third_party_integration) | resource |
+| [aws_ssm_parameter.opsgenie](https://registry.terraform.io/providers/hashicorp/aws/latest/docs/data-sources/ssm_parameter) | data source |
 | [mongodbatlas_project.this](https://registry.terraform.io/providers/mongodb/mongodbatlas/latest/docs/data-sources/project) | data source |
+| [mongodbatlas_third_party_integration.opsgenie](https://registry.terraform.io/providers/mongodb/mongodbatlas/latest/docs/data-sources/third_party_integration) | data source |
 | [mongodbatlas_third_party_integration.slack](https://registry.terraform.io/providers/mongodb/mongodbatlas/latest/docs/data-sources/third_party_integration) | data source |
 
 ## Inputs
@@ -136,12 +147,14 @@ No modules.
 |------|-------------|------|---------|:--------:|
 | <a name="input_alerts"></a> [alerts](#input\_alerts) | Alerts added to the default set, keyed by a stable name. A key that matches a default replaces it entirely. description is for the code and docs only; Atlas has no field for it. | <pre>map(object({<br>    event_type  = string<br>    tier        = string<br>    description = optional(string)<br>    enabled     = optional(bool, true)<br>    delay_min   = optional(number, 0)<br>    metric_threshold = optional(object({<br>      metric_name = string<br>      operator    = string<br>      threshold   = number<br>      units       = optional(string, "RAW")<br>      mode        = optional(string, "AVERAGE")<br>    }))<br>    threshold = optional(object({<br>      operator  = string<br>      threshold = number<br>      units     = optional(string)<br>    }))<br>    matchers = optional(list(object({<br>      field_name = string<br>      operator   = string<br>      value      = string<br>    })), [])<br>  }))</pre> | `{}` | no |
 | <a name="input_enable_default_alerts"></a> [enable\_default\_alerts](#input\_enable\_default\_alerts) | Create the default alert set (see README). Set false to create only the entries in alerts. | `bool` | `true` | no |
+| <a name="input_opsgenie"></a> [opsgenie](#input\_opsgenie) | The project's Opsgenie integration, used by every OPS\_GENIE target. By default the module manages it with the key from the SSM SecureString api\_key\_ssm\_path. use\_existing\_integration = true references the project's existing integration instead and sends no key. | <pre>object({<br>    api_key_ssm_path         = optional(string)<br>    region                   = optional(string, "US")<br>    use_existing_integration = optional(bool, false)<br>  })</pre> | `null` | no |
 | <a name="input_project_name"></a> [project\_name](#input\_project\_name) | Atlas project name, looked up by name, so the caller needs no dependency on the unit that creates the project. | `string` | n/a | yes |
-| <a name="input_tiers"></a> [tiers](#input\_tiers) | Where each tier's alerts are sent. severity becomes the alerts' severity\_override (INFO, WARNING, ERROR, CRITICAL). Target types: OPS\_GENIE (api\_key\_ssm\_path, region), SLACK (channel\_name, uses the project's Slack integration), EMAIL (email\_address), GROUP (roles). The default alerts use the tiers critical and warning. | <pre>map(object({<br>    severity = optional(string)<br>    targets = list(object({<br>      type             = string<br>      api_key_ssm_path = optional(string)<br>      region           = optional(string, "US")<br>      channel_name     = optional(string)<br>      email_address    = optional(string)<br>      roles            = optional(list(string))<br>    }))<br>  }))</pre> | n/a | yes |
+| <a name="input_tiers"></a> [tiers](#input\_tiers) | Where each tier's alerts are sent. severity becomes the alerts' severity\_override (INFO, WARNING, ERROR, CRITICAL). Target types: OPS\_GENIE (uses var.opsgenie), SLACK (channel\_name, uses the project's Slack integration), EMAIL (email\_address), GROUP (roles). The default alerts use the tiers critical and warning. | <pre>map(object({<br>    severity = optional(string)<br>    targets = list(object({<br>      type          = string<br>      channel_name  = optional(string)<br>      email_address = optional(string)<br>      roles         = optional(list(string))<br>    }))<br>  }))</pre> | n/a | yes |
 
 ## Outputs
 
 | Name | Description |
 |------|-------------|
 | <a name="output_alert_configuration_ids"></a> [alert\_configuration\_ids](#output\_alert\_configuration\_ids) | Atlas alert configuration ID of each alert, by key. |
+| <a name="output_opsgenie_integration_id"></a> [opsgenie\_integration\_id](#output\_opsgenie\_integration\_id) | ID of the project's Opsgenie integration the alerts notify, or null when no tier uses Opsgenie. |
 <!-- END_TF_DOCS -->

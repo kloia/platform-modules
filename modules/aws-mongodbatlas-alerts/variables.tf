@@ -7,28 +7,19 @@ variable "tiers" {
   type = map(object({
     severity = optional(string)
     targets = list(object({
-      type             = string
-      api_key_ssm_path = optional(string)
-      region           = optional(string, "US")
-      channel_name     = optional(string)
-      email_address    = optional(string)
-      roles            = optional(list(string))
+      type          = string
+      channel_name  = optional(string)
+      email_address = optional(string)
+      roles         = optional(list(string))
     }))
   }))
-  description = "Where each tier's alerts are sent. severity becomes the alerts' severity_override (INFO, WARNING, ERROR, CRITICAL). Target types: OPS_GENIE (api_key_ssm_path, region), SLACK (channel_name, uses the project's Slack integration), EMAIL (email_address), GROUP (roles). The default alerts use the tiers critical and warning."
+  description = "Where each tier's alerts are sent. severity becomes the alerts' severity_override (INFO, WARNING, ERROR, CRITICAL). Target types: OPS_GENIE (uses var.opsgenie), SLACK (channel_name, uses the project's Slack integration), EMAIL (email_address), GROUP (roles). The default alerts use the tiers critical and warning."
 
   validation {
     condition = alltrue(flatten([for t in values(var.tiers) : [
       for x in t.targets : contains(["OPS_GENIE", "SLACK", "EMAIL", "GROUP"], x.type)
     ]]))
     error_message = "Target type must be OPS_GENIE, SLACK, EMAIL or GROUP."
-  }
-
-  validation {
-    condition = alltrue(flatten([for t in values(var.tiers) : [
-      for x in t.targets : x.type != "OPS_GENIE" || x.api_key_ssm_path != null
-    ]]))
-    error_message = "An OPS_GENIE target needs api_key_ssm_path."
   }
 
   validation {
@@ -41,6 +32,26 @@ variable "tiers" {
   validation {
     condition     = alltrue([for t in values(var.tiers) : t.severity == null || contains(["INFO", "WARNING", "ERROR", "CRITICAL"], t.severity)])
     error_message = "Tier severity must be INFO, WARNING, ERROR or CRITICAL."
+  }
+}
+
+variable "opsgenie" {
+  type = object({
+    api_key_ssm_path         = optional(string)
+    region                   = optional(string, "US")
+    use_existing_integration = optional(bool, false)
+  })
+  default     = null
+  description = "The project's Opsgenie integration, used by every OPS_GENIE target. By default the module manages it with the key from the SSM SecureString api_key_ssm_path. use_existing_integration = true references the project's existing integration instead and sends no key."
+
+  validation {
+    condition     = var.opsgenie == null || try(var.opsgenie.use_existing_integration, false) || try(var.opsgenie.api_key_ssm_path, null) != null
+    error_message = "opsgenie.api_key_ssm_path is required unless use_existing_integration is true."
+  }
+
+  validation {
+    condition     = var.opsgenie == null || contains(["US", "EU"], try(var.opsgenie.region, "US"))
+    error_message = "opsgenie.region must be US or EU."
   }
 }
 
