@@ -4,6 +4,7 @@ locals {
       error_rate_threshold = a.error_rate_threshold != null ? a.error_rate_threshold : var.error_rate_threshold
       min_requests         = a.min_requests != null ? a.min_requests : var.min_requests
       priority             = a.priority != null ? a.priority : var.priority
+      anomaly_priority     = a.anomaly_priority != null ? a.anomaly_priority : (var.anomaly_priority != null ? var.anomaly_priority : (a.priority != null ? a.priority : var.priority))
       anomaly_alarm        = a.anomaly_alarm != null ? a.anomaly_alarm : var.enable_anomaly_alarm
       anomaly_band_width   = a.anomaly_band_width != null ? a.anomaly_band_width : var.anomaly_band_width
     }
@@ -85,7 +86,7 @@ module "error_rate_anomaly" {
 
   alarm_name = "${var.name_prefix}-apigw-${each.key}-5xx-rate-anomaly"
   alarm_description = join(" ", compact([
-    each.value.priority == null ? "" : "[${each.value.priority}]",
+    each.value.anomaly_priority == null ? "" : "[${each.value.anomaly_priority}]",
     "The 5XX rate of ${each.key} is above the range CloudWatch expects (anomaly detection band of ${each.value.anomaly_band_width} standard deviations, learned from the previous weeks) for ${var.period * var.datapoints_to_alarm / 60} minutes (evaluated only when there are at least ${each.value.min_requests} requests per ${var.period / 60} minutes).",
     var.description_suffix,
   ]))

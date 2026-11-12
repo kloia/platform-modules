@@ -15,6 +15,7 @@ locals {
       throttle_threshold          = f.throttle_threshold != null ? f.throttle_threshold : var.throttle_threshold
       duration_percent_of_timeout = f.duration_percent_of_timeout != null ? f.duration_percent_of_timeout : var.duration_percent_of_timeout
       priority                    = f.priority != null ? f.priority : var.priority
+      anomaly_priority            = f.anomaly_priority != null ? f.anomaly_priority : (var.anomaly_priority != null ? var.anomaly_priority : (f.priority != null ? f.priority : var.priority))
       anomaly_alarm               = f.anomaly_alarm != null ? f.anomaly_alarm : var.enable_anomaly_alarm
       anomaly_band_width          = f.anomaly_band_width != null ? f.anomaly_band_width : var.anomaly_band_width
       timeout_seconds             = data.aws_lambda_function.this[name].timeout
@@ -114,7 +115,7 @@ locals {
       s.anomaly_alarm ? {
         "${name}-error-rate-anomaly" = {
           function            = name
-          priority            = s.priority
+          priority            = s.anomaly_priority
           alarm_name          = "${var.name_prefix}-lambda-${name}-error-rate-anomaly"
           description         = "The error rate of ${name} is above the range CloudWatch expects (anomaly detection band of ${s.anomaly_band_width} standard deviations, learned from the previous weeks) for ${local.window_minutes} minutes (evaluated only when there are at least ${s.min_invocations} invocations per ${var.period / 60} minutes)."
           comparison_operator = "GreaterThanUpperThreshold"

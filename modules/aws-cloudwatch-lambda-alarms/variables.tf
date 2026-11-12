@@ -17,6 +17,7 @@ variable "functions" {
     priority                    = optional(string)
     anomaly_alarm               = optional(bool)
     anomaly_band_width          = optional(number)
+    anomaly_priority            = optional(string)
   }))
 
   validation {
@@ -33,6 +34,14 @@ variable "functions" {
       f.priority == null ? true : contains(["P1", "P2", "P3", "P4", "P5"], f.priority)
     ])
     error_message = "priority must be one of P1, P2, P3, P4, P5."
+  }
+
+  validation {
+    condition = alltrue([
+      for f in var.functions :
+      f.anomaly_priority == null ? true : contains(["P1", "P2", "P3", "P4", "P5"], f.anomaly_priority)
+    ])
+    error_message = "anomaly_priority must be one of P1, P2, P3, P4, P5."
   }
 
   validation {
@@ -156,5 +165,20 @@ variable "anomaly_band_width" {
   validation {
     condition     = var.anomaly_band_width > 0
     error_message = "anomaly_band_width must be above 0."
+  }
+}
+
+variable "anomaly_priority" {
+  description = <<-EOT
+    Opsgenie priority of the anomaly alarm, written like `priority`. Null uses the function's `priority`. Set it lower
+    than `priority` while the model is still learning, so a fixed-threshold alarm keeps its priority and the
+    anomaly alarm does not page.
+  EOT
+  type        = string
+  default     = null
+
+  validation {
+    condition     = var.anomaly_priority == null ? true : contains(["P1", "P2", "P3", "P4", "P5"], var.anomaly_priority)
+    error_message = "anomaly_priority must be one of P1, P2, P3, P4, P5."
   }
 }

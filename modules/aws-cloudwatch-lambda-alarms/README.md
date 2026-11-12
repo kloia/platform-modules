@@ -68,3 +68,5 @@ the range is learned from the metric's own history and follows its hourly, daily
 Use it for a function with a steady, known error rate, where no fixed threshold fits: a threshold above the usual rate hides a
 moderate rise, one below it fires all the time. The fixed-threshold alarm is kept, because CloudWatch takes up to two weeks to
 learn the range. Alarm name: `<name_prefix>-lambda-<function>-error-rate-anomaly`. The alarm is billed for the metrics it reads plus the upper and lower band.
+
+`anomaly_priority` (default: the function's `priority`) sets the Opsgenie priority of the anomaly alarm separately. Keep it lower than `priority` while the model is still learning, so the fixed-threshold alarm keeps its priority and the anomaly alarm does not page.
