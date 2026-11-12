@@ -63,7 +63,7 @@ module "alarm" {
   for_each = local.alarms_enabled
 
   alarm_name        = "${var.name_prefix}-redis-${var.name}-${each.key}-high"
-  alarm_description = join(" ", compact([each.value.text, var.description_suffix]))
+  alarm_description = join(" ", compact([var.priority == null ? "" : "[${var.priority}]", each.value.text, var.description_suffix]))
 
   metric_query = concat(
     [{

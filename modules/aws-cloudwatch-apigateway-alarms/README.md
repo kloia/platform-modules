@@ -28,6 +28,11 @@ module "apigw_alarms" {
 }
 ```
 
+`priority` (`P1` to `P5`, default none, module-wide with a per-API override) is written at the start of each alarm
+description as `[P2]`. An Opsgenie CloudWatch integration with a rule that matches `"AlarmDescription":"[P2]` sets
+the alert priority from it; without such a rule the prefix does nothing. With `priority` unset the description is
+unchanged.
+
 APIs are not looked up. API Gateway allows two REST APIs to share a name, and the metric dimension is the name,
 so APIs with the same name are reported and alarmed on together. A misspelt name creates an alarm that never
 receives data and stays `OK`. Alarm names: `<name_prefix>-apigw-<api>-5xx-rate`.

@@ -79,3 +79,18 @@ variable "tags" {
   type        = map(string)
   default     = {}
 }
+
+variable "priority" {
+  description = <<-EOT
+    Opsgenie priority, P1 to P5, written at the start of every alarm description as `[P2]`. An Opsgenie
+    CloudWatch integration can read it from the description; leave it null when the integration has no such
+    rule, and the description stays unchanged.
+  EOT
+  type        = string
+  default     = null
+
+  validation {
+    condition     = var.priority == null ? true : contains(["P1", "P2", "P3", "P4", "P5"], var.priority)
+    error_message = "priority must be one of P1, P2, P3, P4, P5."
+  }
+}

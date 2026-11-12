@@ -36,6 +36,7 @@ module "alarm" {
 
   alarm_name = "${var.name_prefix}-alb-${each.value.lb}-${each.value.kind}-5xx-rate"
   alarm_description = join(" ", compact([
+    var.priority == null ? "" : "[${var.priority}]",
     "More than ${each.value.threshold}% of requests on ${each.value.lb} returned 5XX from ${each.value.source} for ${var.period * var.datapoints_to_alarm / 60} minutes (evaluated only when there are at least ${var.min_requests} requests per ${var.period / 60} minutes).",
     var.description_suffix,
   ]))

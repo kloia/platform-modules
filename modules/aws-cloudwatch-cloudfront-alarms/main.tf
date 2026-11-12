@@ -35,6 +35,7 @@ module "alarm" {
 
   alarm_name = "${var.name_prefix}-cloudfront-${each.key}-5xx-rate"
   alarm_description = join(" ", compact([
+    var.priority == null ? "" : "[${var.priority}]",
     "More than ${each.value.threshold}% of viewer requests to CloudFront distribution ${each.key} (${each.value.id}) returned 5XX for ${var.period * var.datapoints_to_alarm / 60} minutes (evaluated only when there are at least ${each.value.min_requests} requests per ${var.period / 60} minutes).",
     var.description_suffix,
   ]))

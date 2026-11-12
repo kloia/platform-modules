@@ -51,7 +51,7 @@ module "cluster" {
   for_each = local.cluster
 
   alarm_name        = "${var.name_prefix}-kafka-${var.name}-${each.key}-${each.value.suffix}"
-  alarm_description = join(" ", compact([each.value.text, var.description_suffix]))
+  alarm_description = join(" ", compact([var.priority == null ? "" : "[${var.priority}]", each.value.text, var.description_suffix]))
 
   namespace   = "AWS/Kafka"
   metric_name = each.value.metric
@@ -77,7 +77,7 @@ module "broker" {
   for_each = local.max_over_brokers_fits ? local.broker : {}
 
   alarm_name        = "${var.name_prefix}-kafka-${var.name}-${each.key}-high"
-  alarm_description = join(" ", compact([each.value.text, var.description_suffix]))
+  alarm_description = join(" ", compact([var.priority == null ? "" : "[${var.priority}]", each.value.text, var.description_suffix]))
 
   metric_query = concat(
     [{
@@ -126,7 +126,7 @@ module "cpu" {
   for_each = toset(local.brokers)
 
   alarm_name        = "${var.name_prefix}-kafka-${var.name}-cpu-high-broker-${each.key}"
-  alarm_description = join(" ", compact(["Kafka broker ${each.key} CPU (user + system) above ${var.cpu_threshold_pct}% for ${local.minutes} minutes. Above 60% the cluster has no headroom for a broker failure or a rolling update. Check partition balance and client load before scaling up.", var.description_suffix]))
+  alarm_description = join(" ", compact([var.priority == null ? "" : "[${var.priority}]", "Kafka broker ${each.key} CPU (user + system) above ${var.cpu_threshold_pct}% for ${local.minutes} minutes. Above 60% the cluster has no headroom for a broker failure or a rolling update. Check partition balance and client load before scaling up.", var.description_suffix]))
 
   metric_query = [
     {

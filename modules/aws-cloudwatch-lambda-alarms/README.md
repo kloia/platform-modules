@@ -39,6 +39,14 @@ module "lambda_alarms" {
 | `min_invocations` | `min_invocations` |
 | `throttle_threshold` | `throttle_threshold` |
 | `duration_percent_of_timeout` | `duration_percent_of_timeout` |
+| `priority` | `priority` |
+
+`enable_throttle_alarm` and `enable_duration_alarm` (both default `true`) switch those alarm kinds off for every
+function, leaving the error-rate alarm.
+
+`priority` (`P1` to `P5`, default none) is written at the start of each alarm description as `[P2]`. An Opsgenie
+CloudWatch integration with a rule that matches `"AlarmDescription":"[P2]` sets the alert priority from it;
+without such a rule the prefix does nothing. With `priority` unset the description is unchanged.
 
 `period`, `evaluation_periods` and `datapoints_to_alarm` are module-wide. The `effective_settings` output
 shows the value in force for each function after overrides.

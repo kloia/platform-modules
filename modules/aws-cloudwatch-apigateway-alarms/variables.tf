@@ -12,6 +12,7 @@ variable "apis" {
   type = map(object({
     error_rate_threshold = optional(number)
     min_requests         = optional(number)
+    priority             = optional(string)
   }))
 
   validation {
@@ -20,6 +21,29 @@ variable "apis" {
       a.error_rate_threshold == null ? true : (a.error_rate_threshold >= 0 && a.error_rate_threshold <= 100)
     ])
     error_message = "error_rate_threshold must be between 0 and 100 (a percentage)."
+  }
+
+  validation {
+    condition = alltrue([
+      for a in var.apis :
+      a.priority == null ? true : contains(["P1", "P2", "P3", "P4", "P5"], a.priority)
+    ])
+    error_message = "priority must be one of P1, P2, P3, P4, P5."
+  }
+}
+
+variable "priority" {
+  description = <<-EOT
+    Opsgenie priority, P1 to P5, written at the start of every alarm description as `[P2]`. An Opsgenie
+    CloudWatch integration can read it from the description; leave it null when the integration has no such
+    rule, and the description stays unchanged. An API may override it.
+  EOT
+  type        = string
+  default     = null
+
+  validation {
+    condition     = var.priority == null ? true : contains(["P1", "P2", "P3", "P4", "P5"], var.priority)
+    error_message = "priority must be one of P1, P2, P3, P4, P5."
   }
 }
 

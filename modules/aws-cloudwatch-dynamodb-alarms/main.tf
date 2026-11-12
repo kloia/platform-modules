@@ -51,7 +51,7 @@ module "alarm" {
   for_each = local.alarms
 
   alarm_name          = each.value.alarm_name
-  alarm_description   = join(" ", compact([each.value.description, var.description_suffix]))
+  alarm_description   = join(" ", compact([var.priority == null ? "" : "[${var.priority}]", each.value.description, var.description_suffix]))
   namespace           = each.value.namespace
   metric_name         = each.value.metric_name
   statistic           = each.value.statistic
