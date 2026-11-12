@@ -95,7 +95,7 @@
   "modules/aws-access-analyzer": "0.1.0",
   "modules/aws-github-oidc-central-roles": "0.1.0",
   "modules/aws-identity-center": "0.1.0",
-  "modules/aws-cloudwatch-cloudfront-alarms": "0.1.0",
+  "modules/aws-cloudwatch-cloudfront-alarms": "0.2.0",
   "modules/aws-cloudwatch-nlb-alarms": "0.1.0",
   "modules/aws-mongodbatlas-alerts": "0.2.0"
 }
