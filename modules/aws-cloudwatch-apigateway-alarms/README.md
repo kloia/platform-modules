@@ -38,3 +38,15 @@ so APIs with the same name are reported and alarmed on together. A misspelt name
 receives data and stays `OK`. Alarm names: `<name_prefix>-apigw-<api>-5xx-rate`.
 
 Source: API Gateway developer guide, "Amazon API Gateway dimensions and metrics" (5XXError, Count, ApiName).
+
+## Anomaly alarm
+
+`enable_anomaly_alarm` (default `false`; a API may turn it on or off with `anomaly_alarm`) adds a second alarm
+per API on the same 5XX rate. It goes to `ALARM` when the rate stays above the range CloudWatch expects, using
+[anomaly detection](https://docs.aws.amazon.com/AmazonCloudWatch/latest/monitoring/Create_Anomaly_Detection_Alarm.html):
+the range is learned from the metric's own history and follows its hourly, daily and weekly pattern. `anomaly_band_width`
+(default 3, per API override) is the width of the range in standard deviations; a larger value tolerates more deviation.
+
+Use it for a API with a steady, known error rate, where no fixed threshold fits: a threshold above the usual rate hides a
+moderate rise, one below it fires all the time. The fixed-threshold alarm is kept, because CloudWatch takes up to two weeks to
+learn the range. Alarm name: `<name_prefix>-apigw-<api>-5xx-rate-anomaly`. The alarm is billed for the metrics it reads plus the upper and lower band.

@@ -15,11 +15,38 @@ locals {
       throttle_threshold          = f.throttle_threshold != null ? f.throttle_threshold : var.throttle_threshold
       duration_percent_of_timeout = f.duration_percent_of_timeout != null ? f.duration_percent_of_timeout : var.duration_percent_of_timeout
       priority                    = f.priority != null ? f.priority : var.priority
+      anomaly_alarm               = f.anomaly_alarm != null ? f.anomaly_alarm : var.enable_anomaly_alarm
+      anomaly_band_width          = f.anomaly_band_width != null ? f.anomaly_band_width : var.anomaly_band_width
       timeout_seconds             = data.aws_lambda_function.this[name].timeout
     }
   }
 
   window_minutes = var.period * var.datapoints_to_alarm / 60
+
+  # The error rate, shared by the fixed-threshold alarm and the anomaly alarm. The rate is only meaningful
+  # with traffic: below min_invocations it reports 0.
+  rate_query = {
+    for name, s in local.settings : name => concat([
+      {
+        id          = "rate"
+        expression  = "IF(FILL(inv,0) >= ${s.min_invocations}, 100 * FILL(err,0) / FILL(inv,1), 0)"
+        label       = "Error rate %"
+        return_data = true
+      }
+      ], [
+      for id, metric in { inv = "Invocations", err = "Errors" } : {
+        id                    = id
+        return_data           = false
+        metric = [{
+          namespace   = "AWS/Lambda"
+          metric_name = metric
+          stat        = "Sum"
+          period      = var.period
+          dimensions  = { FunctionName = name }
+        }]
+      }
+    ])
+  }
 
   # One entry per function and alarm kind. Fields a kind does not use are null.
   alarms = merge([
@@ -32,32 +59,13 @@ locals {
           description         = "More than ${s.error_rate_threshold}% of invocations of ${name} failed for ${local.window_minutes} minutes (evaluated only when there are at least ${s.min_invocations} invocations per ${var.period / 60} minutes)."
           comparison_operator = "GreaterThanThreshold"
           threshold           = s.error_rate_threshold
+          threshold_metric_id = null
           evaluation_periods  = var.evaluation_periods
           datapoints_to_alarm = var.datapoints_to_alarm
           metric_name         = null
           statistic           = null
           extended_statistic  = null
-          # The rate is only meaningful with traffic: below min_invocations it reports 0.
-          metric_query = concat([
-            {
-              id          = "rate"
-              expression  = "IF(FILL(inv,0) >= ${s.min_invocations}, 100 * FILL(err,0) / FILL(inv,1), 0)"
-              label       = "Error rate %"
-              return_data = true
-            }
-            ], [
-            for id, metric in { inv = "Invocations", err = "Errors" } : {
-              id                    = id
-              return_data           = false
-              metric = [{
-                namespace   = "AWS/Lambda"
-                metric_name = metric
-                stat        = "Sum"
-                period      = var.period
-                dimensions  = { FunctionName = name }
-              }]
-            }
-          ])
+          metric_query        = local.rate_query[name]
         }
       },
 
@@ -71,6 +79,7 @@ locals {
           description         = "${name} had at least ${s.throttle_threshold} throttled invocations in ${var.period / 60} minutes: a concurrency limit was reached and requests were refused."
           comparison_operator = "GreaterThanOrEqualToThreshold"
           threshold           = s.throttle_threshold
+          threshold_metric_id = null
           evaluation_periods  = 1
           datapoints_to_alarm = 1
           metric_name         = "Throttles"
@@ -89,12 +98,41 @@ locals {
           description         = "p99 duration of ${name} exceeded ${s.duration_percent_of_timeout}% of its ${s.timeout_seconds}s timeout for ${local.window_minutes} minutes: invocations are close to being cut off."
           comparison_operator = "GreaterThanThreshold"
           threshold           = s.timeout_seconds * 1000 * s.duration_percent_of_timeout / 100
+          threshold_metric_id = null
           evaluation_periods  = var.evaluation_periods
           datapoints_to_alarm = var.datapoints_to_alarm
           metric_name         = "Duration"
           statistic           = null
           extended_statistic  = "p99"
           metric_query        = []
+        }
+      } : {},
+
+      # Alarms on a rise of the error rate above the range CloudWatch expects, learned from the metric's own
+      # history (up to two weeks). It suits a function with a steady, known error rate, where no fixed
+      # threshold fits. The fixed-threshold alarm stays: during the first weeks the model is still learning.
+      s.anomaly_alarm ? {
+        "${name}-error-rate-anomaly" = {
+          function            = name
+          priority            = s.priority
+          alarm_name          = "${var.name_prefix}-lambda-${name}-error-rate-anomaly"
+          description         = "The error rate of ${name} is above the range CloudWatch expects (anomaly detection band of ${s.anomaly_band_width} standard deviations, learned from the previous weeks) for ${local.window_minutes} minutes (evaluated only when there are at least ${s.min_invocations} invocations per ${var.period / 60} minutes)."
+          comparison_operator = "GreaterThanUpperThreshold"
+          threshold           = null
+          threshold_metric_id = "band"
+          evaluation_periods  = var.evaluation_periods
+          datapoints_to_alarm = var.datapoints_to_alarm
+          metric_name         = null
+          statistic           = null
+          extended_statistic  = null
+          metric_query = concat(local.rate_query[name], [
+            {
+              id          = "band"
+              expression  = "ANOMALY_DETECTION_BAND(rate, ${s.anomaly_band_width})"
+              label       = "Expected error rate %"
+              return_data = true
+            }
+          ])
         }
       } : {},
     )
@@ -112,6 +150,7 @@ module "alarm" {
   alarm_description   = join(" ", compact([each.value.priority == null ? "" : "[${each.value.priority}]", each.value.description, var.description_suffix]))
   comparison_operator = each.value.comparison_operator
   threshold           = each.value.threshold
+  threshold_metric_id = each.value.threshold_metric_id
   evaluation_periods  = each.value.evaluation_periods
   datapoints_to_alarm = each.value.datapoints_to_alarm
   treat_missing_data  = "notBreaching"

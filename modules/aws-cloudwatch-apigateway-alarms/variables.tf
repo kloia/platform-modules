@@ -13,6 +13,8 @@ variable "apis" {
     error_rate_threshold = optional(number)
     min_requests         = optional(number)
     priority             = optional(string)
+    anomaly_alarm        = optional(bool)
+    anomaly_band_width   = optional(number)
   }))
 
   validation {
@@ -99,4 +101,26 @@ variable "tags" {
   description = "Tags for every alarm."
   type        = map(string)
   default     = {}
+}
+
+variable "enable_anomaly_alarm" {
+  description = <<-EOT
+    Also create, for every API, an alarm on a rise of the 5XX rate above the range CloudWatch expects (anomaly
+    detection). It suits APIs with a steady, known 5XX rate, where no fixed threshold fits; an API may turn it
+    on or off with `anomaly_alarm`. The fixed-threshold alarm is kept. CloudWatch takes up to two weeks to learn
+    the range, and bills the alarm for the metrics it reads plus the upper and lower band.
+  EOT
+  type        = bool
+  default     = false
+}
+
+variable "anomaly_band_width" {
+  description = "Width of the expected range for the anomaly alarm, in standard deviations. A larger value tolerates more deviation before alarming."
+  type        = number
+  default     = 3
+
+  validation {
+    condition     = var.anomaly_band_width > 0
+    error_message = "anomaly_band_width must be above 0."
+  }
 }
