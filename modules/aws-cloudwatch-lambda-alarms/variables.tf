@@ -15,6 +15,9 @@ variable "functions" {
     throttle_threshold          = optional(number)
     duration_percent_of_timeout = optional(number)
     priority                    = optional(string)
+    anomaly_alarm               = optional(bool)
+    anomaly_band_width          = optional(number)
+    anomaly_priority            = optional(string)
   }))
 
   validation {
@@ -31,6 +34,14 @@ variable "functions" {
       f.priority == null ? true : contains(["P1", "P2", "P3", "P4", "P5"], f.priority)
     ])
     error_message = "priority must be one of P1, P2, P3, P4, P5."
+  }
+
+  validation {
+    condition = alltrue([
+      for f in var.functions :
+      f.anomaly_priority == null ? true : contains(["P1", "P2", "P3", "P4", "P5"], f.anomaly_priority)
+    ])
+    error_message = "anomaly_priority must be one of P1, P2, P3, P4, P5."
   }
 
   validation {
@@ -133,4 +144,41 @@ variable "tags" {
   description = "Tags for every alarm."
   type        = map(string)
   default     = {}
+}
+
+variable "enable_anomaly_alarm" {
+  description = <<-EOT
+    Also create, for every function, an alarm on a rise of the error rate above the range CloudWatch expects
+    (anomaly detection). It suits functions with a steady, known error rate, where no fixed threshold fits;
+    a function may turn it on or off with `anomaly_alarm`. The fixed-threshold alarm is kept. CloudWatch takes up
+    to two weeks to learn the range, and bills the alarm for the metrics it reads plus the upper and lower band.
+  EOT
+  type        = bool
+  default     = false
+}
+
+variable "anomaly_band_width" {
+  description = "Width of the expected range for the anomaly alarm, in standard deviations. A larger value tolerates more deviation before alarming."
+  type        = number
+  default     = 3
+
+  validation {
+    condition     = var.anomaly_band_width > 0
+    error_message = "anomaly_band_width must be above 0."
+  }
+}
+
+variable "anomaly_priority" {
+  description = <<-EOT
+    Opsgenie priority of the anomaly alarm, written like `priority`. Null uses the function's `priority`. Set it lower
+    than `priority` while the model is still learning, so a fixed-threshold alarm keeps its priority and the
+    anomaly alarm does not page.
+  EOT
+  type        = string
+  default     = null
+
+  validation {
+    condition     = var.anomaly_priority == null ? true : contains(["P1", "P2", "P3", "P4", "P5"], var.anomaly_priority)
+    error_message = "anomaly_priority must be one of P1, P2, P3, P4, P5."
+  }
 }
