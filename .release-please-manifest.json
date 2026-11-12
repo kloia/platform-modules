@@ -79,7 +79,7 @@
   "modules/aws-guardduty-detector-features": "0.1.0",
   "modules/aws-organizations-scp": "0.1.0",
   "modules/aws-cloudwatch-lambda-alarms": "0.1.0",
-  "modules/aws-cloudwatch-elasticache-alarms": "0.1.0",
+  "modules/aws-cloudwatch-elasticache-alarms": "0.2.0",
   "modules/aws-cloudwatch-msk-alarms": "0.1.0",
   "modules/aws-cloudwatch-mq-alarms": "0.1.0",
   "modules/aws-cloudwatch-nat-alarms": "0.1.0",
