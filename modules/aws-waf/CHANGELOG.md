@@ -1,5 +1,12 @@
 # Changelog
 
+## [0.6.0](https://github.com/kloia/platform-modules/compare/aws-waf-v0.5.0...aws-waf-v0.6.0) (2026-11-16)
+
+
+### Features
+
+* **aws-waf:** support JA3 and JA4 fingerprints in field_to_match ([c6d54f2](https://github.com/kloia/platform-modules/commit/c6d54f2b9bf5b5c3b28fa82640359a6140fd24c8))
+
 ## [0.5.0](https://github.com/kloia/platform-modules/compare/aws-waf-v0.4.1...aws-waf-v0.5.0) (2026-10-02)
 
 
