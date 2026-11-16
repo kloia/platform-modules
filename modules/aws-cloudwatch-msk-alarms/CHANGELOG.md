@@ -1,5 +1,12 @@
 # Changelog
 
+## [0.3.0](https://github.com/kloia/platform-modules/compare/aws-cloudwatch-msk-alarms-v0.2.0...aws-cloudwatch-msk-alarms-v0.3.0) (2026-11-16)
+
+
+### Features
+
+* **cloudwatch:** separate datapoints for the MSK under-replicated alarm ([#424](https://github.com/kloia/platform-modules/issues/424)) ([7080fc3](https://github.com/kloia/platform-modules/commit/7080fc3b339525988720d4d4c92bec38ba53db51))
+
 ## [0.2.0](https://github.com/kloia/platform-modules/compare/aws-cloudwatch-msk-alarms-v0.1.0...aws-cloudwatch-msk-alarms-v0.2.0) (2026-11-12)
 
 
