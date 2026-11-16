@@ -190,6 +190,18 @@ resource "aws_wafv2_web_acl" "waf_acl" {
                             name = lower(lookup(single_header.value, "name"))
                           }
                         }
+                        dynamic "ja3_fingerprint" {
+                          for_each = length(lookup(field_to_match.value, "ja3_fingerprint", {})) == 0 ? [] : [lookup(field_to_match.value, "ja3_fingerprint")]
+                          content {
+                            fallback_behavior = lookup(ja3_fingerprint.value, "fallback_behavior")
+                          }
+                        }
+                        dynamic "ja4_fingerprint" {
+                          for_each = length(lookup(field_to_match.value, "ja4_fingerprint", {})) == 0 ? [] : [lookup(field_to_match.value, "ja4_fingerprint")]
+                          content {
+                            fallback_behavior = lookup(ja4_fingerprint.value, "fallback_behavior")
+                          }
+                        }
                       }
                     }
                     positional_constraint = lookup(byte_match_statement.value, "positional_constraint")
@@ -259,6 +271,18 @@ resource "aws_wafv2_web_acl" "waf_acl" {
                                 for_each = length(lookup(field_to_match.value, "single_header", {})) == 0 ? [] : [lookup(field_to_match.value, "single_header")]
                                 content {
                                   name = lower(lookup(single_header.value, "name"))
+                                }
+                              }
+                              dynamic "ja3_fingerprint" {
+                                for_each = length(lookup(field_to_match.value, "ja3_fingerprint", {})) == 0 ? [] : [lookup(field_to_match.value, "ja3_fingerprint")]
+                                content {
+                                  fallback_behavior = lookup(ja3_fingerprint.value, "fallback_behavior")
+                                }
+                              }
+                              dynamic "ja4_fingerprint" {
+                                for_each = length(lookup(field_to_match.value, "ja4_fingerprint", {})) == 0 ? [] : [lookup(field_to_match.value, "ja4_fingerprint")]
+                                content {
+                                  fallback_behavior = lookup(ja4_fingerprint.value, "fallback_behavior")
                                 }
                               }
                             }
@@ -372,6 +396,18 @@ resource "aws_wafv2_web_acl" "waf_acl" {
                                   for_each = length(lookup(field_to_match.value, "single_header", {})) == 0 ? [] : [lookup(field_to_match.value, "single_header")]
                                   content {
                                     name = lower(lookup(single_header.value, "name"))
+                                  }
+                                }
+                                dynamic "ja3_fingerprint" {
+                                  for_each = length(lookup(field_to_match.value, "ja3_fingerprint", {})) == 0 ? [] : [lookup(field_to_match.value, "ja3_fingerprint")]
+                                  content {
+                                    fallback_behavior = lookup(ja3_fingerprint.value, "fallback_behavior")
+                                  }
+                                }
+                                dynamic "ja4_fingerprint" {
+                                  for_each = length(lookup(field_to_match.value, "ja4_fingerprint", {})) == 0 ? [] : [lookup(field_to_match.value, "ja4_fingerprint")]
+                                  content {
+                                    fallback_behavior = lookup(ja4_fingerprint.value, "fallback_behavior")
                                   }
                                 }
                               }
@@ -493,6 +529,18 @@ resource "aws_wafv2_web_acl" "waf_acl" {
                                         for_each = length(lookup(field_to_match.value, "single_header", {})) == 0 ? [] : [lookup(field_to_match.value, "single_header")]
                                         content {
                                           name = lower(lookup(single_header.value, "name"))
+                                        }
+                                      }
+                                      dynamic "ja3_fingerprint" {
+                                        for_each = length(lookup(field_to_match.value, "ja3_fingerprint", {})) == 0 ? [] : [lookup(field_to_match.value, "ja3_fingerprint")]
+                                        content {
+                                          fallback_behavior = lookup(ja3_fingerprint.value, "fallback_behavior")
+                                        }
+                                      }
+                                      dynamic "ja4_fingerprint" {
+                                        for_each = length(lookup(field_to_match.value, "ja4_fingerprint", {})) == 0 ? [] : [lookup(field_to_match.value, "ja4_fingerprint")]
+                                        content {
+                                          fallback_behavior = lookup(ja4_fingerprint.value, "fallback_behavior")
                                         }
                                       }
                                     }
@@ -667,6 +715,18 @@ resource "aws_wafv2_web_acl" "waf_acl" {
                                     name = lower(lookup(single_header.value, "name"))
                                   }
                                 }
+                                dynamic "ja3_fingerprint" {
+                                  for_each = length(lookup(field_to_match.value, "ja3_fingerprint", {})) == 0 ? [] : [lookup(field_to_match.value, "ja3_fingerprint")]
+                                  content {
+                                    fallback_behavior = lookup(ja3_fingerprint.value, "fallback_behavior")
+                                  }
+                                }
+                                dynamic "ja4_fingerprint" {
+                                  for_each = length(lookup(field_to_match.value, "ja4_fingerprint", {})) == 0 ? [] : [lookup(field_to_match.value, "ja4_fingerprint")]
+                                  content {
+                                    fallback_behavior = lookup(ja4_fingerprint.value, "fallback_behavior")
+                                  }
+                                }
                               }
                             }
                             positional_constraint = lookup(byte_match_statement.value, "positional_constraint")
@@ -832,6 +892,18 @@ resource "aws_wafv2_web_acl" "waf_acl" {
                   for_each = length(lookup(field_to_match.value, "single_header", {})) == 0 ? [] : [lookup(field_to_match.value, "single_header")]
                   content {
                     name = lower(lookup(single_header.value, "name"))
+                  }
+                }
+                dynamic "ja3_fingerprint" {
+                  for_each = length(lookup(field_to_match.value, "ja3_fingerprint", {})) == 0 ? [] : [lookup(field_to_match.value, "ja3_fingerprint")]
+                  content {
+                    fallback_behavior = lookup(ja3_fingerprint.value, "fallback_behavior")
+                  }
+                }
+                dynamic "ja4_fingerprint" {
+                  for_each = length(lookup(field_to_match.value, "ja4_fingerprint", {})) == 0 ? [] : [lookup(field_to_match.value, "ja4_fingerprint")]
+                  content {
+                    fallback_behavior = lookup(ja4_fingerprint.value, "fallback_behavior")
                   }
                 }
               }
@@ -1053,6 +1125,18 @@ resource "aws_wafv2_web_acl" "waf_acl" {
                             name = lower(lookup(single_header.value, "name"))
                           }
                         }
+                        dynamic "ja3_fingerprint" {
+                          for_each = length(lookup(field_to_match.value, "ja3_fingerprint", {})) == 0 ? [] : [lookup(field_to_match.value, "ja3_fingerprint")]
+                          content {
+                            fallback_behavior = lookup(ja3_fingerprint.value, "fallback_behavior")
+                          }
+                        }
+                        dynamic "ja4_fingerprint" {
+                          for_each = length(lookup(field_to_match.value, "ja4_fingerprint", {})) == 0 ? [] : [lookup(field_to_match.value, "ja4_fingerprint")]
+                          content {
+                            fallback_behavior = lookup(ja4_fingerprint.value, "fallback_behavior")
+                          }
+                        }
                       }
                     }
                     positional_constraint = lookup(byte_match_statement.value, "positional_constraint")
@@ -1176,6 +1260,18 @@ resource "aws_wafv2_web_acl" "waf_acl" {
                                   name = lower(lookup(single_header.value, "name"))
                                 }
                               }
+                              dynamic "ja3_fingerprint" {
+                                for_each = length(lookup(field_to_match.value, "ja3_fingerprint", {})) == 0 ? [] : [lookup(field_to_match.value, "ja3_fingerprint")]
+                                content {
+                                  fallback_behavior = lookup(ja3_fingerprint.value, "fallback_behavior")
+                                }
+                              }
+                              dynamic "ja4_fingerprint" {
+                                for_each = length(lookup(field_to_match.value, "ja4_fingerprint", {})) == 0 ? [] : [lookup(field_to_match.value, "ja4_fingerprint")]
+                                content {
+                                  fallback_behavior = lookup(ja4_fingerprint.value, "fallback_behavior")
+                                }
+                              }
                             }
                           }
                           positional_constraint = lookup(byte_match_statement.value, "positional_constraint")
@@ -1253,6 +1349,18 @@ resource "aws_wafv2_web_acl" "waf_acl" {
                                   for_each = length(lookup(field_to_match.value, "single_header", {})) == 0 ? [] : [lookup(field_to_match.value, "single_header")]
                                   content {
                                     name = lower(lookup(single_header.value, "name"))
+                                  }
+                                }
+                                dynamic "ja3_fingerprint" {
+                                  for_each = length(lookup(field_to_match.value, "ja3_fingerprint", {})) == 0 ? [] : [lookup(field_to_match.value, "ja3_fingerprint")]
+                                  content {
+                                    fallback_behavior = lookup(ja3_fingerprint.value, "fallback_behavior")
+                                  }
+                                }
+                                dynamic "ja4_fingerprint" {
+                                  for_each = length(lookup(field_to_match.value, "ja4_fingerprint", {})) == 0 ? [] : [lookup(field_to_match.value, "ja4_fingerprint")]
+                                  content {
+                                    fallback_behavior = lookup(ja4_fingerprint.value, "fallback_behavior")
                                   }
                                 }
                               }
@@ -1347,6 +1455,18 @@ resource "aws_wafv2_web_acl" "waf_acl" {
                                           name = lower(lookup(single_header.value, "name"))
                                         }
                                       }
+                                      dynamic "ja3_fingerprint" {
+                                        for_each = length(lookup(field_to_match.value, "ja3_fingerprint", {})) == 0 ? [] : [lookup(field_to_match.value, "ja3_fingerprint")]
+                                        content {
+                                          fallback_behavior = lookup(ja3_fingerprint.value, "fallback_behavior")
+                                        }
+                                      }
+                                      dynamic "ja4_fingerprint" {
+                                        for_each = length(lookup(field_to_match.value, "ja4_fingerprint", {})) == 0 ? [] : [lookup(field_to_match.value, "ja4_fingerprint")]
+                                        content {
+                                          fallback_behavior = lookup(ja4_fingerprint.value, "fallback_behavior")
+                                        }
+                                      }
                                     }
                                   }
                                   positional_constraint = lookup(byte_match_statement.value, "positional_constraint")
@@ -1430,6 +1550,18 @@ resource "aws_wafv2_web_acl" "waf_acl" {
                                     name = lower(lookup(single_header.value, "name"))
                                   }
                                 }
+                                dynamic "ja3_fingerprint" {
+                                  for_each = length(lookup(field_to_match.value, "ja3_fingerprint", {})) == 0 ? [] : [lookup(field_to_match.value, "ja3_fingerprint")]
+                                  content {
+                                    fallback_behavior = lookup(ja3_fingerprint.value, "fallback_behavior")
+                                  }
+                                }
+                                dynamic "ja4_fingerprint" {
+                                  for_each = length(lookup(field_to_match.value, "ja4_fingerprint", {})) == 0 ? [] : [lookup(field_to_match.value, "ja4_fingerprint")]
+                                  content {
+                                    fallback_behavior = lookup(ja4_fingerprint.value, "fallback_behavior")
+                                  }
+                                }
                               }
                             }
                             positional_constraint = lookup(byte_match_statement.value, "positional_constraint")
@@ -1509,6 +1641,18 @@ resource "aws_wafv2_web_acl" "waf_acl" {
                                         for_each = length(lookup(field_to_match.value, "single_header", {})) == 0 ? [] : [lookup(field_to_match.value, "single_header")]
                                         content {
                                           name = lower(lookup(single_header.value, "name"))
+                                        }
+                                      }
+                                      dynamic "ja3_fingerprint" {
+                                        for_each = length(lookup(field_to_match.value, "ja3_fingerprint", {})) == 0 ? [] : [lookup(field_to_match.value, "ja3_fingerprint")]
+                                        content {
+                                          fallback_behavior = lookup(ja3_fingerprint.value, "fallback_behavior")
+                                        }
+                                      }
+                                      dynamic "ja4_fingerprint" {
+                                        for_each = length(lookup(field_to_match.value, "ja4_fingerprint", {})) == 0 ? [] : [lookup(field_to_match.value, "ja4_fingerprint")]
+                                        content {
+                                          fallback_behavior = lookup(ja4_fingerprint.value, "fallback_behavior")
                                         }
                                       }
                                     }
@@ -1594,6 +1738,18 @@ resource "aws_wafv2_web_acl" "waf_acl" {
                         for_each = length(lookup(field_to_match.value, "single_header", {})) == 0 ? [] : [lookup(field_to_match.value, "single_header")]
                         content {
                           name = lower(lookup(single_header.value, "name"))
+                        }
+                      }
+                      dynamic "ja3_fingerprint" {
+                        for_each = length(lookup(field_to_match.value, "ja3_fingerprint", {})) == 0 ? [] : [lookup(field_to_match.value, "ja3_fingerprint")]
+                        content {
+                          fallback_behavior = lookup(ja3_fingerprint.value, "fallback_behavior")
+                        }
+                      }
+                      dynamic "ja4_fingerprint" {
+                        for_each = length(lookup(field_to_match.value, "ja4_fingerprint", {})) == 0 ? [] : [lookup(field_to_match.value, "ja4_fingerprint")]
+                        content {
+                          fallback_behavior = lookup(ja4_fingerprint.value, "fallback_behavior")
                         }
                       }
                     }
@@ -1770,6 +1926,18 @@ resource "aws_wafv2_web_acl" "waf_acl" {
                             name = lower(lookup(single_header.value, "name"))
                           }
                         }
+                        dynamic "ja3_fingerprint" {
+                          for_each = length(lookup(field_to_match.value, "ja3_fingerprint", {})) == 0 ? [] : [lookup(field_to_match.value, "ja3_fingerprint")]
+                          content {
+                            fallback_behavior = lookup(ja3_fingerprint.value, "fallback_behavior")
+                          }
+                        }
+                        dynamic "ja4_fingerprint" {
+                          for_each = length(lookup(field_to_match.value, "ja4_fingerprint", {})) == 0 ? [] : [lookup(field_to_match.value, "ja4_fingerprint")]
+                          content {
+                            fallback_behavior = lookup(ja4_fingerprint.value, "fallback_behavior")
+                          }
+                        }
                       }
                     }
                     positional_constraint = lookup(byte_match_statement.value, "positional_constraint")
@@ -1893,6 +2061,18 @@ resource "aws_wafv2_web_acl" "waf_acl" {
                                 for_each = length(lookup(field_to_match.value, "single_header", {})) == 0 ? [] : [lookup(field_to_match.value, "single_header")]
                                 content {
                                   name = lower(lookup(single_header.value, "name"))
+                                }
+                              }
+                              dynamic "ja3_fingerprint" {
+                                for_each = length(lookup(field_to_match.value, "ja3_fingerprint", {})) == 0 ? [] : [lookup(field_to_match.value, "ja3_fingerprint")]
+                                content {
+                                  fallback_behavior = lookup(ja3_fingerprint.value, "fallback_behavior")
+                                }
+                              }
+                              dynamic "ja4_fingerprint" {
+                                for_each = length(lookup(field_to_match.value, "ja4_fingerprint", {})) == 0 ? [] : [lookup(field_to_match.value, "ja4_fingerprint")]
+                                content {
+                                  fallback_behavior = lookup(ja4_fingerprint.value, "fallback_behavior")
                                 }
                               }
                             }
@@ -2035,6 +2215,18 @@ resource "aws_wafv2_web_acl" "waf_acl" {
                                     name = lower(lookup(single_header.value, "name"))
                                   }
                                 }
+                                dynamic "ja3_fingerprint" {
+                                  for_each = length(lookup(field_to_match.value, "ja3_fingerprint", {})) == 0 ? [] : [lookup(field_to_match.value, "ja3_fingerprint")]
+                                  content {
+                                    fallback_behavior = lookup(ja3_fingerprint.value, "fallback_behavior")
+                                  }
+                                }
+                                dynamic "ja4_fingerprint" {
+                                  for_each = length(lookup(field_to_match.value, "ja4_fingerprint", {})) == 0 ? [] : [lookup(field_to_match.value, "ja4_fingerprint")]
+                                  content {
+                                    fallback_behavior = lookup(ja4_fingerprint.value, "fallback_behavior")
+                                  }
+                                }
                               }
                             }
                             positional_constraint = lookup(byte_match_statement.value, "positional_constraint")
@@ -2094,6 +2286,18 @@ resource "aws_wafv2_web_acl" "waf_acl" {
                           for_each = length(lookup(field_to_match.value, "single_header", {})) == 0 ? [] : [lookup(field_to_match.value, "single_header")]
                           content {
                             name = lower(lookup(single_header.value, "name"))
+                          }
+                        }
+                        dynamic "ja3_fingerprint" {
+                          for_each = length(lookup(field_to_match.value, "ja3_fingerprint", {})) == 0 ? [] : [lookup(field_to_match.value, "ja3_fingerprint")]
+                          content {
+                            fallback_behavior = lookup(ja3_fingerprint.value, "fallback_behavior")
+                          }
+                        }
+                        dynamic "ja4_fingerprint" {
+                          for_each = length(lookup(field_to_match.value, "ja4_fingerprint", {})) == 0 ? [] : [lookup(field_to_match.value, "ja4_fingerprint")]
+                          content {
+                            fallback_behavior = lookup(ja4_fingerprint.value, "fallback_behavior")
                           }
                         }
                       }
@@ -2218,6 +2422,18 @@ resource "aws_wafv2_web_acl" "waf_acl" {
                                 for_each = length(lookup(field_to_match.value, "single_header", {})) == 0 ? [] : [lookup(field_to_match.value, "single_header")]
                                 content {
                                   name = lower(lookup(single_header.value, "name"))
+                                }
+                              }
+                              dynamic "ja3_fingerprint" {
+                                for_each = length(lookup(field_to_match.value, "ja3_fingerprint", {})) == 0 ? [] : [lookup(field_to_match.value, "ja3_fingerprint")]
+                                content {
+                                  fallback_behavior = lookup(ja3_fingerprint.value, "fallback_behavior")
+                                }
+                              }
+                              dynamic "ja4_fingerprint" {
+                                for_each = length(lookup(field_to_match.value, "ja4_fingerprint", {})) == 0 ? [] : [lookup(field_to_match.value, "ja4_fingerprint")]
+                                content {
+                                  fallback_behavior = lookup(ja4_fingerprint.value, "fallback_behavior")
                                 }
                               }
                             }

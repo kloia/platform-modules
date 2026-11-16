@@ -10,6 +10,7 @@ Supported WAF v2 components:
 - Blocking IP Sets
 - Rate limiting IPs (and optional scopedown statements)
 - Byte Match statements
+- JA3 / JA4 TLS fingerprint match (in Byte Match statements)
 - Geo set statements
 - Logical Statements (AND, OR, NOT)
 - Size constraint statements
@@ -381,6 +382,26 @@ module "waf" {
   scope = "CLOUDFRONT"
   create_alb_association = false
   ...
+}
+```
+
+### JA3 / JA4 fingerprint match
+
+A `byte_match_statement` can match the client's TLS fingerprint through `ja3_fingerprint` or `ja4_fingerprint` in `field_to_match`, at every level a byte match is accepted (rule, AND/OR/NOT statements, rate-based and managed rule group scope-down statements). Use `positional_constraint = "EXACTLY"` with the 32-character JA3 hash or the 36-character JA4 fingerprint taken from the web ACL logs.
+
+`fallback_behavior` is required and has no default: it is the match result when AWS WAF cannot compute the fingerprint (`MATCH` or `NO_MATCH`). An empty map (`ja3_fingerprint = {}`) renders nothing.
+
+Fingerprint inspection works only for CloudFront distributions and Application Load Balancers, and AWS requires web ACL logging to be enabled to use it.
+
+```hcl
+byte_match_statement = {
+  field_to_match = {
+    ja3_fingerprint = { fallback_behavior = "NO_MATCH" } # or ja4_fingerprint
+  }
+  positional_constraint = "EXACTLY"
+  search_string         = "00000000000000000000000000000000" # placeholder JA3 hash
+  priority              = 0
+  type                  = "NONE"
 }
 ```
 
