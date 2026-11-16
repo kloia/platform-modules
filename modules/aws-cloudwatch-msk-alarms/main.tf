@@ -13,6 +13,8 @@ locals {
 
   minutes = var.period * var.datapoints_to_alarm / 60
 
+  under_replicated_datapoints = coalesce(var.under_replicated_datapoints, var.datapoints_to_alarm)
+
   # Published once per cluster (dimension "Cluster Name" only).
   cluster = {
     offline-partitions = {
@@ -32,12 +34,12 @@ locals {
 
   broker = {
     under-replicated = {
-      metric = "UnderReplicatedPartitions", threshold = 0
+      metric = "UnderReplicatedPartitions", threshold = 0, datapoints = local.under_replicated_datapoints
       label  = "Under-replicated partitions (worst broker)"
-      text   = "Kafka partitions under-replicated for ${local.minutes} minutes: a broker is behind or down, and losing another one can lose data. Check broker CPU, disk and network."
+      text   = "Kafka partitions under-replicated for ${var.period * local.under_replicated_datapoints / 60} minutes: a broker is behind or down, and losing another one can lose data. Check broker CPU, disk and network."
     }
     disk-used = {
-      metric = "KafkaDataLogsDiskUsed", threshold = var.disk_used_threshold_pct
+      metric = "KafkaDataLogsDiskUsed", threshold = var.disk_used_threshold_pct, datapoints = var.datapoints_to_alarm
       label  = "Data log disk used % (worst broker)"
       text   = "Kafka data log disk above ${var.disk_used_threshold_pct}% on a broker for ${local.minutes} minutes. A full disk stops the broker. Check retention or expand storage."
     }
@@ -101,8 +103,8 @@ module "broker" {
 
   comparison_operator = "GreaterThanThreshold"
   threshold           = each.value.threshold
-  evaluation_periods  = var.evaluation_periods
-  datapoints_to_alarm = var.datapoints_to_alarm
+  evaluation_periods  = max(var.evaluation_periods, each.value.datapoints)
+  datapoints_to_alarm = each.value.datapoints
   treat_missing_data  = "missing"
 
   alarm_actions = var.alarm_actions

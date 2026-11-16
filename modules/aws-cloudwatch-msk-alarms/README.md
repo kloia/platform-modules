@@ -22,6 +22,11 @@ KRaft-mode cluster, confirm `ActiveControllerCount` is published first, or set
 
 Every threshold, the period and the datapoints are variables. Defaults: 5-minute period, 3 of 3 datapoints.
 
+MSK security patching restarts brokers one at a time, and each restart leaves partitions under-replicated for
+about 15 minutes. With the default 3 of 3 that is enough to fire `under-replicated-high` once per broker. Set
+`under_replicated_datapoints` (for example `6`, 30 minutes) to keep it quiet during patching;
+`offline-partitions-high` still fires on the first datapoint if a partition loses its leader.
+
 ## Usage
 
 ```hcl
