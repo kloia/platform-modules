@@ -269,3 +269,9 @@ variable "provider_assume_role_arn" {
   type        = string
   default     = ""
 }
+
+variable "provider_session_name" {
+  description = "Session name for the provider's assume-role call, for roles whose trust requires one. Null keeps the provider's default session name"
+  type        = string
+  default     = null
+}
