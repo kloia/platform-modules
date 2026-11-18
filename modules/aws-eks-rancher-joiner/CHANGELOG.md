@@ -1,5 +1,12 @@
 # Changelog
 
+## [0.2.0](https://github.com/kloia/platform-modules/compare/aws-eks-rancher-joiner-v0.1.1...aws-eks-rancher-joiner-v0.2.0) (2026-11-18)
+
+
+### Features
+
+* **eks:** optional session_name for cluster token and provider role sessions ([#458](https://github.com/kloia/platform-modules/issues/458)) ([d8b7491](https://github.com/kloia/platform-modules/commit/d8b74914ca094aca7762f3d8b892ee823f82dfb0))
+
 ## [0.1.1](https://github.com/kloia/platform-modules/compare/aws-eks-rancher-joiner-v0.1.0...aws-eks-rancher-joiner-v0.1.1) (2024-06-01)
 
 
