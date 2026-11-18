@@ -30,6 +30,12 @@ variable "upstream_assume_role_arn" {
   type        = string
 }
 
+variable "session_name" {
+  description = "Session name used when assuming the role(s) for cluster access, for roles whose trust requires one. Null keeps `aws eks get-token --role-arn`, whose session name is always EKSGetTokenAuth"
+  type        = string
+  default     = null
+}
+
 variable "downstream_cluster_name" {
   type        = string
   description = "Name of the existing downstream cluster"

@@ -101,6 +101,12 @@ variable "assume_role_arn" {
   type        = string
 }
 
+variable "session_name" {
+  description = "Session name used when assuming the role(s) for cluster access, for roles whose trust requires one. Null keeps `aws eks get-token --role-arn`, whose session name is always EKSGetTokenAuth"
+  type        = string
+  default     = null
+}
+
 variable "deploy_aws_loadbalancer" {
   description = "Deploy AWS Loadbalancer flag"
   type        = bool
