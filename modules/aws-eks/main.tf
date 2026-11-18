@@ -161,9 +161,28 @@ locals {
     }
   }
 
+  # Fixed cluster administrators, keyed by role or user name. Unlike the cluster creator
+  # entry above, these do not change with the identity used by Terraform
+  cluster_admin_access_entries = {
+    for arn in var.cluster_admin_principal_arns : regex("[^/]+$", arn) => {
+      principal_arn = arn
+      type          = "STANDARD"
+
+      policy_associations = {
+        admin = {
+          policy_arn = "arn:${local.partition}:eks::aws:cluster-access-policy/AmazonEKSClusterAdminPolicy"
+          access_scope = {
+            type = "cluster"
+          }
+        }
+      }
+    }
+  }
+
   # Merge the bootstrap behavior with the entries that users provide
   merged_access_entries = merge(
     { for k, v in local.bootstrap_cluster_creator_admin_permissions : k => v if var.enable_cluster_creator_admin_permissions },
+    local.cluster_admin_access_entries,
     var.access_entries,
   )
 
@@ -236,7 +255,7 @@ module "kms" {
   # Policy
   enable_default_policy     = var.kms_key_enable_default_policy
   key_owners                = var.kms_key_owners
-  key_administrators        = coalescelist(var.kms_key_administrators, [data.aws_iam_session_context.current.issuer_arn])
+  key_administrators        = coalescelist(var.kms_key_administrators, var.cluster_admin_principal_arns, [data.aws_iam_session_context.current.issuer_arn])
   key_users                 = concat([local.cluster_role], var.kms_key_users)
   key_service_users         = var.kms_key_service_users
   source_policy_documents   = var.kms_key_source_policy_documents

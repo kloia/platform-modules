@@ -152,6 +152,17 @@ variable "enable_cluster_creator_admin_permissions" {
   default     = false
 }
 
+variable "cluster_admin_principal_arns" {
+  description = "List of IAM principal ARNs to add as cluster administrators (`AmazonEKSClusterAdminPolicy`) via access entry, keyed by role or user name. Unlike `enable_cluster_creator_admin_permissions`, these do not depend on the identity used by Terraform. Also used as the KMS key administrators when `kms_key_administrators` is empty"
+  type        = list(string)
+  default     = []
+
+  validation {
+    condition     = length(distinct([for arn in var.cluster_admin_principal_arns : regex("[^/]+$", arn)])) == length(var.cluster_admin_principal_arns)
+    error_message = "Each principal ARN must end in a distinct role or user name, which is used as the access entry key."
+  }
+}
+
 ################################################################################
 # KMS Key
 ################################################################################
