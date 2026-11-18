@@ -1,5 +1,12 @@
 # Changelog
 
+## [0.4.0](https://github.com/kloia/platform-modules/compare/aws-eks-v0.3.1...aws-eks-v0.4.0) (2026-11-18)
+
+
+### Features
+
+* **aws-eks:** optional session name for the karpenter submodule provider ([#463](https://github.com/kloia/platform-modules/issues/463)) ([5e4cb0a](https://github.com/kloia/platform-modules/commit/5e4cb0a78b701e17fd457f89a8294e10e8b5bf4d))
+
 ## [0.3.1](https://github.com/kloia/platform-modules/compare/aws-eks-v0.3.0...aws-eks-v0.3.1) (2025-07-11)
 
 
