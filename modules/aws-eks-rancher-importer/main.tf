@@ -12,6 +12,15 @@ data "aws_ssm_parameter" "upstream_cluster_ca_cert" {
   name     = var.upstream_cluster_ca_cert_ssm_key
 }
 
+locals {
+  # `aws eks get-token --role-arn` always names the session EKSGetTokenAuth, which a role whose
+  # trust requires a specific session name rejects. With var.session_name set, the token is signed
+  # as a session of that role assumed with that name instead. Arguments: role ARN, session name,
+  # cluster name.
+  eks_token_script  = "c=$(aws sts assume-role --role-arn \"$1\" --role-session-name \"$2\" --query 'Credentials.[AccessKeyId,SecretAccessKey,SessionToken]' --output text) && set -- \"$3\" $c && unset AWS_PROFILE && AWS_ACCESS_KEY_ID=$2 AWS_SECRET_ACCESS_KEY=$3 AWS_SESSION_TOKEN=$4 exec aws eks get-token --cluster-name \"$1\""
+  eks_token_command = var.session_name == null ? "aws" : "sh"
+}
+
 provider "kubernetes" {
   alias = "upstream"
 
@@ -19,8 +28,8 @@ provider "kubernetes" {
   cluster_ca_certificate = base64decode(data.aws_ssm_parameter.upstream_cluster_ca_cert.value)
   exec {
     api_version = "client.authentication.k8s.io/v1beta1"
-    args        = ["eks", "get-token", "--role-arn", var.upstream_assume_role_arn, "--cluster-name", data.aws_ssm_parameter.upstream_cluster_name.value]
-    command     = "aws"
+    args        = var.session_name == null ? ["eks", "get-token", "--role-arn", var.upstream_assume_role_arn, "--cluster-name", data.aws_ssm_parameter.upstream_cluster_name.value] : ["-c", local.eks_token_script, "eks-token", var.upstream_assume_role_arn, var.session_name, data.aws_ssm_parameter.upstream_cluster_name.value]
+    command     = local.eks_token_command
   }
 }
 
