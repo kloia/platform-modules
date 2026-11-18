@@ -1,5 +1,12 @@
 # Changelog
 
+## [0.9.1](https://github.com/kloia/platform-modules/compare/aws-eks-addons-v0.9.0...aws-eks-addons-v0.9.1) (2026-11-18)
+
+
+### Bug Fixes
+
+* **aws-eks-addons:** pass session_name to the karpenter submodule provider ([#465](https://github.com/kloia/platform-modules/issues/465)) ([788fa46](https://github.com/kloia/platform-modules/commit/788fa463caf0aa830517f18cad92595f65c2bad6))
+
 ## [0.9.0](https://github.com/kloia/platform-modules/compare/aws-eks-addons-v0.8.0...aws-eks-addons-v0.9.0) (2026-11-18)
 
 
