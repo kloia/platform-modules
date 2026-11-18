@@ -498,6 +498,10 @@ resource "kubectl_manifest" "argocd_bootstrapper_application" {
 provider "aws" {
   region = "us-east-1"
   alias = "virginia"
+  assume_role {
+    role_arn     = var.assume_role_arn
+    session_name = var.session_name
+  }
 }
 
 data "aws_ecrpublic_authorization_token" "token" {
@@ -506,7 +510,7 @@ data "aws_ecrpublic_authorization_token" "token" {
 
 module "karpenter" {
 
-  source  = "git::https://github.com/kloia/platform-modules.git//aws-eks/modules/karpenter?ref=v0.0.47"
+  source  = "git::https://github.com/kloia/platform-modules.git//modules/karpenter?ref=module/aws-eks/v0.4.0"
 
   cluster_name = var.cluster_name
 
@@ -516,6 +520,7 @@ module "karpenter" {
   irsa_namespace_service_accounts = ["karpenter:karpenter"]
   provider_region = var.cluster_region
   provider_assume_role_arn = var.assume_role_arn
+  provider_session_name    = var.session_name
 
   # Since Karpenter is running on an EKS Managed Node group,
   # we can re-use the role that was created for the node group
