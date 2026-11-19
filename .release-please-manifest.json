@@ -100,5 +100,5 @@
   "modules/aws-mongodbatlas-alerts": "0.2.0",
   "modules/cloudflare-dns-records": "0.1.0",
   "modules/cloudflare-rulesets": "0.1.0",
-  "modules/cloudflare-zone-settings": "0.0.0"
+  "modules/cloudflare-zone-settings": "0.1.0"
 }
