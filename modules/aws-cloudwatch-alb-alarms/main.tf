@@ -83,3 +83,57 @@ module "alarm" {
   ok_actions    = var.ok_actions
   tags          = var.tags
 }
+
+# Target groups are looked up by name for the same reason as the load balancers.
+data "aws_lb_target_group" "healthy_host" {
+  for_each = var.healthy_host_target_groups
+
+  name = each.value
+
+  lifecycle {
+    postcondition {
+      condition     = length(self.load_balancer_arns) == 1
+      error_message = "Target group ${each.value} must be attached to exactly one load balancer."
+    }
+  }
+}
+
+data "aws_lb" "healthy_host" {
+  for_each = var.healthy_host_target_groups
+
+  arn = one(data.aws_lb_target_group.healthy_host[each.key].load_balancer_arns)
+}
+
+module "healthy_host_alarm" {
+  source  = "terraform-aws-modules/cloudwatch/aws//modules/metric-alarm"
+  version = "5.7.3"
+
+  for_each = var.healthy_host_target_groups
+
+  alarm_name = "${var.name_prefix}-tg-${each.value}-healthy-hosts"
+  alarm_description = join(" ", compact([
+    var.priority == null ? "" : "[${var.priority}]",
+    "Fewer than ${var.min_healthy_hosts} healthy target(s) in ${each.value} behind ${data.aws_lb.healthy_host[each.key].name} for ${var.healthy_host_period * var.healthy_host_datapoints_to_alarm / 60} minutes, at any traffic level.",
+    var.description_suffix,
+  ]))
+
+  namespace   = "AWS/ApplicationELB"
+  metric_name = "HealthyHostCount"
+  statistic   = "Minimum"
+  period      = var.healthy_host_period
+  dimensions = {
+    TargetGroup  = data.aws_lb_target_group.healthy_host[each.key].arn_suffix
+    LoadBalancer = data.aws_lb.healthy_host[each.key].arn_suffix
+  }
+
+  comparison_operator = "LessThanThreshold"
+  threshold           = var.min_healthy_hosts
+  evaluation_periods  = var.healthy_host_evaluation_periods
+  datapoints_to_alarm = var.healthy_host_datapoints_to_alarm
+  # No data means no target reported healthy, which is the case this alarm exists for.
+  treat_missing_data = "breaching"
+
+  alarm_actions = var.alarm_actions
+  ok_actions    = var.ok_actions
+  tags          = var.tags
+}

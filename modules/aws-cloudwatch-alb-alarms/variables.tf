@@ -88,3 +88,37 @@ variable "priority" {
     error_message = "priority must be one of P1, P2, P3, P4, P5."
   }
 }
+
+variable "healthy_host_target_groups" {
+  description = <<-EOT
+    Names of target groups to alarm on when too few targets are healthy. Each target group must be attached to
+    exactly one load balancer. This catches a backend that is fully down at any traffic level, which the 5XX-rate
+    alarms miss below min_requests.
+  EOT
+  type        = set(string)
+  default     = []
+}
+
+variable "min_healthy_hosts" {
+  description = "Alarm when the healthy target count stays below this number."
+  type        = number
+  default     = 1
+}
+
+variable "healthy_host_period" {
+  description = "Period in seconds for the healthy-host alarm."
+  type        = number
+  default     = 60
+}
+
+variable "healthy_host_evaluation_periods" {
+  description = "Number of periods evaluated by the healthy-host alarm."
+  type        = number
+  default     = 3
+}
+
+variable "healthy_host_datapoints_to_alarm" {
+  description = "Breaching periods, out of healthy_host_evaluation_periods, that trigger the healthy-host alarm."
+  type        = number
+  default     = 3
+}
