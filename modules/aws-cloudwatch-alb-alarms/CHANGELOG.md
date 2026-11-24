@@ -1,5 +1,12 @@
 # Changelog
 
+## [0.3.0](https://github.com/kloia/platform-modules/compare/aws-cloudwatch-alb-alarms-v0.2.0...aws-cloudwatch-alb-alarms-v0.3.0) (2026-11-24)
+
+
+### Features
+
+* **aws-cloudwatch-alb-alarms:** add optional healthy-host-count alarm per target group ([#472](https://github.com/kloia/platform-modules/issues/472)) ([aba6f04](https://github.com/kloia/platform-modules/commit/aba6f0447aae3f27f475825f5685ae125849a168))
+
 ## [0.2.0](https://github.com/kloia/platform-modules/compare/aws-cloudwatch-alb-alarms-v0.1.0...aws-cloudwatch-alb-alarms-v0.2.0) (2026-11-12)
 
 
