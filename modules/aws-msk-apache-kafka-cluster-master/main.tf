@@ -135,7 +135,7 @@ resource "aws_secretsmanager_secret_policy" "policy" {
 
 resource "aws_msk_configuration" "config" {
   count          = local.enabled ? 1 : 0
-  kafka_versions = [var.kafka_version]
+  kafka_versions = var.configuration_kafka_versions != null ? var.configuration_kafka_versions : [var.kafka_version]
   name           = var.name
   description    = "Manages an Amazon Managed Streaming for Kafka configuration"
 
