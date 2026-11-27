@@ -1,5 +1,12 @@
 # Changelog
 
+## [0.4.0](https://github.com/kloia/platform-modules/compare/aws-msk-apache-kafka-cluster-master-v0.3.0...aws-msk-apache-kafka-cluster-master-v0.4.0) (2026-11-27)
+
+
+### Features
+
+* **aws-msk-apache-kafka-cluster-master:** optional configuration_kafka_versions ([#474](https://github.com/kloia/platform-modules/issues/474)) ([a5642e1](https://github.com/kloia/platform-modules/commit/a5642e1f2118cc767799e6ae8e377086a2094527))
+
 ## [0.3.0](https://github.com/kloia/platform-modules/compare/aws-msk-apache-kafka-cluster-master-v0.2.2...aws-msk-apache-kafka-cluster-master-v0.3.0) (2026-10-01)
 
 
