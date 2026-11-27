@@ -15,6 +15,12 @@ variable "kafka_version" {
   description = "The desired Kafka software version"
 }
 
+variable "configuration_kafka_versions" {
+  type        = list(string)
+  default     = null
+  description = "Kafka versions the MSK configuration is compatible with. Defaults to `[kafka_version]`. Set it when the cluster has been upgraded in place and its existing configuration lists an older version: changing `kafka_versions` replaces the configuration."
+}
+
 variable "broker_instance_type" {
   type        = string
   description = "The instance type to use for the Kafka brokers"
